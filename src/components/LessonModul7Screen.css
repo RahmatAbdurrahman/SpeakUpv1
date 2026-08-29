@@ -681,7 +681,7 @@
 .modul7-cta-with-hint {
   flex-direction: column;
   align-items: center;
-  gap: 10px;
+  gap: 22px;
   width: 100%;
 }
 
@@ -694,12 +694,13 @@
 
 .modul7-practice-autostart {
   font-family: var(--font-family-base, 'Space Grotesk', sans-serif);
-  font-size: 13px;
+  font-size: 13.5px;
   font-weight: 500;
   color: var(--modul7-dark-faint, rgba(255, 255, 255, 0.45));
   text-align: center;
   margin: 0;
   width: 100%;
+  letter-spacing: 0.2px;
 }
 
 /* "Aku tidak tahu jawabannya" — text-link fallback below "Ulangi lagi" */
