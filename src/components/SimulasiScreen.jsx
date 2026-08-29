@@ -610,7 +610,7 @@ function RecordingStep({ scenario, cheatSheet, questions = [], onBack, onFinish,
             <span>{formatTime(seconds)}</span>
           </div>
         )}
-        {isRecording && (
+        {isRecording && !isInterview && (
           <div className="simulasi-viewer-badge" aria-hidden="true">
             <span className="simulasi-viewer-icon">👁</span>
             <span>{viewerCount} menonton</span>
