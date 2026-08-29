@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect } from "react";
 import LessonAffirmation from "./LessonAffirmation";
 import LessonModul7Screen from "./LessonModul7Screen";
+import LessonExitModal from "./LessonExitModal";
 import "./LessonScreen.css";
 
 // ─── Assets ──────────────────────────────────────────────────────────────────
@@ -647,6 +648,7 @@ export default function LessonScreen({ lessonData, onBack, onFinish }) {
 
   // step: "affirmation" | 1 | 2 | 3 | 4 | 5 | "completed"
   const [step, setStep] = useState("affirmation");
+  const [showExitModal, setShowExitModal] = useState(false);
 
   if (isModul7) {
     return (
@@ -669,15 +671,8 @@ export default function LessonScreen({ lessonData, onBack, onFinish }) {
     });
   };
 
-  const goPrev = () => {
-    setStep((prev) => {
-      if (prev === 1 || prev === "affirmation") {
-        onBack?.();
-        return "affirmation";
-      }
-      if (prev === "completed") return 5;
-      return prev - 1;
-    });
+  const handleRequestExit = () => {
+    setShowExitModal(true);
   };
 
   return (
@@ -688,12 +683,22 @@ export default function LessonScreen({ lessonData, onBack, onFinish }) {
           onComplete={goNext}
         />
       )}
-      {step === 1 && <LessonPage1 onNext={goNext} onBack={goPrev} />}
-      {step === 2 && <LessonPage2 onNext={goNext} onBack={goPrev} />}
-      {step === 3 && <LessonPage3 onNext={goNext} onBack={goPrev} />}
-      {step === 4 && <LessonPage4 onNext={goNext} onBack={goPrev} />}
-      {step === 5 && <LessonPage5 onNext={goNext} onBack={goPrev} />}
+      {step === 1 && <LessonPage1 onNext={goNext} onBack={handleRequestExit} />}
+      {step === 2 && <LessonPage2 onNext={goNext} onBack={handleRequestExit} />}
+      {step === 3 && <LessonPage3 onNext={goNext} onBack={handleRequestExit} />}
+      {step === 4 && <LessonPage4 onNext={goNext} onBack={handleRequestExit} />}
+      {step === 5 && <LessonPage5 onNext={goNext} onBack={handleRequestExit} />}
       {step === "completed" && <CompletedLesson onFinish={onFinish} />}
+
+      {showExitModal && (
+        <LessonExitModal
+          onCancel={() => setShowExitModal(false)}
+          onConfirm={() => {
+            setShowExitModal(false);
+            onBack?.();
+          }}
+        />
+      )}
     </div>
   );
 }

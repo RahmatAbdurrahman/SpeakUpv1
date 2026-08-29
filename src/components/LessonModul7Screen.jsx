@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect } from "react";
 import "./LessonModul7Screen.css";
+import LessonExitModal from "./LessonExitModal";
 import { supabase } from "../lib/supabaseClient";
 import {
   createSimulation,
@@ -1667,6 +1668,18 @@ export default function LessonModul7Screen({ onBack, onFinish }) {
     }
   };
 
+  const [showExitModal, setShowExitModal] = useState(false);
+
+  const handleRequestExit = () => {
+    setShowExitModal(true);
+  };
+
+  const handleConfirmExit = () => {
+    setShowExitModal(false);
+    streamRef.current?.getTracks().forEach((t) => t.stop());
+    onBack?.();
+  };
+
   const goNext = () => {
     setStep((prev) => {
       if (prev === 17) return "completed";
@@ -1682,45 +1695,33 @@ export default function LessonModul7Screen({ onBack, onFinish }) {
     });
   };
 
-  const goPrev = () => {
-    setStep((prev) => {
-      if (prev === 1) {
-        onBack?.();
-        return 1;
-      }
-      if (prev === "analysis") return "completed";
-      if (prev === "completed") return 17;
-      return prev - 1;
-    });
-  };
-
   return (
     <div className="modul7-lesson-screen">
-      {step === 1 && <LessonPage1 onNext={goNext} onBack={goPrev} />}
-      {step === 2 && <LessonPage2 onNext={goNext} onBack={goPrev} />}
-      {step === 3 && <LessonPage3 onNext={goNext} onBack={goPrev} />}
-      {step === 4 && <LessonPage4 onNext={goNext} onBack={goPrev} />}
-      {step === 5 && <LessonPage5 onNext={goNext} onBack={goPrev} />}
-      {step === 6 && <LessonPage6 onNext={goNext} onBack={goPrev} />}
-      {step === 7 && <PracticeIntro onNext={goNext} onBack={goPrev} />}
-      {step === 8 && <PracticeTopic onNext={goNext} onBack={goPrev} />}
-      {step === 9 && <PracticePrep onNext={goNext} onBack={goPrev} />}
-      {step === 10 && <PracticeSpeak onNext={goNext} onBack={goPrev} />}
-      {step === 11 && <PracticeQaIntro onNext={goNext} onBack={goPrev} />}
+      {step === 1 && <LessonPage1 onNext={goNext} onBack={handleRequestExit} />}
+      {step === 2 && <LessonPage2 onNext={goNext} onBack={handleRequestExit} />}
+      {step === 3 && <LessonPage3 onNext={goNext} onBack={handleRequestExit} />}
+      {step === 4 && <LessonPage4 onNext={goNext} onBack={handleRequestExit} />}
+      {step === 5 && <LessonPage5 onNext={goNext} onBack={handleRequestExit} />}
+      {step === 6 && <LessonPage6 onNext={goNext} onBack={handleRequestExit} />}
+      {step === 7 && <PracticeIntro onNext={goNext} onBack={handleRequestExit} />}
+      {step === 8 && <PracticeTopic onNext={goNext} onBack={handleRequestExit} />}
+      {step === 9 && <PracticePrep onNext={goNext} onBack={handleRequestExit} />}
+      {step === 10 && <PracticeSpeak onNext={goNext} onBack={handleRequestExit} />}
+      {step === 11 && <PracticeQaIntro onNext={goNext} onBack={handleRequestExit} />}
       {step === 12 && (
-        <PracticeQuestionCue step={12} questionIndex={0} onNext={goNext} onBack={goPrev} />
+        <PracticeQuestionCue step={12} questionIndex={0} onNext={goNext} onBack={handleRequestExit} />
       )}
       {step === 13 && (
-        <PracticeAnswer step={13} questionIndex={0} onNext={goNext} onBack={goPrev} />
+        <PracticeAnswer step={13} questionIndex={0} onNext={goNext} onBack={handleRequestExit} />
       )}
-      {step === 14 && <PracticeInterlude onNext={goNext} onBack={goPrev} />}
+      {step === 14 && <PracticeInterlude onNext={goNext} onBack={handleRequestExit} />}
       {step === 15 && (
-        <PracticeQuestionCue step={15} questionIndex={1} onNext={goNext} onBack={goPrev} />
+        <PracticeQuestionCue step={15} questionIndex={1} onNext={goNext} onBack={handleRequestExit} />
       )}
       {step === 16 && (
-        <PracticeAnswer step={16} questionIndex={1} onNext={goNext} onBack={goPrev} />
+        <PracticeAnswer step={16} questionIndex={1} onNext={goNext} onBack={handleRequestExit} />
       )}
-      {step === 17 && <PracticeSuccess onNext={goNext} onBack={goPrev} />}
+      {step === 17 && <PracticeSuccess onNext={goNext} onBack={handleRequestExit} />}
       {step === "completed" && <CompletedLesson onFinish={goNext} />}
       {step === "analyzing" && <AnalyzingScreen />}
       {step === "analysis-error" && (
@@ -1734,6 +1735,13 @@ export default function LessonModul7Screen({ onBack, onFinish }) {
         />
       )}
       {step === "analysis" && <PracticeAnalysis result={analysisResult ?? PRACTICE_ANALYSIS} onFinish={onFinish} />}
+
+      {showExitModal && (
+        <LessonExitModal
+          onCancel={() => setShowExitModal(false)}
+          onConfirm={handleConfirmExit}
+        />
+      )}
     </div>
   );
 }
