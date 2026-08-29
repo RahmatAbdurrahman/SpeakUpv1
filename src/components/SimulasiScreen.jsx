@@ -15,6 +15,8 @@ import iconFlash from "../assets/pages_assets/ai_analysis/Icons/Flash-Icon.svg";
 import iconAI from "../assets/pages_assets/ai_analysis/Icons/AI.svg";
 import videoGainXP from "../assets/pages_assets/gain_xp/Video-Gain-XP.webm";
 import { useGainXpPreloader, getPreloadedVideoSrc } from "../lib/assetPreloader";
+import { DotLottieReact } from "@lottiefiles/dotlottie-react";
+import animaBotLottie from "../assets/lotties/AnimaBot.lottie";
 import SessionLoadingScreen from "./SessionLoadingScreen";
 import { supabase } from "../lib/supabaseClient";
 import {
@@ -1157,7 +1159,14 @@ export default function SimulasiScreen({ onNavigateHome, onNavigateSosial, onNav
   if (step === "processing-materials") {
     return (
       <div className="simulasi-processing-screen">
-        <div className="simulasi-processing-spinner" />
+        <div className="simulasi-processing-lottie-wrap">
+          <DotLottieReact
+            src={animaBotLottie}
+            loop
+            autoplay
+            className="simulasi-processing-lottie"
+          />
+        </div>
         <p className="simulasi-processing-title">Memproses materi kamu...</p>
         <p className="simulasi-processing-sub">AI kami lagi baca file-nya, biasanya cuma beberapa detik. Untuk file hasil scan gambar, ini bisa lebih lama — mohon tunggu, jangan tutup halaman ini.</p>
       </div>
@@ -1199,7 +1208,14 @@ export default function SimulasiScreen({ onNavigateHome, onNavigateSosial, onNav
   if (step === "processing") {
     return (
       <div className="simulasi-processing-screen">
-        <div className="simulasi-processing-spinner" />
+        <div className="simulasi-processing-lottie-wrap">
+          <DotLottieReact
+            src={animaBotLottie}
+            loop
+            autoplay
+            className="simulasi-processing-lottie"
+          />
+        </div>
         <p className="simulasi-processing-title">Menganalisis rekamanmu...</p>
         <p className="simulasi-processing-sub">
           AI kami lagi dengerin cara kamu ngomong. Ini butuh beberapa detik.

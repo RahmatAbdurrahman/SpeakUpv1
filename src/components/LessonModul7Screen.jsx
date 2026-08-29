@@ -26,7 +26,8 @@ import imgMascottKhawatir from "../assets/pages_assets/lessons/lesson-6-modul7/I
 import videoHappySpeaker from "../assets/pages_assets/lessons/lesson-6-modul7/Video-Happy-Speaker.webm";
 import videoGainXP from "../assets/pages_assets/gain_xp/Video-Gain-XP.webm";
 
-// ─── Assets for the practice result (AI analysis) screen ─────────────────────
+import { DotLottieReact } from "@lottiefiles/dotlottie-react";
+import animaBotLottie from "../assets/lotties/AnimaBot.lottie";
 import imgAnalysisHero from "../assets/pages_assets/ai_analysis/analysis_hero.png";
 import iconArgument from "../assets/pages_assets/ai_analysis/Icons/Argument-Icon.svg";
 import iconRelevance from "../assets/pages_assets/ai_analysis/Icons/Relevance-Icon.svg";
@@ -1333,7 +1334,14 @@ function PracticeSuccess({ onNext, onBack }) {
 function AnalyzingScreen() {
   return (
     <div className="modul7-lesson-page modul7-dark-page modul7-analyzing-page" data-name="Practice-Menganalisis">
-      <div className="modul7-analyzing-spinner" />
+      <div className="modul7-analyzing-lottie-wrap">
+        <DotLottieReact
+          src={animaBotLottie}
+          loop
+          autoplay
+          className="modul7-analyzing-lottie"
+        />
+      </div>
       <p className="modul7-analyzing-title">Menganalisis rekamanmu...</p>
       <p className="modul7-analyzing-sub">
         AI kami lagi dengerin jawabanmu, biasanya cuma beberapa detik. Jangan tutup halaman ini.

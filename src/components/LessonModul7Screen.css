@@ -1443,6 +1443,19 @@
   text-align: center;
 }
 
+.modul7-analyzing-lottie-wrap {
+  width: 90px;
+  height: 90px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.modul7-analyzing-lottie {
+  width: 100%;
+  height: 100%;
+}
+
 .modul7-analyzing-spinner {
   width: 40px;
   height: 40px;
