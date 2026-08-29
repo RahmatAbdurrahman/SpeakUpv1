@@ -1290,7 +1290,7 @@ function PracticeSuccess({ onNext, onBack }) {
 
       <div className="modul7-lesson-cta-wrapper">
         <button type="button" className="btn-modul7-next" onClick={onNext}>
-          Selesaikan Pelajaran
+          Akhiri Pelajaran
         </button>
       </div>
     </div>
@@ -1401,7 +1401,7 @@ function PracticeAnalysis({ result = PRACTICE_ANALYSIS, onFinish }) {
 
       <div className="modul7-lesson-cta-wrapper">
         <button type="button" className="btn-modul7-next" onClick={onFinish}>
-          Lanjut
+          Tutup
         </button>
       </div>
     </div>

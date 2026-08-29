@@ -76,7 +76,7 @@
   font-size: 14px;
   font-weight: 500;
   color: var(--color-text-caption, #8199A3);
-  margin: -20px 0 0 0;
+  margin: 0;
   line-height: 1.4;
 }
 

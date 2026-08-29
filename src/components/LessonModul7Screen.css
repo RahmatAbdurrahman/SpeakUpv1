@@ -183,10 +183,11 @@
   bottom: 0;
   left: 0;
   right: 0;
-  padding: 12px 16px 40px 16px;
+  padding: 12px 16px 24px 16px;
   background: linear-gradient(180deg, rgba(250, 248, 243, 0) 0%, rgba(250, 248, 243, 0.95) 25%, #FAF8F3 100%);
   display: flex;
   justify-content: center;
+  align-items: center;
   box-sizing: border-box;
   z-index: 10;
 }
@@ -679,7 +680,9 @@
 /* CTA wrapper that carries an auto-start hint above the buttons */
 .modul7-cta-with-hint {
   flex-direction: column;
-  gap: 14px;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
 }
 
 .modul7-cta-row {
@@ -691,24 +694,29 @@
 
 .modul7-practice-autostart {
   font-family: var(--font-family-base, 'Space Grotesk', sans-serif);
-  font-size: 12px;
-  font-weight: 400;
-  color: var(--modul7-dark-faint, rgba(255, 255, 255, 0.32));
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--modul7-dark-faint, rgba(255, 255, 255, 0.45));
   text-align: center;
   margin: 0;
+  width: 100%;
 }
 
 /* "Aku tidak tahu jawabannya" — text-link fallback below "Ulangi lagi" */
 .modul7-novoice-skip {
   background: none;
   border: none;
-  padding: 4px;
+  padding: 6px 12px;
   font-family: var(--font-family-base, 'Space Grotesk', sans-serif);
   font-size: 13px;
   font-weight: 500;
   color: var(--modul7-dark-muted, #8199A3);
   cursor: pointer;
+  text-align: center;
+  display: inline-block;
+  margin: 0 auto;
   -webkit-tap-highlight-color: transparent;
+  transition: color 0.15s ease;
 }
 .modul7-novoice-skip:hover {
   color: #FFFFFF;
@@ -1097,16 +1105,18 @@
 /* ── Pages 11 & 14: mascot bridge screens ────────────────────────────────── */
 .modul7-practice-bridge-content {
   justify-content: center;
-  gap: 26px;
-  padding: 0 0 24px 0;
+  gap: 16px;
+  padding: 0 0 16px 0;
 }
 
 .modul7-practice-bridge-img {
   width: 100%;
-  max-width: 390px;
+  max-width: 220px;
+  max-height: 200px;
   height: auto;
   display: block;
   object-fit: contain;
+  margin: 0 auto;
 }
 
 .modul7-practice-bridge-text {
@@ -1470,12 +1480,6 @@
   inset: 0;
   background: rgba(0, 0, 0, 0.55);
   display: flex;
-  align-items: flex-end;
-  justify-content: center;
-  z-index: 300;
-}
-
-.modul7-gate-sheet {
   width: 100%;
   max-width: 420px;
   background: var(--color-surface, #FFFFFF);
@@ -1536,4 +1540,24 @@
 }
 .btn-modul7-gate-ghost:hover {
   color: var(--color-text-primary, #243238);
+=======
+/* ── Gain XP Video Animation Compact Sizing ──────────────────────────────── */
+.lesson-completed-video-wrap {
+  position: relative;
+  width: 320px;
+  max-width: 88%;
+  height: 320px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  margin: 0 auto;
+}
+
+.lesson-completed-video {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  display: block;
+>>>>>>> cf6077d (fix: adjust lesson button layout, login title spacing, XP video size, and update CTA labels)
 }
