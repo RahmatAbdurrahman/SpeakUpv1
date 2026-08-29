@@ -634,7 +634,7 @@ function CompletedLesson({ onFinish, xpEarned = 25 }) {
             onClick={onFinish}
             data-node-id="281:932"
           >
-            Tutup
+            Klaim XP
           </button>
         </div>
       )}

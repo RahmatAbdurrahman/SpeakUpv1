@@ -1299,32 +1299,6 @@ function useVideoPreloader(videoSrc) {
 
 // ─── Page 17: Keren! — practice cleared ─────────────────────────────────────
 function PracticeSuccess({ onNext, onBack }) {
-  const isVideoReady = useVideoPreloader(videoGainXP);
-  const [waitingForVideo, setWaitingForVideo] = useState(false);
-
-  const handleClick = () => {
-    if (isVideoReady) {
-      onNext();
-    } else {
-      setWaitingForVideo(true);
-    }
-  };
-
-  useEffect(() => {
-    if (waitingForVideo && isVideoReady) {
-      onNext();
-    }
-  }, [waitingForVideo, isVideoReady, onNext]);
-
-  // Safety fallback: proceed after 3s if network is slow
-  useEffect(() => {
-    if (!waitingForVideo) return;
-    const timeout = setTimeout(() => {
-      onNext();
-    }, 3000);
-    return () => clearTimeout(timeout);
-  }, [waitingForVideo, onNext]);
-
   return (
     <div className="modul7-lesson-page" data-name="Practice-Keren">
       <LessonTopBar currentStep={17} totalSteps={TOTAL_LESSON_STEPS} onBack={onBack} />
@@ -1354,11 +1328,9 @@ function PracticeSuccess({ onNext, onBack }) {
         <button
           type="button"
           className="btn-modul7-next"
-          onClick={handleClick}
-          disabled={waitingForVideo}
-          style={waitingForVideo ? { opacity: 0.75, cursor: "not-allowed" } : undefined}
+          onClick={onNext}
         >
-          {waitingForVideo ? "Menyiapkan XP..." : "Akhiri Pelajaran"}
+          Akhiri Pelajaran
         </button>
       </div>
     </div>
@@ -1408,6 +1380,32 @@ function AnalysisChip({ label, tone }) {
 }
 
 function PracticeAnalysis({ result = PRACTICE_ANALYSIS, onFinish }) {
+  const isVideoReady = useVideoPreloader(videoGainXP);
+  const [waitingForVideo, setWaitingForVideo] = useState(false);
+
+  const handleClick = () => {
+    if (isVideoReady) {
+      onFinish();
+    } else {
+      setWaitingForVideo(true);
+    }
+  };
+
+  useEffect(() => {
+    if (waitingForVideo && isVideoReady) {
+      onFinish();
+    }
+  }, [waitingForVideo, isVideoReady, onFinish]);
+
+  // Safety fallback: proceed after 3s if network is slow
+  useEffect(() => {
+    if (!waitingForVideo) return;
+    const timeout = setTimeout(() => {
+      onFinish();
+    }, 3000);
+    return () => clearTimeout(timeout);
+  }, [waitingForVideo, onFinish]);
+
   return (
     <div className="modul7-lesson-page modul7-analysis-page" data-name="Practice-Hasil Analisis AI">
       <div className="modul7-analysis-hero">
@@ -1417,7 +1415,7 @@ function PracticeAnalysis({ result = PRACTICE_ANALYSIS, onFinish }) {
       <div className="modul7-analysis-body">
         <div className="modul7-analysis-headline">
           <p className="modul7-analysis-eyebrow">Mantap!</p>
-          <h2 className="modul7-analysis-title">Kamu keren!</h2>
+          <h1 className="modul7-analysis-title">Kamu keren!</h1>
           <p className="modul7-analysis-subtitle">
             Dengan latihan yang konsisten, kamu akan semakin mahir dan percaya diri dalam berbicara!
           </p>
@@ -1468,8 +1466,14 @@ function PracticeAnalysis({ result = PRACTICE_ANALYSIS, onFinish }) {
       </div>
 
       <div className="modul7-lesson-cta-wrapper">
-        <button type="button" className="btn-modul7-next" onClick={onFinish}>
-          Tutup
+        <button
+          type="button"
+          className="btn-modul7-next"
+          onClick={handleClick}
+          disabled={waitingForVideo}
+          style={waitingForVideo ? { opacity: 0.75, cursor: "not-allowed" } : undefined}
+        >
+          {waitingForVideo ? "Menyiapkan XP..." : "Lanjut"}
         </button>
       </div>
     </div>
@@ -1551,7 +1555,7 @@ function CompletedLesson({ onFinish, xpEarned = 95 }) {
             className="btn-lesson-finish"
             onClick={onFinish}
           >
-            Tutup
+            Klaim XP
           </button>
         </div>
       )}
@@ -1682,14 +1686,14 @@ export default function LessonModul7Screen({ onBack, onFinish }) {
 
   const goNext = () => {
     setStep((prev) => {
-      if (prev === 17) return "completed";
-      if (prev === "completed") {
+      if (prev === 17) {
         submitForAnalysis();
         return "analyzing";
       }
-      if (prev === "analysis") {
+      if (prev === "analysis") return "completed";
+      if (prev === "completed") {
         onFinish?.();
-        return "analysis";
+        return "completed";
       }
       return prev + 1;
     });
@@ -1722,7 +1726,6 @@ export default function LessonModul7Screen({ onBack, onFinish }) {
         <PracticeAnswer step={16} questionIndex={1} onNext={goNext} onBack={handleRequestExit} />
       )}
       {step === 17 && <PracticeSuccess onNext={goNext} onBack={handleRequestExit} />}
-      {step === "completed" && <CompletedLesson onFinish={goNext} />}
       {step === "analyzing" && <AnalyzingScreen />}
       {step === "analysis-error" && (
         <AnalysisErrorScreen
@@ -1734,7 +1737,8 @@ export default function LessonModul7Screen({ onBack, onFinish }) {
           }}
         />
       )}
-      {step === "analysis" && <PracticeAnalysis result={analysisResult ?? PRACTICE_ANALYSIS} onFinish={onFinish} />}
+      {step === "analysis" && <PracticeAnalysis result={analysisResult ?? PRACTICE_ANALYSIS} onFinish={goNext} />}
+      {step === "completed" && <CompletedLesson onFinish={onFinish} />}
 
       {showExitModal && (
         <LessonExitModal

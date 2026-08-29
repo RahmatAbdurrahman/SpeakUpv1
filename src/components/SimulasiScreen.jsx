@@ -13,6 +13,7 @@ import iconQuote from "../assets/pages_assets/ai_analysis/Icons/Quote-Icon.svg";
 import iconMouth from "../assets/pages_assets/ai_analysis/Icons/Mouth-Icon.svg";
 import iconFlash from "../assets/pages_assets/ai_analysis/Icons/Flash-Icon.svg";
 import iconAI from "../assets/pages_assets/ai_analysis/Icons/AI.svg";
+import videoGainXP from "../assets/pages_assets/gain_xp/Video-Gain-XP.webm";
 import { supabase } from "../lib/supabaseClient";
 import {
   SCENARIOS,
@@ -853,9 +854,92 @@ function ResultsStep({ results, onDone, canGoLive, onGoLive }) {
           </>
         )}
         <button type="button" className="btn-simulasi-lanjut" onClick={onDone}>
-          Tutup
+          Lanjut
         </button>
       </div>
+    </div>
+  );
+}
+
+// ─── Simulasi Gain XP Step ──────────────────────────────────────────────────
+function SimulasiGainXpStep({ onClaim, xpEarned = 75 }) {
+  const [displayedXP, setDisplayedXP] = useState(0);
+  const [isCounting, setIsCounting] = useState(false);
+  const [showButton, setShowButton] = useState(false);
+  const videoRef = useRef(null);
+
+  const handleVideoEnded = () => {
+    setIsCounting(true);
+    let current = 0;
+    const target = xpEarned;
+    const duration = 2000;
+    const stepTime = 20;
+    const increment = target / (duration / stepTime);
+
+    const timer = setInterval(() => {
+      current += increment;
+      if (current >= target) {
+        setDisplayedXP(target);
+        clearInterval(timer);
+        setIsCounting(false);
+        setTimeout(() => {
+          setShowButton(true);
+        }, 1000);
+      } else {
+        setDisplayedXP(Math.floor(current));
+      }
+    }, stepTime);
+  };
+
+  return (
+    <div className="lesson-completed-screen">
+      <div className="lesson-completed-content">
+        <div className="lesson-completed-video-wrap">
+          <video
+            ref={videoRef}
+            src={videoGainXP}
+            autoPlay
+            muted
+            playsInline
+            onEnded={handleVideoEnded}
+            className="lesson-completed-video"
+            aria-label="Animasi Perolehan XP"
+          />
+        </div>
+
+        <h2 className="lesson-completed-title">Simulasi Selesai!</h2>
+
+        {displayedXP > 0 && (
+          <div className="lesson-completed-xp-block lesson-xp-appear">
+            <p className="lesson-completed-xp-subtitle">Kamu meraih</p>
+            <div className="lesson-completed-xp-amount-wrapper">
+              <div className={`lesson-sparkle-stars ${isCounting ? "active-sparkle" : "sparkle-stopped"}`}>
+                <span className="sparkle-star star-1">✦</span>
+                <span className="sparkle-star star-2">✨</span>
+                <span className="sparkle-star star-3">✧</span>
+                <span className="sparkle-star star-4">✦</span>
+                <span className="sparkle-star star-5">✨</span>
+                <span className="sparkle-star star-6">✧</span>
+              </div>
+              <p className="lesson-completed-xp-amount">
+                +{displayedXP} XP
+              </p>
+            </div>
+          </div>
+        )}
+      </div>
+
+      {showButton && (
+        <div className="lesson-cta-wrapper lesson-cta-appear">
+          <button
+            type="button"
+            className="btn-lesson-finish"
+            onClick={onClaim}
+          >
+            Klaim XP
+          </button>
+        </div>
+      )}
     </div>
   );
 }
@@ -1125,8 +1209,7 @@ export default function SimulasiScreen({ onNavigateHome, onNavigateSosial, onNav
       <ResultsStep
         results={results}
         onDone={() => {
-          setResults(null);
-          resetToPicker();
+          setStep("gain-xp");
         }}
         canGoLive={canGoLive}
         onGoLive={async () => {
@@ -1138,6 +1221,30 @@ export default function SimulasiScreen({ onNavigateHome, onNavigateSosial, onNav
             title: `Live: ${userName || "Latihan Presentasi"}`,
             hostName: userName || "Kamu",
           });
+        }}
+      />
+    );
+  }
+
+  if (step === "gain-xp") {
+    const earned = results?.feedback?.skor ? Math.round(50 + results.feedback.skor * 0.5) : 75;
+    return (
+      <SimulasiGainXpStep
+        xpEarned={earned}
+        onClaim={async () => {
+          try {
+            const {
+              data: { user },
+            } = await supabase.auth.getUser();
+            if (user) {
+              const nextXp = await fetchXp(user.id);
+              setXp(nextXp);
+            }
+          } catch {
+            // non-fatal
+          }
+          setResults(null);
+          resetToPicker();
         }}
       />
     );
