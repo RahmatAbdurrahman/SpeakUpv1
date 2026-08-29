@@ -322,12 +322,12 @@ function LessonPage4({ onNext, onBack }) {
     }
   };
 
-  // Jump immediately to 4th loop at second 12.5
+  // Jump immediately to 4th loop at second 22.5
   const handleSkip = () => {
     if (!isCompleted) {
       setCycle(4);
       if (videoRef.current) {
-        videoRef.current.currentTime = 12.5;
+        videoRef.current.currentTime = 22.5;
         videoRef.current.play().catch(() => {});
       }
     }
@@ -435,8 +435,66 @@ function LessonPage4({ onNext, onBack }) {
   );
 }
 
+// ─── Hook: Preload Gain XP video before navigation ──────────────────────────
+function useVideoPreloader(videoSrc) {
+  const [isReady, setIsReady] = useState(false);
+
+  useEffect(() => {
+    if (!videoSrc) return;
+    const video = document.createElement("video");
+    video.preload = "auto";
+    video.src = videoSrc;
+    video.muted = true;
+
+    const onCanPlay = () => setIsReady(true);
+
+    if (video.readyState >= 3) {
+      setIsReady(true);
+    } else {
+      video.addEventListener("canplaythrough", onCanPlay, { once: true });
+      video.addEventListener("canplay", onCanPlay, { once: true });
+      video.addEventListener("loadeddata", onCanPlay, { once: true });
+      video.load();
+    }
+
+    return () => {
+      video.removeEventListener("canplaythrough", onCanPlay);
+      video.removeEventListener("canplay", onCanPlay);
+      video.removeEventListener("loadeddata", onCanPlay);
+    };
+  }, [videoSrc]);
+
+  return isReady;
+}
+
 // ─── Page 5: Conclusion (node 281:849) ──────────────────────────────────────
 function LessonPage5({ onNext, onBack }) {
+  const isVideoReady = useVideoPreloader(videoGainXP);
+  const [waitingForVideo, setWaitingForVideo] = useState(false);
+
+  const handleClick = () => {
+    if (isVideoReady) {
+      onNext();
+    } else {
+      setWaitingForVideo(true);
+    }
+  };
+
+  useEffect(() => {
+    if (waitingForVideo && isVideoReady) {
+      onNext();
+    }
+  }, [waitingForVideo, isVideoReady, onNext]);
+
+  // Safety fallback: proceed after 3s if network is slow
+  useEffect(() => {
+    if (!waitingForVideo) return;
+    const timeout = setTimeout(() => {
+      onNext();
+    }, 3000);
+    return () => clearTimeout(timeout);
+  }, [waitingForVideo, onNext]);
+
   return (
     <div className="lesson-page lesson-page-5" data-node-id="281:849">
       <LessonTopBar currentStep={5} totalSteps={5} onBack={onBack} />
@@ -469,10 +527,12 @@ function LessonPage5({ onNext, onBack }) {
         <button
           type="button"
           className="btn-lesson-finish"
-          onClick={onNext}
+          onClick={handleClick}
+          disabled={waitingForVideo}
+          style={waitingForVideo ? { opacity: 0.75, cursor: "not-allowed" } : undefined}
           data-node-id="281:898"
         >
-          Selesaikan Pelajaran
+          {waitingForVideo ? "Menyiapkan XP..." : "Selesaikan Pelajaran"}
         </button>
       </div>
     </div>

@@ -1264,8 +1264,66 @@ function PracticeInterlude({ onNext, onBack }) {
   );
 }
 
+// ─── Hook: Preload Gain XP video before navigation ──────────────────────────
+function useVideoPreloader(videoSrc) {
+  const [isReady, setIsReady] = useState(false);
+
+  useEffect(() => {
+    if (!videoSrc) return;
+    const video = document.createElement("video");
+    video.preload = "auto";
+    video.src = videoSrc;
+    video.muted = true;
+
+    const onCanPlay = () => setIsReady(true);
+
+    if (video.readyState >= 3) {
+      setIsReady(true);
+    } else {
+      video.addEventListener("canplaythrough", onCanPlay, { once: true });
+      video.addEventListener("canplay", onCanPlay, { once: true });
+      video.addEventListener("loadeddata", onCanPlay, { once: true });
+      video.load();
+    }
+
+    return () => {
+      video.removeEventListener("canplaythrough", onCanPlay);
+      video.removeEventListener("canplay", onCanPlay);
+      video.removeEventListener("loadeddata", onCanPlay);
+    };
+  }, [videoSrc]);
+
+  return isReady;
+}
+
 // ─── Page 17: Keren! — practice cleared ─────────────────────────────────────
 function PracticeSuccess({ onNext, onBack }) {
+  const isVideoReady = useVideoPreloader(videoGainXP);
+  const [waitingForVideo, setWaitingForVideo] = useState(false);
+
+  const handleClick = () => {
+    if (isVideoReady) {
+      onNext();
+    } else {
+      setWaitingForVideo(true);
+    }
+  };
+
+  useEffect(() => {
+    if (waitingForVideo && isVideoReady) {
+      onNext();
+    }
+  }, [waitingForVideo, isVideoReady, onNext]);
+
+  // Safety fallback: proceed after 3s if network is slow
+  useEffect(() => {
+    if (!waitingForVideo) return;
+    const timeout = setTimeout(() => {
+      onNext();
+    }, 3000);
+    return () => clearTimeout(timeout);
+  }, [waitingForVideo, onNext]);
+
   return (
     <div className="modul7-lesson-page" data-name="Practice-Keren">
       <LessonTopBar currentStep={17} totalSteps={TOTAL_LESSON_STEPS} onBack={onBack} />
@@ -1292,8 +1350,14 @@ function PracticeSuccess({ onNext, onBack }) {
       </div>
 
       <div className="modul7-lesson-cta-wrapper">
-        <button type="button" className="btn-modul7-next" onClick={onNext}>
-          Akhiri Pelajaran
+        <button
+          type="button"
+          className="btn-modul7-next"
+          onClick={handleClick}
+          disabled={waitingForVideo}
+          style={waitingForVideo ? { opacity: 0.75, cursor: "not-allowed" } : undefined}
+        >
+          {waitingForVideo ? "Menyiapkan XP..." : "Akhiri Pelajaran"}
         </button>
       </div>
     </div>
