@@ -1,0 +1,52 @@
+<svg preserveAspectRatio="none" overflow="visible" style="display: block;" width="911" height="912.043" viewBox="0 0 911 912.043" fill="none" xmlns="http://www.w3.org/2000/svg">
+<g id="Background" filter="url(#filter0_n_317_1368)">
+<g id="Ellipse 5">
+</g>
+<path id="Ellipse 6" d="M765.641 355.771C755.067 323.227 739.436 292.549 719.322 264.865L455.5 456.542L765.641 355.771Z" fill="white" fill-opacity="0.08"/>
+<g id="Ellipse 7">
+</g>
+<path id="Ellipse 8" d="M647.178 192.721C619.493 172.607 588.816 156.976 556.271 146.401L455.5 456.542L647.178 192.721Z" fill="white" fill-opacity="0.08"/>
+<g id="Ellipse 9">
+</g>
+<path id="Ellipse 10" d="M455.5 130.441C421.28 130.441 387.274 135.827 354.729 146.401L455.5 456.543L455.5 130.441Z" fill="white" fill-opacity="0.08"/>
+<g id="Ellipse 11">
+</g>
+<path id="Ellipse 12" d="M263.822 192.721C236.138 212.835 211.792 237.181 191.678 264.865L455.5 456.543L263.822 192.721Z" fill="white" fill-opacity="0.08"/>
+<g id="Ellipse 13">
+</g>
+<path id="Ellipse 14" d="M145.359 355.772C134.784 388.317 129.398 422.323 129.398 456.543L455.5 456.543L145.359 355.772Z" fill="white" fill-opacity="0.08"/>
+<g id="Ellipse 15">
+</g>
+<path id="Ellipse 16" d="M145.359 557.314C155.933 589.858 171.564 620.536 191.678 648.22L455.5 456.543L145.359 557.314Z" fill="white" fill-opacity="0.08"/>
+<g id="Ellipse 17">
+</g>
+<path id="Ellipse 18" d="M263.822 720.365C291.506 740.478 322.184 756.109 354.729 766.684L455.5 456.543L263.822 720.365Z" fill="white" fill-opacity="0.08"/>
+<g id="Ellipse 19">
+</g>
+<path id="Ellipse 20" d="M455.499 782.645C489.719 782.645 523.726 777.259 556.27 766.684L455.5 456.543L455.499 782.645Z" fill="white" fill-opacity="0.08"/>
+<g id="Ellipse 21">
+</g>
+<path id="Ellipse 22" d="M647.178 720.365C674.862 700.251 699.208 675.905 719.322 648.221L455.5 456.543L647.178 720.365Z" fill="white" fill-opacity="0.08"/>
+<g id="Ellipse 23">
+</g>
+<path id="Ellipse 24" d="M765.641 557.314C776.216 524.769 781.602 490.763 781.602 456.543L455.5 456.543L765.641 557.314Z" fill="white" fill-opacity="0.08"/>
+</g>
+<defs>
+<filter id="filter0_n_317_1368" x="129.398" y="130.441" width="652.204" height="652.204" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
+<feFlood flood-opacity="0" result="BackgroundImageFix"/>
+<feBlend mode="normal" in="SourceGraphic" in2="BackgroundImageFix" result="shape"/>
+<feTurbulence type="fractalNoise" baseFrequency="1.187772274017334 1.187772274017334" stitchTiles="stitch" numOctaves="3" result="noise" seed="1758" />
+<feColorMatrix in="noise" type="luminanceToAlpha" result="alphaNoise" />
+<feComponentTransfer in="alphaNoise" result="coloredNoise1">
+<feFuncA type="discrete" tableValues="0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 "/>
+</feComponentTransfer>
+<feComposite operator="in" in2="shape" in="coloredNoise1" result="noise1Clipped" />
+<feFlood flood-color="rgba(0, 0, 0, 0.25)" result="color1Flood" />
+<feComposite operator="in" in2="noise1Clipped" in="color1Flood" result="color1" />
+<feMerge result="effect1_noise_317_1368">
+<feMergeNode in="shape" />
+<feMergeNode in="color1" />
+</feMerge>
+</filter>
+</defs>
+</svg>

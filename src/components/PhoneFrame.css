@@ -1,0 +1,226 @@
+/* ==========================================================================
+   Mobile-First & Simulator Styles
+   ========================================================================== */
+
+/* Mobile View (< 768px) - Full Native Screen */
+@media (max-width: 767px) {
+  .simulator-wrapper {
+    width: 100%;
+    min-height: 100vh;
+    min-height: 100dvh;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: stretch;
+    align-items: stretch;
+    background-color: transparent;
+  }
+
+  .iphone-14-frame {
+    width: 100%;
+    min-height: 100vh;
+    min-height: 100dvh;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    transform: none !important;
+  }
+
+  .side-button,
+  .iphone-notch,
+  .home-indicator {
+    display: none;
+  }
+
+  .iphone-screen-container {
+    width: 100%;
+    min-height: 100vh;
+    min-height: 100dvh;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    background-color: var(--color-bg-app, #FAF8F3);
+  }
+
+  .iphone-screen-content {
+    width: 100%;
+    min-height: 100vh;
+    min-height: 100dvh;
+    height: 100%;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    position: relative;
+  }
+}
+
+/* Tablet & Desktop View (>= 768px) - Fixed iPhone 14 Simulator Frame */
+@media (min-width: 768px) {
+  .simulator-wrapper {
+    width: 100vw;
+    height: 100vh;
+    min-height: 100vh;
+    padding: 16px;
+    background: radial-gradient(circle at 50% 20%, #1e293b 0%, #0f172a 100%);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    overflow: hidden;
+    box-sizing: border-box;
+  }
+
+  /* Fixed iPhone 14 Frame: 390px x 844px */
+  .iphone-14-frame {
+    position: relative;
+    width: 390px;
+    height: 844px;
+    box-sizing: border-box;
+    background-color: #000000;
+    border-radius: 48px;
+    padding: 10px;
+    flex: 0 0 auto;
+    align-self: center;
+    transition: transform 0.15s ease-out;
+    
+    /* Sleek metallic chassis & realistic depth shadows */
+    box-shadow: 
+      0 0 0 2px #334155,
+      0 0 0 9px #1e293b,
+      0 0 0 10px #0f172a,
+      0 20px 50px -10px rgba(0, 0, 0, 0.65),
+      0 8px 16px -4px rgba(0, 0, 0, 0.4);
+  }
+
+  /* Physical Side Buttons on iPhone 14 frame */
+  .side-button {
+    display: block;
+    position: absolute;
+    background: #334155;
+    border-radius: 2px;
+  }
+
+  .side-button.silent-switch {
+    left: -13px;
+    top: 90px;
+    width: 3px;
+    height: 22px;
+  }
+
+  .side-button.volume-up {
+    left: -13px;
+    top: 130px;
+    width: 3px;
+    height: 42px;
+  }
+
+  .side-button.volume-down {
+    left: -13px;
+    top: 185px;
+    width: 3px;
+    height: 42px;
+  }
+
+  .side-button.power-button {
+    right: -13px;
+    top: 140px;
+    width: 3px;
+    height: 65px;
+  }
+
+  /* Inner Screen Area inside Frame */
+  .iphone-screen-container {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    min-height: 0;
+    max-height: 100%;
+    background-color: #ffffff;
+    border-radius: 38px;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    box-shadow: inset 0 0 4px rgba(0, 0, 0, 0.2);
+  }
+
+  /* Top iPhone 14 Notch */
+  .iphone-notch {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    position: absolute;
+    top: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 135px;
+    height: 25px;
+    background-color: #000000;
+    border-bottom-left-radius: 16px;
+    border-bottom-right-radius: 16px;
+    z-index: 100;
+    gap: 10px;
+  }
+
+  .camera-lens {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background-color: #111827;
+    border: 2px solid #1f2937;
+  }
+
+  .speaker-earpiece {
+    width: 44px;
+    height: 4px;
+    background-color: #1f2937;
+    border-radius: 4px;
+  }
+
+  /* Scrollable App Screen Content */
+  .iphone-screen-content {
+    flex: 1;
+    width: 100%;
+    height: 100%;
+    min-height: 0;
+    max-height: 100%;
+    padding: 0;
+    overflow-y: auto;
+    overflow-x: hidden;
+    display: flex;
+    flex-direction: column;
+    scrollbar-width: none;
+    position: relative;
+  }
+
+  .iphone-screen-content::-webkit-scrollbar {
+    display: none;
+  }
+
+  /* Home Indicator Bar at Bottom */
+  .home-indicator {
+    display: block;
+    position: absolute;
+    bottom: 6px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 120px;
+    height: 4px;
+    background-color: #000000;
+    border-radius: 2px;
+    opacity: 0.6;
+    z-index: 100;
+    pointer-events: none;
+  }
+}
+
+/* Dark Mode support for screen container background */
+@media (min-width: 768px) and (prefers-color-scheme: dark) {
+  .iphone-screen-container {
+    background-color: #0f172a;
+  }
+
+  .home-indicator {
+    background-color: #ffffff;
+  }
+}

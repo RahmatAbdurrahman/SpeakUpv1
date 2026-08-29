@@ -1,0 +1,1425 @@
+/* ==========================================================================
+   Lesson 6 Modul 7 - Hadapi Pertanyaan Menantang (Figma Node 329:1659)
+   ========================================================================== */
+
+.modul7-lesson-screen {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  background-color: var(--color-bg-app, #FAF8F3);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  box-sizing: border-box;
+}
+
+.modul7-lesson-page {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+  overflow-x: hidden;
+  scrollbar-width: none;
+  -webkit-overflow-scrolling: touch;
+  box-sizing: border-box;
+}
+.modul7-lesson-page::-webkit-scrollbar {
+  display: none;
+}
+
+/* ── Top Bar & Progress Bar ────────────────────────────────────────────────── */
+.modul7-lesson-topbar {
+  position: sticky;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 10;
+  background-color: var(--color-bg-app, #FAF8F3);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 24px 20px 16px 20px;
+  box-sizing: border-box;
+}
+
+.modul7-lesson-back-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  align-self: flex-start;
+  transition: transform 0.12s ease, opacity 0.15s ease;
+  -webkit-tap-highlight-color: transparent;
+}
+.modul7-lesson-back-btn:hover {
+  transform: translateX(-2px);
+  opacity: 0.85;
+}
+.modul7-lesson-back-btn:active {
+  transform: translateX(-4px) scale(0.95);
+}
+
+.modul7-lesson-progress-bar {
+  width: 100%;
+  height: 8px;
+  display: flex;
+  align-items: center;
+}
+
+.modul7-lesson-progress-track {
+  width: 100%;
+  height: 8px;
+  background: rgba(0, 0, 0, 0.1);
+  border: 0.3px solid rgba(0, 0, 0, 0.04);
+  border-radius: 29px;
+  overflow: hidden;
+  position: relative;
+}
+
+.modul7-lesson-progress-fill {
+  height: 100%;
+  background-color: var(--color-primary, #24A981);
+  border-radius: 29px;
+  transition: width 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* ── Content Area ─────────────────────────────────────────────────────────── */
+.modul7-lesson-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 8px 16px 100px 16px;
+  box-sizing: border-box;
+  width: 100%;
+  margin: auto 0;
+}
+
+.modul7-lesson-heading {
+  font-family: var(--font-family-base, 'Space Grotesk', sans-serif);
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--color-text-primary, #243238);
+  letter-spacing: -0.6141px;
+  text-align: center;
+  margin: 0 0 24px 0;
+  line-height: 1.25;
+  width: 100%;
+  max-width: 300px;
+}
+
+.modul7-cards-wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+/* ── Feeling Cards ────────────────────────────────────────────────────────── */
+.modul7-feeling-card {
+  width: 100%;
+  min-height: 122px;
+  background: #FFFFFF;
+  border: 1px solid var(--color-border, rgba(20, 60, 63, 0.12));
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 0 20px 0 0;
+  box-sizing: border-box;
+  overflow: hidden;
+  box-shadow: 0px 2px 6px rgba(20, 60, 63, 0.04);
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.modul7-feeling-card:hover {
+  transform: translateY(-1px);
+  box-shadow: 0px 4px 10px rgba(20, 60, 63, 0.08);
+}
+
+.modul7-card-img-container {
+  width: 113px;
+  height: 120px;
+  flex-shrink: 0;
+  overflow: hidden;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  position: relative;
+}
+
+.modul7-card-img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  object-position: bottom left;
+  display: block;
+}
+
+.modul7-card-text {
+  flex: 1;
+  font-family: var(--font-family-base, 'Space Grotesk', sans-serif);
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--color-text-primary, #243238);
+  letter-spacing: -0.4437px;
+  text-align: center;
+  line-height: 1.35;
+  margin: 0;
+  word-break: break-word;
+}
+
+/* ── Fixed Bottom CTA ─────────────────────────────────────────────────────── */
+.modul7-lesson-cta-wrapper {
+  position: sticky;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  padding: 12px 16px 40px 16px;
+  background: linear-gradient(180deg, rgba(250, 248, 243, 0) 0%, rgba(250, 248, 243, 0.95) 25%, #FAF8F3 100%);
+  display: flex;
+  justify-content: center;
+  box-sizing: border-box;
+  z-index: 10;
+}
+
+.btn-modul7-next {
+  width: 100%;
+  max-width: 366px;
+  height: 46px;
+  background-color: var(--color-secondary, #E8753D);
+  border: 1px solid #8B4827;
+  border-radius: 34px;
+  box-shadow: 0px 4px 0px 0px #8B4827;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  font-family: var(--font-family-base, 'Space Grotesk', sans-serif);
+  font-size: 14px;
+  font-weight: 700;
+  color: #FFFFFF;
+  white-space: nowrap;
+  transition: transform 0.12s ease, box-shadow 0.12s ease, filter 0.15s ease;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.btn-modul7-next:hover {
+  filter: brightness(1.05);
+}
+
+.btn-modul7-next:active {
+  transform: translateY(2px);
+  box-shadow: 0px 2px 0px 0px #8B4827;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   PAGE 2: QUOTES & MINDSET (Figma Node 329:1710)
+   ═══════════════════════════════════════════════════════════════════════════ */
+.modul7-lesson-page-2 {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  position: relative;
+  height: 100%;
+  overflow: hidden;
+}
+
+.modul7-page2-content {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px 24px 100px 24px;
+  position: relative;
+  z-index: 5;
+  box-sizing: border-box;
+}
+
+.modul7-page2-quote {
+  font-family: var(--font-family-base, 'Space Grotesk', sans-serif);
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--color-text-primary, #243238);
+  letter-spacing: -0.522px;
+  line-height: 1.6;
+  text-align: center;
+  max-width: 310px;
+  margin: 0 auto;
+}
+
+/* Mascot Illustration at bottom */
+.modul7-page2-mascot-wrapper {
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 100%;
+  max-width: 390px;
+  height: 320px;
+  pointer-events: none;
+  z-index: 2;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.modul7-page2-mascot-img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  object-position: bottom center;
+  display: block;
+}
+
+/* Dual Button Footer */
+.modul7-page2-cta-wrapper {
+  position: sticky;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  padding: 12px 16px 40px 16px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  box-sizing: border-box;
+  z-index: 10;
+  width: 100%;
+}
+
+.btn-modul7-round-back {
+  width: 65px;
+  height: 46px;
+  background-color: #FFFFFF;
+  border: 1px solid rgba(36, 50, 56, 0.18);
+  border-radius: 34px;
+  box-shadow: 0px 4px 0px 0px rgba(0, 0, 0, 0.18);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: transform 0.12s ease, box-shadow 0.12s ease;
+  -webkit-tap-highlight-color: transparent;
+}
+.btn-modul7-round-back:hover {
+  filter: brightness(0.98);
+}
+.btn-modul7-round-back:active {
+  transform: translateY(2px);
+  box-shadow: 0px 2px 0px 0px rgba(0, 0, 0, 0.18);
+}
+
+.btn-modul7-next--flex {
+  flex: 1;
+  max-width: none;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   PAGE 3: COGNITIVE RESTRUCTURING (Figma Node 329:1733)
+   ═══════════════════════════════════════════════════════════════════════════ */
+.modul7-page3-content {
+  padding: 16px 16px 100px 16px;
+  gap: 28px;
+}
+
+.modul7-page3-header {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 8px;
+}
+
+.modul7-page3-subtitle {
+  font-family: var(--font-family-base, 'Space Grotesk', sans-serif);
+  font-size: 12px;
+  font-weight: 400;
+  color: var(--color-text-caption, #8199A3);
+  margin: 0;
+}
+
+.modul7-page3-title {
+  font-family: var(--font-family-base, 'Space Grotesk', sans-serif);
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--color-text-primary, #243238);
+  letter-spacing: -0.6141px;
+  line-height: 1.25;
+  text-align: center;
+  margin: 0;
+  max-width: 300px;
+}
+
+.modul7-page3-cards-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+/* Dark Automatic Thought Card */
+.modul7-thought-card-dark {
+  width: 100%;
+  background-color: var(--color-text-primary, #243238);
+  border-radius: 12px;
+  padding: 24px 20px;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  box-sizing: border-box;
+  box-shadow: 0px 4px 12px rgba(36, 50, 56, 0.12);
+}
+
+.modul7-brain-img-wrap {
+  width: 75px;
+  height: 63px;
+  flex-shrink: 0;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.modul7-brain-img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  display: block;
+}
+
+.modul7-thought-text-dark {
+  flex: 1;
+  font-family: var(--font-family-base, 'Space Grotesk', sans-serif);
+  font-size: 14px;
+  font-weight: 700;
+  color: #FFFFFF;
+  letter-spacing: -0.4437px;
+  text-align: center;
+  line-height: 1.35;
+  margin: 0;
+}
+
+/* Dotted Arrow Connector between cards */
+.modul7-arrow-divider {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 34px;
+  width: 100%;
+  margin: 4px 0;
+}
+
+/* White Fact Card */
+.modul7-fact-card-white {
+  width: 100%;
+  background-color: #FFFFFF;
+  border: 1px solid var(--color-border, rgba(20, 60, 63, 0.12));
+  border-radius: 12px;
+  padding: 24px 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 8px;
+  box-sizing: border-box;
+  box-shadow: 0px 2px 6px rgba(20, 60, 63, 0.04);
+}
+
+.modul7-fact-card-label {
+  font-family: var(--font-family-base, 'Space Grotesk', sans-serif);
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--color-text-primary, #243238);
+  letter-spacing: -0.4437px;
+  margin: 0;
+  text-align: center;
+}
+
+.modul7-fact-card-text {
+  font-family: var(--font-family-base, 'Space Grotesk', sans-serif);
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--color-text-primary, #243238);
+  letter-spacing: -0.4437px;
+  line-height: 1.45;
+  margin: 0;
+  text-align: center;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   PAGE 4: COGNITIVE DEFUSION (Figma Node 333:1784)
+   ═══════════════════════════════════════════════════════════════════════════ */
+.modul7-page4-content {
+  padding: 16px 16px 100px 16px;
+  gap: 24px;
+}
+
+.modul7-page4-header {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 8px;
+}
+
+.modul7-page4-subtitle {
+  font-family: var(--font-family-base, 'Space Grotesk', sans-serif);
+  font-size: 12px;
+  font-weight: 400;
+  color: var(--color-text-caption, #8199A3);
+  margin: 0;
+}
+
+.modul7-page4-title {
+  font-family: var(--font-family-base, 'Space Grotesk', sans-serif);
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--color-text-primary, #243238);
+  letter-spacing: -0.6141px;
+  line-height: 1.25;
+  text-align: center;
+  margin: 0;
+  max-width: 300px;
+}
+
+.modul7-page4-cards-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.modul7-arrow-divider-short {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 23px;
+  width: 100%;
+  margin: 2px 0;
+}
+
+.modul7-breath-tag {
+  font-family: var(--font-family-base, 'Space Grotesk', sans-serif);
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--color-text-primary, #243238);
+  letter-spacing: -0.4437px;
+  margin: 4px 0;
+  text-align: center;
+  white-space: nowrap;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   PAGE 6: TEKNIK MERESPONS KRITIK (Figma Node 334:1838)
+   ═══════════════════════════════════════════════════════════════════════════ */
+.modul7-page6-content {
+  padding: 16px 16px 100px 16px;
+  gap: 32px;
+}
+
+.modul7-page6-header {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 8px;
+}
+
+.modul7-page6-subtitle {
+  font-family: var(--font-family-base, 'Space Grotesk', sans-serif);
+  font-size: 12px;
+  font-weight: 400;
+  color: var(--color-text-caption, #8199A3);
+  margin: 0;
+}
+
+.modul7-page6-title {
+  font-family: var(--font-family-base, 'Space Grotesk', sans-serif);
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--color-text-primary, #243238);
+  letter-spacing: -0.6141px;
+  line-height: 1.25;
+  text-align: center;
+  margin: 0;
+  max-width: 310px;
+}
+
+.modul7-page6-cards-wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.modul7-formula-card {
+  width: 100%;
+  background-color: #FFFFFF;
+  border: 1px solid var(--color-border, rgba(20, 60, 63, 0.12));
+  border-radius: 12px;
+  padding: 12px 20px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  box-sizing: border-box;
+  box-shadow: 0px 2px 6px rgba(20, 60, 63, 0.04);
+}
+
+.modul7-formula-num-badge {
+  width: 25px;
+  height: 25px;
+  min-width: 25px;
+  background-color: var(--color-primary, #24A981);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-family-base, 'Space Grotesk', sans-serif);
+  font-size: 14px;
+  font-weight: 700;
+  color: #FFFFFF;
+  letter-spacing: -0.4437px;
+  flex-shrink: 0;
+}
+
+.modul7-formula-text-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  flex: 1;
+  min-width: 0;
+}
+
+.modul7-formula-card-title {
+  font-family: var(--font-family-base, 'Space Grotesk', sans-serif);
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--color-text-primary, #243238);
+  letter-spacing: -0.4437px;
+  margin: 0;
+  line-height: 1.3;
+}
+
+.modul7-formula-card-desc {
+  font-family: var(--font-family-base, 'Space Grotesk', sans-serif);
+  font-size: 12px;
+  font-weight: 400;
+  color: var(--color-text-primary, #243238);
+  margin: 0;
+  line-height: 1.4;
+  word-break: break-word;
+}
+
+.modul7-completed-mascot {
+  width: 160px;
+  height: auto;
+  object-fit: contain;
+}
+
+
+
+
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   PRACTICE FLOW — pages 7 → 17 (frames after Figma node 334:1838)
+   Shared dark-stage shell used by every practice page.
+   ═══════════════════════════════════════════════════════════════════════════ */
+.modul7-dark-page {
+  background-color: #243238;
+
+  --modul7-dark-surface: #313E44;
+  --modul7-dark-muted: #8199A3;
+  --modul7-dark-faint: rgba(255, 255, 255, 0.32);
+}
+
+.modul7-lesson-topbar--dark {
+  background-color: #243238;
+}
+
+.modul7-lesson-topbar--dark .modul7-lesson-progress-track {
+  background: rgba(0, 0, 0, 0.22);
+  border-color: rgba(255, 255, 255, 0.06);
+}
+
+.modul7-lesson-cta-wrapper--dark {
+  background: linear-gradient(
+    180deg,
+    rgba(36, 50, 56, 0) 0%,
+    rgba(36, 50, 56, 0.95) 25%,
+    #243238 100%
+  );
+}
+
+/* Dark variant of the round back FAB used on pages 7 and 8 */
+.btn-modul7-round-back--dark {
+  background-color: #222F34;
+  border-color: #354247;
+  box-shadow: 0px 4px 0px 0px rgba(0, 0, 0, 0.35);
+}
+.btn-modul7-round-back--dark:hover {
+  filter: brightness(1.15);
+}
+.btn-modul7-round-back--dark:active {
+  box-shadow: 0px 2px 0px 0px rgba(0, 0, 0, 0.35);
+}
+
+/* CTA wrapper that carries an auto-start hint above the buttons */
+.modul7-cta-with-hint {
+  flex-direction: column;
+  gap: 14px;
+}
+
+.modul7-cta-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+}
+
+.modul7-practice-autostart {
+  font-family: var(--font-family-base, 'Space Grotesk', sans-serif);
+  font-size: 12px;
+  font-weight: 400;
+  color: var(--modul7-dark-faint, rgba(255, 255, 255, 0.32));
+  text-align: center;
+  margin: 0;
+}
+
+/* "Aku tidak tahu jawabannya" — text-link fallback below "Ulangi lagi" */
+.modul7-novoice-skip {
+  background: none;
+  border: none;
+  padding: 4px;
+  font-family: var(--font-family-base, 'Space Grotesk', sans-serif);
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--modul7-dark-muted, #8199A3);
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+.modul7-novoice-skip:hover {
+  color: #FFFFFF;
+}
+
+/* Stop / "Selesai Bicara" button */
+.btn-modul7-stop {
+  min-width: 152px;
+  height: 46px;
+  padding: 0 26px;
+  background-color: #B54747;
+  border: 1px solid #9B3E3E;
+  border-radius: 34px;
+  box-shadow: 0px 4px 0px 0px #9B3E3E;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  font-family: var(--font-family-base, 'Space Grotesk', sans-serif);
+  font-size: 14px;
+  font-weight: 700;
+  color: #FFFFFF;
+  white-space: nowrap;
+  transition: transform 0.12s ease, box-shadow 0.12s ease, filter 0.15s ease;
+  -webkit-tap-highlight-color: transparent;
+}
+.btn-modul7-stop:hover {
+  filter: brightness(1.06);
+}
+.btn-modul7-stop:active {
+  transform: translateY(2px);
+  box-shadow: 0px 2px 0px 0px #9B3E3E;
+}
+
+/* Shared text styles on the dark stage */
+.modul7-practice-eyebrow {
+  font-family: var(--font-family-base, 'Space Grotesk', sans-serif);
+  font-size: 13px;
+  font-weight: 400;
+  color: var(--modul7-dark-muted, #8199A3);
+  text-align: center;
+  margin: 0;
+}
+
+.modul7-practice-centered {
+  justify-content: center;
+  gap: 10px;
+  padding: 8px 16px 24px 16px;
+}
+
+.modul7-practice-counter {
+  font-family: var(--font-family-base, 'Space Grotesk', sans-serif);
+  font-size: 18px;
+  font-weight: 700;
+  color: #FFFFFF;
+  letter-spacing: -0.4px;
+  text-align: center;
+  margin: 8px 0 0 0;
+  flex-shrink: 0;
+}
+
+/* ── Page 7: Skenario Latihan ─────────────────────────────────────────────── */
+.modul7-practice-intro-content {
+  gap: 34px;
+  padding: 8px 16px 24px 16px;
+}
+
+.modul7-practice-header {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+}
+
+.modul7-practice-title {
+  font-family: var(--font-family-base, 'Space Grotesk', sans-serif);
+  font-size: 22px;
+  font-weight: 700;
+  color: #FFFFFF;
+  letter-spacing: -0.6141px;
+  line-height: 1.3;
+  text-align: center;
+  margin: 0;
+}
+
+.modul7-practice-steps {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 11px;
+  width: 100%;
+  margin: 0;
+  padding: 0;
+}
+
+.modul7-practice-step {
+  min-height: 50px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 20px;
+  background-color: var(--modul7-dark-surface, #313E44);
+  border-radius: 12px;
+  box-sizing: border-box;
+}
+
+.modul7-practice-step-num {
+  width: 24px;
+  height: 24px;
+  flex-shrink: 0;
+  border-radius: 50%;
+  background-color: var(--color-primary, #24A981);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-family-base, 'Space Grotesk', sans-serif);
+  font-size: 13px;
+  font-weight: 700;
+  color: #FFFFFF;
+}
+
+.modul7-practice-step-label {
+  font-family: var(--font-family-base, 'Space Grotesk', sans-serif);
+  font-size: 14px;
+  font-weight: 600;
+  color: #FFFFFF;
+  line-height: 1.35;
+}
+
+/* ── Page 8: Tema nya adalah ──────────────────────────────────────────────── */
+.modul7-practice-topic {
+  font-family: var(--font-family-base, 'Space Grotesk', sans-serif);
+  font-size: 18px;
+  font-weight: 700;
+  color: #FFFFFF;
+  letter-spacing: -0.5px;
+  line-height: 1.35;
+  text-align: center;
+  max-width: 300px;
+  margin: 0;
+}
+
+/* ── Page 9: Waktu Persiapan ──────────────────────────────────────────────── */
+.modul7-practice-prep-content {
+  justify-content: flex-start;
+  gap: 22px;
+  padding: 8px 16px 24px 16px;
+  margin: 0;
+}
+
+.modul7-practice-timer-bar {
+  width: 100%;
+  min-height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 0 18px;
+  background-color: var(--modul7-dark-surface, #313E44);
+  border-radius: 12px;
+  box-sizing: border-box;
+}
+
+.modul7-practice-timer-label,
+.modul7-practice-timer-value {
+  font-family: var(--font-family-base, 'Space Grotesk', sans-serif);
+  font-size: 15px;
+  font-weight: 700;
+  color: #FFFFFF;
+  letter-spacing: -0.3px;
+  margin: 0;
+}
+
+.modul7-practice-timer-value {
+  font-variant-numeric: tabular-nums;
+}
+
+.modul7-practice-prompt {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  padding: 0 8px;
+}
+
+.modul7-practice-prompt-topic {
+  font-family: var(--font-family-base, 'Space Grotesk', sans-serif);
+  font-size: 15px;
+  font-weight: 700;
+  color: #FFFFFF;
+  line-height: 1.4;
+  text-align: center;
+  margin: 0;
+}
+
+.modul7-practice-prompt-ask {
+  font-family: var(--font-family-base, 'Space Grotesk', sans-serif);
+  font-size: 15px;
+  font-weight: 400;
+  color: var(--modul7-dark-muted, #8199A3);
+  text-align: center;
+  margin: 0;
+}
+
+.modul7-outline-panel {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 16px;
+  background-color: var(--modul7-dark-surface, #313E44);
+  border-radius: 16px;
+  box-sizing: border-box;
+}
+
+.modul7-outline-header {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.modul7-outline-title {
+  font-family: var(--font-family-base, 'Space Grotesk', sans-serif);
+  font-size: 14px;
+  font-weight: 700;
+  color: #FFFFFF;
+}
+
+.modul7-outline-optional {
+  font-family: var(--font-family-base, 'Space Grotesk', sans-serif);
+  font-size: 13px;
+  font-weight: 400;
+  color: var(--modul7-dark-muted, #8199A3);
+}
+
+.modul7-outline-field {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-height: 76px;
+  padding: 14px;
+  background-color: rgba(255, 255, 255, 0.05);
+  border: 1px dashed rgba(255, 255, 255, 0.24);
+  border-radius: 12px;
+  box-sizing: border-box;
+}
+
+.modul7-outline-num {
+  width: 24px;
+  height: 24px;
+  flex-shrink: 0;
+  border-radius: 50%;
+  background-color: var(--color-primary, #24A981);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-family-base, 'Space Grotesk', sans-serif);
+  font-size: 13px;
+  font-weight: 700;
+  color: #FFFFFF;
+}
+
+.modul7-outline-input {
+  flex: 1;
+  min-width: 0;
+  background: transparent;
+  border: none;
+  outline: none;
+  resize: none;
+  font-family: var(--font-family-base, 'Space Grotesk', sans-serif);
+  font-size: 13px;
+  font-weight: 400;
+  color: #FFFFFF;
+  line-height: 1.45;
+  padding: 0;
+}
+
+.modul7-outline-input::placeholder {
+  color: rgba(255, 255, 255, 0.34);
+}
+
+/* ── Pages 10, 13 & 16: speaking timer ────────────────────────────────────── */
+.modul7-practice-speak-title {
+  font-family: var(--font-family-base, 'Space Grotesk', sans-serif);
+  font-size: 20px;
+  font-weight: 700;
+  color: #FFFFFF;
+  letter-spacing: -0.5px;
+  text-align: center;
+  margin: 0 0 34px 0;
+}
+
+.modul7-practice-dial {
+  width: 220px;
+  height: 220px;
+  flex-shrink: 0;
+  border-radius: 50%;
+  background-color: var(--color-primary, #24A981);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-family-base, 'Space Grotesk', sans-serif);
+  font-size: 40px;
+  font-weight: 700;
+  color: #FFFFFF;
+  letter-spacing: -1px;
+  font-variant-numeric: tabular-nums;
+}
+
+.modul7-voice-wave {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  height: 40px;
+  margin-top: 56px;
+  flex-shrink: 0;
+}
+
+.modul7-voice-bar {
+  width: 6px;
+  border-radius: 3px;
+  background-color: var(--color-primary, #24A981);
+  animation: modul7VoicePulse 1.1s ease-in-out infinite;
+}
+
+.modul7-voice-bar:nth-child(1) { height: 39px; animation-delay: 0s; }
+.modul7-voice-bar:nth-child(2) { height: 15px; animation-delay: 0.18s; }
+.modul7-voice-bar:nth-child(3) { height: 27px; animation-delay: 0.36s; }
+.modul7-voice-bar:nth-child(4) { height: 27px; animation-delay: 0.54s; }
+.modul7-voice-bar:nth-child(5) { height: 39px; animation-delay: 0.72s; }
+
+@keyframes modul7VoicePulse {
+  0%, 100% { transform: scaleY(1); }
+  50% { transform: scaleY(0.45); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .modul7-voice-bar {
+    animation: none;
+  }
+}
+
+.modul7-practice-answer-content {
+  justify-content: flex-start;
+  gap: 0;
+  padding-top: 16px;
+}
+
+.modul7-practice-question-card {
+  width: 100%;
+  max-width: 324px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 14px 16px;
+  background-color: var(--modul7-dark-surface, #313E44);
+  border-radius: 12px;
+  box-sizing: border-box;
+  margin-bottom: 56px;
+}
+
+.modul7-practice-question-sm {
+  font-family: var(--font-family-base, 'Space Grotesk', sans-serif);
+  font-size: 13px;
+  font-weight: 400;
+  color: #FFFFFF;
+  line-height: 1.45;
+  text-align: center;
+  margin: 0;
+}
+
+/* ── Pages 12 & 15: the challenging question ──────────────────────────────── */
+.modul7-practice-question {
+  font-family: var(--font-family-base, 'Space Grotesk', sans-serif);
+  font-size: 14px;
+  font-weight: 700;
+  color: #FFFFFF;
+  line-height: 1.42;
+  text-align: center;
+  max-width: 310px;
+  margin: 0;
+}
+
+/* ── Pages 11 & 14: mascot bridge screens ────────────────────────────────── */
+.modul7-practice-bridge-content {
+  justify-content: center;
+  gap: 26px;
+  padding: 0 0 24px 0;
+}
+
+.modul7-practice-bridge-img {
+  width: 100%;
+  max-width: 390px;
+  height: auto;
+  display: block;
+  object-fit: contain;
+}
+
+.modul7-practice-bridge-text {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+  padding: 0 24px;
+}
+
+.modul7-practice-bridge-title {
+  font-family: var(--font-family-base, 'Space Grotesk', sans-serif);
+  font-size: 20px;
+  font-weight: 700;
+  color: #FFFFFF;
+  letter-spacing: -0.5px;
+  text-align: center;
+  margin: 0;
+}
+
+.modul7-practice-bridge-desc {
+  font-family: var(--font-family-base, 'Space Grotesk', sans-serif);
+  font-size: 14px;
+  font-weight: 400;
+  color: var(--modul7-dark-muted, #8199A3);
+  line-height: 1.45;
+  text-align: center;
+  max-width: 300px;
+  margin: 0;
+}
+
+.modul7-practice-next-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  max-width: 282px;
+  padding: 14px 18px;
+  background-color: var(--modul7-dark-surface, #313E44);
+  border-radius: 12px;
+  box-sizing: border-box;
+}
+
+.modul7-practice-next-label {
+  font-family: var(--font-family-base, 'Space Grotesk', sans-serif);
+  font-size: 13px;
+  font-weight: 700;
+  color: #FFFFFF;
+  margin: 0;
+}
+
+.modul7-practice-next-desc {
+  font-family: var(--font-family-base, 'Space Grotesk', sans-serif);
+  font-size: 13px;
+  font-weight: 400;
+  color: #B7C4C9;
+  line-height: 1.4;
+  text-align: center;
+  margin: 0;
+}
+
+/* ── Page 17: Keren! ──────────────────────────────────────────────────────── */
+.modul7-practice-success-content {
+  justify-content: center;
+  gap: 40px;
+  padding: 8px 16px 24px 16px;
+}
+
+.modul7-practice-success-video {
+  width: 100%;
+  max-width: 390px;
+  height: 260px;
+  object-fit: contain;
+  display: block;
+}
+
+.modul7-practice-success-text {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+}
+
+.modul7-practice-success-eyebrow {
+  font-family: var(--font-family-base, 'Space Grotesk', sans-serif);
+  font-size: 14px;
+  font-weight: 700;
+  color: #0B75A3;
+  margin: 0;
+}
+
+.modul7-practice-success-title {
+  font-family: var(--font-family-base, 'Space Grotesk', sans-serif);
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--color-text-primary, #243238);
+  letter-spacing: -0.5px;
+  line-height: 1.3;
+  text-align: center;
+  max-width: 300px;
+  margin: 0;
+}
+
+.modul7-practice-success-desc {
+  font-family: var(--font-family-base, 'Space Grotesk', sans-serif);
+  font-size: 13px;
+  font-weight: 400;
+  color: var(--color-text-caption, #8199A3);
+  line-height: 1.45;
+  text-align: center;
+  max-width: 290px;
+  margin: 0;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   AI ANALYSIS RESULT — Mantap! Kamu keren!
+   ═══════════════════════════════════════════════════════════════════════════ */
+.modul7-analysis-page {
+  background-color: var(--color-bg-app, #FAF8F3);
+}
+
+.modul7-analysis-hero {
+  width: 100%;
+  height: 343px;
+  flex-shrink: 0;
+  overflow: hidden;
+}
+
+.modul7-analysis-hero-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center top;
+  display: block;
+}
+
+.modul7-analysis-body {
+  display: flex;
+  flex-direction: column;
+  gap: 11px;
+  /* bottom padding keeps the last card clear of the sticky CTA */
+  padding: 18px 16px 110px 16px;
+  box-sizing: border-box;
+}
+
+.modul7-analysis-headline {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 10px;
+}
+
+.modul7-analysis-eyebrow {
+  font-family: var(--font-family-base, 'Space Grotesk', sans-serif);
+  font-size: 15px;
+  font-weight: 700;
+  color: #0B75A3;
+  margin: 0;
+}
+
+.modul7-analysis-title {
+  font-family: var(--font-family-base, 'Space Grotesk', sans-serif);
+  font-size: 24px;
+  font-weight: 700;
+  color: var(--color-text-primary, #243238);
+  letter-spacing: -0.66px;
+  margin: 0;
+}
+
+.modul7-analysis-subtitle {
+  font-family: var(--font-family-base, 'Space Grotesk', sans-serif);
+  font-size: 13px;
+  font-weight: 400;
+  color: var(--color-text-caption, #8199A3);
+  line-height: 1.45;
+  text-align: center;
+  max-width: 300px;
+  margin: 0;
+}
+
+.modul7-analysis-card {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 16px;
+  background-color: var(--color-surface, #FFFFFF);
+  border: 1px solid #F0F3F3;
+  border-radius: 16px;
+  box-shadow: 0px 1px 2px 0px rgba(20, 60, 63, 0.04);
+  box-sizing: border-box;
+}
+
+.modul7-analysis-card-top {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 12px;
+  width: 100%;
+}
+
+.modul7-analysis-card-heading {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 8px;
+}
+
+.modul7-analysis-icon {
+  width: 24px;
+  height: 24px;
+  display: block;
+}
+
+.modul7-analysis-card-label {
+  font-family: var(--font-family-base, 'Space Grotesk', sans-serif);
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--color-text-primary, #243238);
+  margin: 0;
+}
+
+.modul7-analysis-score {
+  font-family: var(--font-family-base, 'Space Grotesk', sans-serif);
+  font-size: 26px;
+  font-weight: 700;
+  color: #277A5B;
+  letter-spacing: -0.6px;
+  line-height: 1;
+  margin: 0;
+  white-space: nowrap;
+}
+
+.modul7-analysis-score-unit {
+  font-size: 12px;
+  font-weight: 500;
+  color: rgba(39, 122, 91, 0.6);
+  margin-left: 4px;
+}
+
+.modul7-analysis-note {
+  width: 100%;
+  padding: 10px 12px;
+  background-color: #F6F6F6;
+  border-radius: 8px;
+  font-family: var(--font-family-base, 'Space Grotesk', sans-serif);
+  font-size: 12px;
+  font-weight: 400;
+  color: #9AA5A9;
+  line-height: 1.4;
+  box-sizing: border-box;
+  margin: 0;
+}
+
+.modul7-analysis-chip {
+  display: inline-flex;
+  align-items: center;
+  padding: 7px 13px;
+  border-radius: 9px;
+  font-family: var(--font-family-base, 'Space Grotesk', sans-serif);
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.modul7-analysis-chip--good {
+  background-color: #DBF1EC;
+  color: #009F7A;
+}
+
+.modul7-analysis-chip--warn {
+  background-color: #F6EFE9;
+  color: #996515;
+}
+
+.modul7-analysis-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 11px;
+}
+
+.modul7-analysis-card--sm {
+  gap: 10px;
+}
+
+.modul7-analysis-metric {
+  font-family: var(--font-family-base, 'Space Grotesk', sans-serif);
+  font-size: 26px;
+  font-weight: 700;
+  color: #277A5B;
+  letter-spacing: -0.6px;
+  line-height: 1;
+  margin: 0;
+  white-space: nowrap;
+}
+
+.modul7-analysis-metric--warn {
+  color: #996515;
+}
+
+.modul7-analysis-metric-unit {
+  font-size: 12px;
+  font-weight: 500;
+  color: #9AA5A9;
+  margin-left: 5px;
+}
+
+.modul7-analysis-feedback {
+  font-family: var(--font-family-base, 'Space Grotesk', sans-serif);
+  font-size: 12.5px;
+  font-weight: 400;
+  color: #9AA5A9;
+  line-height: 1.55;
+  margin: 0;
+}

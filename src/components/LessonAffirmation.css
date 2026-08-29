@@ -1,0 +1,76 @@
+/* ─── LessonAffirmation.css ────────────────────────────────────────────────── */
+.lesson-affirmation-loading-screen {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  background-color: var(--color-bg-base, #FAF8F3);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: flex-start;
+  padding: 0 32px;
+  box-sizing: border-box;
+  overflow: hidden;
+  animation: lessonAffirmationFadeIn 0.5s ease-out forwards;
+}
+
+@keyframes lessonAffirmationFadeIn {
+  from {
+    opacity: 0;
+    transform: scale(0.985);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+/* ── Quote text container ─────────────────────────────────────────────────── */
+.lesson-affirmation-quote-wrapper {
+  width: 100%;
+  max-width: 313px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.lesson-affirmation-quote-text {
+  font-family: var(--font-family-base, 'Space Grotesk', sans-serif);
+  font-weight: 700;
+  font-size: 18px;
+  line-height: 1.4;
+  letter-spacing: -0.522px;
+  color: var(--color-text-primary, #243238);
+  margin: 0;
+  word-break: break-word;
+}
+
+/* ── Bottom loading indicator ─────────────────────────────────────────────── */
+.lesson-affirmation-bottom-loading {
+  position: absolute;
+  bottom: 60px;
+  left: 0;
+  right: 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  pointer-events: none;
+}
+
+.lesson-affirmation-loading-label {
+  font-family: var(--font-family-base, 'Space Grotesk', sans-serif);
+  font-weight: 700;
+  font-size: 14px;
+  line-height: normal;
+  letter-spacing: -0.4437px;
+  color: var(--color-text-muted, #8199A3);
+  margin: 0;
+  white-space: nowrap;
+  opacity: 0.85;
+}
+
+.lesson-affirmation-animated-dots {
+  display: inline-block;
+  min-width: 14px;
+  text-align: left;
+}

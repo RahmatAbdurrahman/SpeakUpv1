@@ -1,0 +1,1017 @@
+/* ─── LessonScreen.css ───────────────────────────────────────────────────── */
+
+/* ── Shared Container ───────────────────────────────────────────────────── */
+.lesson-screen {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  background: #FAF8F3;
+  font-family: var(--font-family-base, 'Space Grotesk', sans-serif);
+}
+
+.lesson-page {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  background: #FAF8F3;
+  overflow: hidden;
+}
+
+/* ── Scrollable body inside pages ───────────────────────────────────────── */
+.lesson-page-scroll-body {
+  flex: 1;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+}
+.lesson-page-scroll-body::-webkit-scrollbar {
+  display: none;
+}
+
+/* ── TopBar ─────────────────────────────────────────────────────────────── */
+.lesson-topbar {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 24px 20px 16px;
+  width: 100%;
+  box-sizing: border-box;
+  background: #FAF8F3;
+  flex-shrink: 0;
+}
+
+.lesson-back-btn {
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.lesson-progress-bar {
+  display: flex;
+  align-items: center;
+  width: 100%;
+}
+
+.lesson-progress-track {
+  flex: 1;
+  height: 8px;
+  background: rgba(0, 0, 0, 0.1);
+  border: 0.3px solid rgba(0, 0, 0, 0.04);
+  border-radius: 29px;
+  overflow: hidden;
+  position: relative;
+}
+
+.lesson-progress-fill {
+  position: absolute;
+  left: 0;
+  top: 0;
+  height: 100%;
+  background: #24A981;
+  border-radius: 29px;
+  transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* ── Section Header (shared across pages) ───────────────────────────────── */
+.lesson-section-header {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 20px 24px 0;
+}
+
+.lesson-tag {
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  color: #24A981;
+}
+
+.lesson-title {
+  font-family: var(--font-family-base, 'Space Grotesk', sans-serif);
+  font-size: 26px;
+  font-weight: 700;
+  color: #243238;
+  letter-spacing: -0.6px;
+  line-height: 1.1;
+  margin: 0;
+}
+
+.lesson-caption {
+  font-size: 13px;
+  font-weight: 400;
+  color: #8199A3;
+  line-height: 1.5;
+  margin: 0;
+}
+
+/* ── Shared info / highlight boxes ──────────────────────────────────────── */
+.lesson-info-box {
+  background: #F0FAF6;
+  border-left: 3px solid #24A981;
+  border-radius: 10px;
+  padding: 14px 16px;
+  margin: 16px 24px;
+  font-size: 13px;
+  color: #243238;
+  line-height: 1.55;
+}
+
+.lesson-info-box p { margin: 0; }
+
+.lesson-highlight-box {
+  background: #FFF8E7;
+  border-left: 3px solid #F59E0B;
+  border-radius: 10px;
+  padding: 14px 16px;
+  margin: 16px 24px;
+  font-size: 13px;
+  color: #243238;
+  line-height: 1.55;
+}
+
+.lesson-highlight-box p { margin: 0; }
+
+/* ── CTA wrapper (fixed bottom) ─────────────────────────────────────────── */
+.lesson-cta-wrapper {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  padding: 16px 20px 40px;
+  background: linear-gradient(to bottom, transparent 0%, #FAF8F3 40%);
+  display: flex;
+  justify-content: center;
+  z-index: 10;
+}
+
+.btn-lesson-primary {
+  width: 100%;
+  max-width: 366px;
+  height: 46px;
+  background: #24A981;
+  border: 1px solid #1A7A5E;
+  border-radius: 34px;
+  box-shadow: 0px 4px 0px 0px #1A7A5E;
+  color: #FFFFFF;
+  font-family: var(--font-family-base, 'Space Grotesk', sans-serif);
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: transform 0.12s ease, box-shadow 0.12s ease;
+}
+
+.btn-lesson-primary:active {
+  transform: translateY(2px);
+  box-shadow: 0px 2px 0px 0px #1A7A5E;
+}
+
+.btn-lesson-finish {
+  width: 100%;
+  max-width: 366px;
+  height: 46px;
+  background: #E8753D;
+  border: 1px solid #8B4827;
+  border-radius: 34px;
+  box-shadow: 0px 4px 0px 0px #8B4827;
+  color: #FFFFFF;
+  font-family: var(--font-family-base, 'Space Grotesk', sans-serif);
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: transform 0.12s ease, box-shadow 0.12s ease;
+}
+
+.btn-lesson-finish:active {
+  transform: translateY(2px);
+  box-shadow: 0px 2px 0px 0px #8B4827;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   PAGE 1: GUGUP vs TENANG (node 228:257)
+═══════════════════════════════════════════════════════════════════════════ */
+.lesson-page-1 {
+  background: #FAF8F3;
+}
+
+.lesson-p1-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 24px;
+  padding: 0 16px;
+  box-sizing: border-box;
+  margin-top: -30px;
+}
+
+.lesson-p1-title {
+  font-family: var(--font-family-base, 'Space Grotesk', sans-serif);
+  font-size: 22px;
+  font-weight: 700;
+  color: #243238;
+  text-align: center;
+  letter-spacing: -0.614px;
+  line-height: 1.25;
+  max-width: 300px;
+  margin: 0;
+  word-break: break-word;
+}
+
+.lesson-p1-cards-wrapper {
+  display: flex;
+  flex-direction: row;
+  gap: 10px;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.lesson-p1-card {
+  flex: 1;
+  height: 200px;
+  background: #FFFFFF;
+  border: 1px solid rgba(20, 60, 63, 0.12);
+  border-radius: 12px;
+  box-shadow: 0px 3px 0px 0px #E3E8E8;
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 8px 16px;
+  box-sizing: border-box;
+}
+
+.lesson-p1-card-img-wrap {
+  width: 100%;
+  height: 140px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.lesson-p1-card-img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  display: block;
+}
+
+.lesson-p1-card-ritme-wrap {
+  width: 100%;
+  max-width: 114px;
+  height: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.lesson-p1-card-ritme {
+  width: 100%;
+  height: auto;
+  max-height: 18px;
+  display: block;
+}
+
+.lesson-p1-desc {
+  font-family: var(--font-family-base, 'Space Grotesk', sans-serif);
+  font-weight: 400;
+  font-size: 12px;
+  line-height: 1.5;
+  color: #243238;
+  text-align: center;
+  max-width: 320px;
+  word-break: break-word;
+}
+
+.lesson-p1-desc p {
+  margin: 0;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   PAGE 2: TEKNIK 4-7-8 (node 268:876)
+═══════════════════════════════════════════════════════════════════════════ */
+.lesson-page-2 {
+  background: #FAF8F3;
+}
+
+.lesson-p2-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 20px;
+  padding: 0 16px;
+  box-sizing: border-box;
+  margin-top: -20px;
+}
+
+.lesson-p2-title {
+  font-family: var(--font-family-base, 'Space Grotesk', sans-serif);
+  font-size: 22px;
+  font-weight: 700;
+  color: #243238;
+  text-align: center;
+  letter-spacing: -0.614px;
+  line-height: 1.25;
+  max-width: 300px;
+  margin: 0;
+  word-break: break-word;
+}
+
+.lesson-p2-cards-wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.lesson-p2-card {
+  background: #FFFFFF;
+  border: 1px solid rgba(20, 60, 63, 0.12);
+  border-radius: 12px;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 12px;
+  padding-right: 24px;
+  height: 98px;
+  box-sizing: border-box;
+  overflow: hidden;
+  box-shadow: 0px 2px 0px 0px rgba(20, 60, 63, 0.05);
+}
+
+.lesson-p2-card-img-wrap {
+  width: 112px;
+  height: 100%;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.lesson-p2-card-img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  object-position: center;
+  display: block;
+}
+
+.lesson-p2-card-text {
+  flex: 1;
+  font-family: var(--font-family-base, 'Space Grotesk', sans-serif);
+  font-weight: 700;
+  font-size: 14px;
+  line-height: 1.35;
+  color: #243238;
+  letter-spacing: -0.4437px;
+  margin: 0;
+  word-break: break-word;
+}
+
+.lesson-p2-desc {
+  font-family: var(--font-family-base, 'Space Grotesk', sans-serif);
+  font-weight: 400;
+  font-size: 12px;
+  line-height: 1.45;
+  color: #243238;
+  text-align: center;
+  max-width: 340px;
+  margin: 0;
+  word-break: break-word;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   PAGE 3: SEBERAPA GUGUP KAMU (node 279:258)
+═══════════════════════════════════════════════════════════════════════════ */
+.lesson-page-3 {
+  background: #FAF8F3;
+}
+
+.lesson-p3-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 32px;
+  padding: 0 18px;
+  box-sizing: border-box;
+  margin-top: -30px;
+}
+
+.lesson-p3-title {
+  font-family: var(--font-family-base, 'Space Grotesk', sans-serif);
+  font-size: 22px;
+  font-weight: 700;
+  color: #243238;
+  text-align: center;
+  letter-spacing: -0.614px;
+  line-height: 1.25;
+  max-width: 300px;
+  margin: 0;
+  word-break: break-word;
+}
+
+.lesson-p3-scale-container {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  width: 100%;
+  max-width: 354px;
+  box-sizing: border-box;
+}
+
+.lesson-p3-slider-box {
+  position: relative;
+  width: 100%;
+  height: 48px;
+  display: flex;
+  align-items: center;
+  touch-action: pan-y;
+  cursor: pointer;
+}
+
+/* Dual-tone background tracks */
+.lesson-p3-slider-box .slider-track-bg-left {
+  position: absolute;
+  left: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 50%;
+  height: 16px;
+  background-color: rgba(36, 169, 129, 0.2);
+  border-radius: 16px 2px 2px 16px;
+}
+
+.lesson-p3-slider-box .slider-track-bg-right {
+  position: absolute;
+  right: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 50%;
+  height: 16px;
+  background-color: rgba(232, 117, 61, 0.2);
+  border-radius: 2px 16px 16px 2px;
+}
+
+/* Active progress bar */
+.lesson-p3-slider-box .slider-track-active-fill {
+  position: absolute;
+  left: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  height: 16px;
+  border-radius: 16px;
+  pointer-events: none;
+  transition: width 0.08s ease;
+}
+
+/* Tick stop dots */
+.lesson-p3-slider-box .slider-ticks-row {
+  position: absolute;
+  left: 12px;
+  right: 12px;
+  top: 0;
+  bottom: 0;
+  pointer-events: none;
+  display: flex;
+  align-items: center;
+}
+
+.lesson-p3-slider-box .slider-tick-dot {
+  position: absolute;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  transition: background-color 0.2s ease;
+  z-index: 2;
+}
+
+/* Custom Draggable Handle */
+.lesson-p3-slider-box .slider-custom-thumb {
+  position: absolute;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  width: 24px;
+  height: 44px;
+  background-color: #FFFFFF;
+  border: 2px solid;
+  border-radius: 6px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.18);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 3;
+  pointer-events: none;
+  transition: left 0.08s ease, border-color 0.2s ease;
+}
+
+.lesson-p3-slider-box .slider-thumb-inner {
+  width: 4px;
+  height: 22px;
+  border-radius: 2px;
+  transition: background-color 0.2s ease;
+}
+
+/* Range input overlay */
+.lesson-p3-slider-box .slider-range-overlay {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0;
+  cursor: pointer;
+  z-index: 4;
+  margin: 0;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.lesson-p3-scale-labels {
+  display: flex;
+  justify-content: space-between;
+  width: 100%;
+  font-family: var(--font-family-base, 'Space Grotesk', sans-serif);
+  font-size: 12px;
+  font-weight: 400;
+  line-height: normal;
+  padding: 0 2px;
+  box-sizing: border-box;
+}
+
+.lesson-p3-scale-labels .label-santai {
+  color: #24A981;
+}
+
+.lesson-p3-scale-labels .label-gugup {
+  color: #DA5000;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   PAGE 4: VIDEO ANIMASI RITME NAPAS (node 279:407)
+═══════════════════════════════════════════════════════════════════════════ */
+.lesson-page-4 {
+  background-color: #243238;
+}
+
+.lesson-topbar-dark {
+  background-color: #243238;
+}
+
+.lesson-topbar-nav-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+}
+
+.btn-lesson-skip {
+  background: none;
+  border: none;
+  font-family: var(--font-family-base, 'Space Grotesk', sans-serif);
+  font-weight: 700;
+  font-size: 14px;
+  color: rgba(255, 255, 255, 0.7);
+  cursor: pointer;
+  padding: 4px 8px;
+  border-radius: 6px;
+  transition: color 0.15s ease, background-color 0.15s ease;
+}
+
+.btn-lesson-skip:hover {
+  color: #FFFFFF;
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+.btn-lesson-skip:active {
+  color: #24A981;
+}
+
+.lesson-progress-track-dark {
+  background: rgba(255, 255, 255, 0.12);
+  border: 0.3px solid rgba(255, 255, 255, 0.05);
+}
+
+.lesson-p4-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 18px 105px;
+  box-sizing: border-box;
+  position: relative;
+}
+
+.lesson-p4-banner-img {
+  width: 182px;
+  height: 60px;
+  max-width: 90%;
+  display: block;
+}
+
+.lesson-p4-center-area {
+  position: relative;
+  width: 100%;
+  max-width: 320px;
+  height: 320px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.lesson-p4-video-container {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  overflow: hidden;
+  position: relative;
+  transition: opacity 0.8s ease-in-out, transform 0.8s ease-in-out;
+  opacity: 1;
+  transform: scale(1);
+}
+
+.lesson-p4-video-container.dissolved {
+  opacity: 0;
+  transform: scale(0.92);
+  pointer-events: none;
+}
+
+.lesson-p4-anim-video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.lesson-p4-finished-state {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: finishedFadeIn 0.8s ease-out forwards;
+}
+
+@keyframes finishedFadeIn {
+  from {
+    opacity: 0;
+    transform: scale(0.85);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.lesson-p4-finished-text {
+  font-family: var(--font-family-base, 'Space Grotesk', sans-serif);
+  font-weight: 700;
+  font-size: 32px;
+  color: #FFFFFF;
+  letter-spacing: -0.8px;
+  margin: 0;
+  text-align: center;
+}
+
+.lesson-p4-cycle-counter {
+  font-family: var(--font-family-base, 'Space Grotesk', sans-serif);
+  font-weight: 700;
+  font-size: 22px;
+  color: #FFFFFF;
+  letter-spacing: -0.614px;
+  margin: 0;
+  text-align: center;
+}
+
+.lesson-cta-dark {
+  background: linear-gradient(to bottom, transparent 0%, #243238 40%);
+}
+
+.lesson-cta-appear {
+  animation: ctaSlideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes ctaSlideUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   PAGE 5: CONCLUSION
+═══════════════════════════════════════════════════════════════════════════ */
+.lesson-page-5 {
+  background: #FAF8F3;
+}
+
+.lesson-p5-hero {
+  position: relative;
+  width: 100%;
+  height: 346px;
+  overflow: hidden;
+  flex-shrink: 0;
+}
+
+.lesson-p5-hero-img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center top;
+  display: block;
+}
+
+.lesson-p5-result {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  padding-top: 24px;
+  box-sizing: border-box;
+}
+
+.lesson-p5-text-wrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding: 0 24px;
+  gap: 14px;
+}
+
+.lesson-p5-title-group {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+}
+
+.lesson-p5-question {
+  font-family: var(--font-family-base, 'Space Grotesk', sans-serif);
+  font-size: 18px;
+  font-weight: 700;
+  color: #0B75A3;
+  letter-spacing: -0.52px;
+  margin: 0;
+  white-space: nowrap;
+}
+
+.lesson-p5-headline {
+  font-family: var(--font-family-base, 'Space Grotesk', sans-serif);
+  font-size: 26px;
+  font-weight: 700;
+  color: #243238;
+  letter-spacing: -0.72px;
+  line-height: 1.2;
+  margin: 0;
+}
+
+.lesson-p5-caption {
+  font-family: var(--font-family-base, 'Space Grotesk', sans-serif);
+  font-size: 12px;
+  font-weight: 400;
+  color: #8199A3;
+  line-height: 1.55;
+  max-width: 280px;
+  margin: 0;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   PAGE 6: COMPLETED LESSON / GAIN XP (node 281:919)
+═══════════════════════════════════════════════════════════════════════════ */
+.lesson-completed-screen {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background-color: #FAF8F3;
+  overflow: hidden;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+.lesson-completed-content {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  text-align: center;
+  margin-top: -30px;
+  animation: completedContentPop 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes completedContentPop {
+  0% {
+    opacity: 0;
+    transform: scale(0.88);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.lesson-completed-video-wrap {
+  position: relative;
+  width: 100%;
+  max-width: 100%;
+  height: 421px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.lesson-completed-video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+@media (min-width: 600px) {
+  .lesson-completed-video-wrap {
+    max-width: 390px;
+  }
+}
+
+.lesson-completed-title {
+  font-family: var(--font-family-base, 'Space Grotesk', sans-serif);
+  font-size: 26px;
+  font-weight: 700;
+  color: #243238;
+  letter-spacing: -0.7225px;
+  padding: 0 20px;
+  margin: 0;
+}
+
+.lesson-completed-xp-block {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  padding: 0 20px;
+}
+
+.lesson-completed-xp-amount-wrapper {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.lesson-xp-appear {
+  animation: xpSlidePop 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes xpSlidePop {
+  0% {
+    opacity: 0;
+    transform: translateY(16px) scale(0.92);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+/* ── Sparkling Stars around XP ────────────────────────────────────────── */
+.lesson-sparkle-stars {
+  position: absolute;
+  inset: -14px -28px;
+  pointer-events: none;
+}
+
+.sparkle-star {
+  position: absolute;
+  color: #FFC83B;
+  font-size: 16px;
+  line-height: 1;
+  text-shadow: 0 0 8px rgba(255, 200, 59, 0.8);
+  opacity: 0;
+  transition: opacity 0.3s ease-out;
+}
+
+.lesson-sparkle-stars.active-sparkle .sparkle-star {
+  opacity: 1;
+  animation: starGlitter 0.5s ease-in-out infinite alternate;
+}
+
+.lesson-sparkle-stars.sparkle-stopped .sparkle-star {
+  opacity: 0;
+  animation: none;
+}
+
+.star-1 {
+  top: 0;
+  left: 0;
+  font-size: 18px;
+  color: #FFE66D;
+  animation-delay: 0s !important;
+}
+
+.star-2 {
+  top: -6px;
+  right: 6px;
+  font-size: 20px;
+  color: #FFAA00;
+  animation-delay: 0.15s !important;
+}
+
+.star-3 {
+  bottom: 4px;
+  left: -4px;
+  font-size: 14px;
+  color: #FFD166;
+  animation-delay: 0.25s !important;
+}
+
+.star-4 {
+  bottom: -2px;
+  right: 0;
+  font-size: 17px;
+  color: #FFE66D;
+  animation-delay: 0.35s !important;
+}
+
+.star-5 {
+  top: 40%;
+  left: -18px;
+  font-size: 15px;
+  color: #FF9F1C;
+  animation-delay: 0.2s !important;
+}
+
+.star-6 {
+  top: 35%;
+  right: -18px;
+  font-size: 16px;
+  color: #FFE66D;
+  animation-delay: 0.4s !important;
+}
+
+@keyframes starGlitter {
+  0% {
+    transform: scale(0.6) rotate(-15deg);
+    opacity: 0.3;
+  }
+  50% {
+    transform: scale(1.3) rotate(15deg);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(0.8) rotate(30deg);
+    opacity: 0.5;
+  }
+}
+
+.lesson-completed-xp-subtitle {
+  font-family: var(--font-family-base, 'Space Grotesk', sans-serif);
+  font-size: 16px;
+  font-weight: 500;
+  color: #E8A63D;
+  margin: 0;
+}
+
+.lesson-completed-xp-amount {
+  font-family: var(--font-family-base, 'Space Grotesk', sans-serif);
+  font-size: 60px;
+  font-weight: 700;
+  color: #E8A63D;
+  letter-spacing: -1px;
+  line-height: 1;
+  margin: 0;
+}

@@ -1,0 +1,454 @@
+/* ==========================================================================
+   Module Detail Screen (Figma node 12-175)
+   ========================================================================== */
+
+/* ── Screen Shell ─────────────────────────────────────────────────────────── */
+.module-detail-screen {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  min-height: 100%;
+  flex: 1;
+  background-color: var(--color-bg-app, #FAF8F3);
+  display: flex;
+  flex-direction: column;
+  box-sizing: border-box;
+  overflow: hidden;
+}
+
+/* ── Scrollable Body ──────────────────────────────────────────────────────── */
+.module-detail-scroll-body {
+  width: 100%;
+  height: 100%;
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+  scrollbar-width: none;
+  -webkit-overflow-scrolling: touch;
+  box-sizing: border-box;
+}
+.module-detail-scroll-body::-webkit-scrollbar { display: none; }
+
+/* ── Top Bar ──────────────────────────────────────────────────────────────── */
+.module-detail-topbar {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 20;
+  display: flex;
+  align-items: center;
+  padding: 32px 16px 12px 16px;
+  box-sizing: border-box;
+}
+
+.btn-module-back {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  transition: transform 0.12s ease, opacity 0.15s ease;
+  -webkit-tap-highlight-color: transparent;
+}
+.btn-module-back:hover {
+  transform: translateX(-2px);
+  opacity: 0.9;
+}
+.btn-module-back:active {
+  transform: translateX(-4px) scale(0.95);
+}
+
+/* ── Hero Section with Teal Background ────────────────────────────────────── */
+.module-detail-hero {
+  position: relative;
+  width: 100%;
+  height: 316px;
+  background-color: var(--color-primary, #24A981);
+  border-radius: 0 0 24px 24px;
+  padding: 20px 16px;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  gap: 16px;
+  box-sizing: border-box;
+  overflow: hidden;
+  flex-shrink: 0;
+}
+
+.module-detail-hero--modul2 {
+  background-color: #24A981;
+}
+
+.module-detail-hero--modul7 {
+  background-color: #7C4E28;
+}
+
+.module-detail-hero-bg-wrapper {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  overflow: hidden;
+  z-index: 1;
+}
+
+.module-detail-hero-bg-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: right center;
+  display: block;
+}
+
+.module-detail-hero-bg-decor {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.module-detail-title-block {
+  position: relative;
+  z-index: 5;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  max-width: 220px;
+}
+
+.module-detail-label {
+  font-family: var(--font-family-base, 'Space Grotesk', sans-serif);
+  font-size: 14px;
+  font-weight: 700;
+  color: #FFFFFF;
+  letter-spacing: -0.4437px;
+  margin: 0;
+}
+
+.module-detail-title {
+  font-family: var(--font-family-base, 'Space Grotesk', sans-serif);
+  font-size: 26px;
+  font-weight: 700;
+  color: #FFFFFF;
+  letter-spacing: -0.7225px;
+  line-height: 1.15;
+  margin: 0;
+  word-break: break-word;
+}
+
+.module-detail-meta {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  margin-top: 4px;
+}
+
+.module-detail-meta-item {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.module-detail-book-icon {
+  width: 16px;
+  height: 16px;
+  object-fit: contain;
+  filter: brightness(0) invert(1);
+}
+
+.module-detail-meta-text {
+  font-family: var(--font-family-base, 'Space Grotesk', sans-serif);
+  font-size: 12px;
+  font-weight: 400;
+  color: #FFFFFF;
+  white-space: nowrap;
+}
+
+/* Primary Action inside Hero */
+.btn-module-start {
+  position: relative;
+  z-index: 5;
+  width: 100%;
+  height: 38px;
+  background-color: var(--color-secondary, #E8753D);
+  border: 1px solid #8B4827;
+  border-radius: 34px;
+  box-shadow: 0px 4px 0px 0px #8B4827;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  cursor: pointer;
+  font-family: var(--font-family-base, 'Space Grotesk', sans-serif);
+  font-size: 14px;
+  font-weight: 700;
+  color: #FFFFFF;
+  transition: transform 0.12s ease, box-shadow 0.12s ease, filter 0.15s ease;
+  -webkit-tap-highlight-color: transparent;
+}
+.btn-module-start:hover { filter: brightness(1.05); }
+.btn-module-start:active {
+  transform: translateY(2px);
+  box-shadow: 0px 2px 0px 0px #8B4827;
+}
+
+.btn-module-play-icon {
+  width: 16px;
+  height: 16px;
+  object-fit: contain;
+  filter: brightness(0) invert(1);
+}
+
+/* ── Lessons List View ────────────────────────────────────────────────────── */
+.module-detail-lessons-list {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 24px 16px 48px 16px;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+/* ── Lesson Card ──────────────────────────────────────────────────────────── */
+.module-lesson-card {
+  width: 100%;
+  background: #FFFFFF;
+  border: 1px solid rgba(20, 60, 63, 0.12);
+  border-radius: 12px;
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  box-sizing: border-box;
+  box-shadow: 0px 2px 6px rgba(20, 60, 63, 0.04);
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.module-lesson-card--active {
+  border: 1.5px solid #E8753D !important;
+}
+
+.module-lesson-content {
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+  width: 100%;
+}
+
+.module-lesson-thumb-wrapper {
+  width: 74px;
+  height: 74px;
+  border-radius: 6px;
+  border: 0.6px solid rgba(36, 50, 56, 0.18);
+  overflow: hidden;
+  flex-shrink: 0;
+  background-color: #FAF8F3;
+}
+
+.module-lesson-thumb {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.module-lesson-info {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  flex: 1;
+  min-width: 0;
+}
+
+.module-lesson-status {
+  font-family: var(--font-family-base, 'Space Grotesk', sans-serif);
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--color-primary, #24A981);
+  white-space: nowrap;
+}
+
+.module-lesson-title {
+  font-family: var(--font-family-base, 'Space Grotesk', sans-serif);
+  font-size: 14px;
+  font-weight: 700;
+  color: #243238;
+  letter-spacing: -0.4437px;
+  line-height: 1.2;
+  margin: 0;
+  word-break: break-word;
+}
+
+.module-lesson-desc {
+  font-family: var(--font-family-base, 'Space Grotesk', sans-serif);
+  font-size: 12px;
+  font-weight: 400;
+  color: var(--color-text-caption, #8199A3);
+  line-height: 1.35;
+  margin: 0;
+  word-break: break-word;
+}
+
+.module-lesson-tag {
+  display: inline-block;
+  background: #243238;
+  color: #FFFFFF;
+  font-family: var(--font-family-base, 'Space Grotesk', sans-serif);
+  font-size: 10px;
+  font-weight: 500;
+  padding: 4px 12px;
+  border-radius: 30px;
+  align-self: flex-start;
+  line-height: 13px;
+  margin-top: 2px;
+  white-space: nowrap;
+}
+
+/* Small Completed Lesson Button */
+.btn-lesson-status {
+  width: 100%;
+  height: 28px;
+  border-radius: 34px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  font-family: var(--font-family-base, 'Space Grotesk', sans-serif);
+  font-size: 12px;
+  font-weight: 700;
+  transition: transform 0.12s ease, box-shadow 0.12s ease, filter 0.15s ease;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.btn-lesson-status--active,
+.btn-lesson-status--completed {
+  background-color: var(--color-primary, #24A981);
+  border: 1px solid #17674F;
+  box-shadow: 0px 4px 0px 0px #17674F;
+  color: #FFFFFF;
+  cursor: pointer;
+}
+.btn-lesson-status--active:hover,
+.btn-lesson-status--completed:hover { filter: brightness(1.05); }
+.btn-lesson-status--active:active,
+.btn-lesson-status--completed:active {
+  transform: translateY(2px);
+  box-shadow: 0px 2px 0px 0px #17674F;
+}
+
+.btn-lesson-status--current {
+  background-color: var(--color-secondary, #E8753D);
+  border: 1px solid #8B4827;
+  box-shadow: 0px 4px 0px 0px #8B4827;
+  color: #FFFFFF;
+  cursor: pointer;
+}
+.btn-lesson-status--current:hover { filter: brightness(1.05); }
+.btn-lesson-status--current:active {
+  transform: translateY(2px);
+  box-shadow: 0px 2px 0px 0px #8B4827;
+}
+
+.btn-lesson-status--inactive {
+  background-color: #CBD5E1;
+  border: 1px solid #94A3B8;
+  box-shadow: 0px 4px 0px 0px #94A3B8;
+  color: #475569;
+  cursor: not-allowed;
+  opacity: 0.9;
+}
+.btn-lesson-status--inactive:hover {
+  filter: none;
+}
+.btn-lesson-status--inactive:active {
+  transform: none;
+  box-shadow: 0px 4px 0px 0px #94A3B8;
+}
+
+.btn-lesson-check-icon {
+  width: 13px;
+  height: 13px;
+  display: inline-block;
+  flex-shrink: 0;
+}
+
+.btn-lesson-play-icon {
+  width: 12px;
+  height: 12px;
+  display: inline-block;
+  flex-shrink: 0;
+}
+
+/* ── Dotted Arrow Divider ─────────────────────────────────────────────────── */
+.module-detail-arrow-divider {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 34px;
+  width: 100%;
+  margin: 2px 0;
+}
+
+/* ── Next Module Unlock Button ────────────────────────────────────────────── */
+.btn-open-next-module {
+  height: 38px;
+  padding: 0 24px;
+  background-color: var(--color-primary, #24A981);
+  border: 1px solid #17674F;
+  border-radius: 34px;
+  box-shadow: 0px 4px 0px 0px #17674F;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  cursor: pointer;
+  font-family: var(--font-family-base, 'Space Grotesk', sans-serif);
+  font-size: 14px;
+  font-weight: 700;
+  color: #FFFFFF;
+  white-space: nowrap;
+  transition: transform 0.12s ease, box-shadow 0.12s ease, filter 0.15s ease;
+  -webkit-tap-highlight-color: transparent;
+  margin-top: 4px;
+}
+.btn-open-next-module:hover { filter: brightness(1.05); }
+.btn-open-next-module:active {
+  transform: translateY(2px);
+  box-shadow: 0px 2px 0px 0px #17674F;
+}
+
+.btn-open-next-module--inactive {
+  background-color: #CBD5E1 !important;
+  border: none !important;
+  box-shadow: none !important;
+  color: #94A3B8 !important;
+  cursor: not-allowed !important;
+  opacity: 0.9;
+}
+
+.btn-open-next-module--inactive:hover {
+  filter: none !important;
+  transform: none !important;
+}
+
+.btn-open-next-module--inactive:active {
+  transform: none !important;
+  box-shadow: none !important;
+}
+
+.btn-open-next-module--inactive .btn-open-door-icon {
+  filter: grayscale(100%) opacity(0.4);
+}
+
+.btn-open-door-icon {
+  width: 18px;
+  height: 18px;
+  object-fit: contain;
+}

@@ -1,0 +1,262 @@
+/* ==========================================================================
+   Register Form Screen (Steps 1, 2, 3)
+   ========================================================================== */
+
+/* ── Screen Shell ─────────────────────────────────────────────────────────── */
+.register-screen {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  min-height: 100%;
+  background-color: var(--color-bg-app, #FAF8F3);
+  display: flex;
+  flex-direction: column;
+  box-sizing: border-box;
+  overflow-y: auto;
+  overflow-x: hidden;
+  scrollbar-width: none;
+}
+.register-screen::-webkit-scrollbar { display: none; }
+
+/* ── Sticky TopBar ────────────────────────────────────────────────────────── */
+.register-topbar {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  background-color: var(--color-bg-app, #FAF8F3);
+  display: flex;
+  flex-direction: column;
+  padding: 32px 18px 12px 18px;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+/* 3-Segment Progress Bar */
+.register-progress-bar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  height: 4px;
+}
+.register-progress-segment {
+  flex: 1;
+  height: 4px;
+  min-width: 4px;
+  border-radius: 29px;
+  background-color: rgba(0, 0, 0, 0.1);
+  border: 0.3px solid rgba(0, 0, 0, 0.04);
+  transition: background-color 0.35s ease;
+  overflow: hidden;
+}
+.register-progress-segment.filled {
+  background-color: var(--color-primary, #24A981);
+}
+
+/* ── Main Form Section ────────────────────────────────────────────────────── */
+.register-form-section {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 24px 16px 40px 16px;
+  box-sizing: border-box;
+  width: 100%;
+}
+
+.register-form-body {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  width: 100%;
+}
+
+.register-step-content {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  width: 100%;
+}
+
+.register-step-title {
+  font-family: var(--font-family-base, 'Space Grotesk', sans-serif);
+  font-size: 26px;
+  font-weight: 700;
+  color: var(--color-text-primary, #243238);
+  letter-spacing: -0.7225px;
+  margin: 0;
+  line-height: 1.25;
+}
+.register-step-title p {
+  margin: 0;
+  line-height: 1.25;
+}
+
+/* ── Input Fields ─────────────────────────────────────────────────────────── */
+.register-input-group {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  width: 100%;
+}
+
+.register-input-wrapper {
+  position: relative;
+  width: 100%;
+  display: flex;
+  align-items: center;
+}
+
+.register-input {
+  width: 100%;
+  height: 55px;
+  background-color: rgba(129, 153, 163, 0.05);
+  border: 1px solid rgba(20, 60, 63, 0.12);
+  border-radius: 12px;
+  padding: 0 18px;
+  box-sizing: border-box;
+  font-family: var(--font-family-base, 'Space Grotesk', sans-serif);
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--color-text-primary, #243238);
+  outline: none;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+.register-input::placeholder {
+  color: rgba(36, 50, 56, 0.24);
+  font-weight: 700;
+}
+.register-input:focus {
+  border-color: var(--color-secondary, #E8753D);
+  box-shadow: 0 0 0 2px rgba(232, 117, 61, 0.15);
+}
+
+.register-input-wrapper .register-input {
+  padding-right: 48px;
+}
+
+.btn-toggle-eye {
+  position: absolute;
+  right: 14px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  padding: 4px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.eye-icon {
+  width: 20px;
+  height: 20px;
+  opacity: 0.6;
+  transition: opacity 0.15s ease;
+}
+.eye-icon.active {
+  opacity: 1;
+}
+
+.register-error-text {
+  font-family: var(--font-family-base, 'Space Grotesk', sans-serif);
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--color-text-secondary, #DA5000);
+  margin: 4px 0 0 4px;
+}
+
+/* ── Actions / Buttons Group ──────────────────────────────────────────────── */
+.register-actions-wrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  width: 100%;
+  margin-top: auto;
+  padding-top: 24px;
+}
+
+/* Primary CTA */
+.btn-register-submit {
+  width: 100%;
+  height: 46px;
+  background-color: var(--color-secondary, #E8753D);
+  color: #FFFFFF;
+  border: 1px solid #8B4827;
+  border-radius: var(--buttons, 100px);
+  font-family: var(--font-family-base, 'Space Grotesk', sans-serif);
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  box-shadow: 0px 4px 0px 0px #8B4827;
+  transition: transform 0.12s ease, box-shadow 0.12s ease, filter 0.15s ease;
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-tap-highlight-color: transparent;
+}
+.btn-register-submit:hover { filter: brightness(1.04); }
+.btn-register-submit:active {
+  transform: translateY(2px);
+  box-shadow: 0px 2px 0px 0px #8B4827;
+}
+.btn-register-submit:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* Step 1 Secondary CTA: "Aku sudah memiliki akun" */
+.btn-has-account {
+  width: 100%;
+  height: 46px;
+  background-color: #FAF8F3;
+  color: var(--color-text-secondary, #DA5000);
+  border: 1px solid var(--color-border, rgba(20, 60, 63, 0.12));
+  border-radius: var(--buttons, 100px);
+  font-family: var(--font-family-base, 'Space Grotesk', sans-serif);
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  box-shadow: 0px 3px 0px 0px #E3E8E8;
+  transition: transform 0.12s ease, box-shadow 0.12s ease;
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-tap-highlight-color: transparent;
+}
+.btn-has-account:active {
+  transform: translateY(2px);
+  box-shadow: 0px 1px 0px 0px #E3E8E8;
+}
+
+/* Step 2 & 3 Back Action */
+.btn-register-back {
+  background: none;
+  border: none;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--color-text-caption, #8199A3);
+  font-family: var(--font-family-base, 'Space Grotesk', sans-serif);
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  padding: 6px 0;
+  transition: color 0.15s ease;
+}
+.btn-register-back:hover {
+  color: var(--color-text-primary, #243238);
+}
+.back-arrow-icon {
+  width: 12px;
+  height: 12px;
+  transform: rotate(180deg);
+}

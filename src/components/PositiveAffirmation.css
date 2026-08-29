@@ -1,0 +1,144 @@
+/* Positive Affirmation Screen (Node 211:4913) */
+.positive-affirmation-screen {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  min-height: 100%;
+  flex: 1;
+  background-color: #243238;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  align-items: center;
+  box-sizing: border-box;
+  padding: 0 32px 40px 32px;
+}
+
+/* Ambient Top Light Glow */
+.ambient-glow-top {
+  position: absolute;
+  top: -120px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 320px;
+  height: 320px;
+  border-radius: 50%;
+  background: radial-gradient(
+    circle at center,
+    rgba(255, 255, 255, 0.28) 0%,
+    rgba(255, 255, 255, 0.12) 35%,
+    rgba(36, 50, 56, 0) 70%
+  );
+  filter: blur(50px);
+  pointer-events: none;
+  z-index: 1;
+}
+
+/* Center Section for Affirmation Text */
+.affirmation-center-section {
+  position: relative;
+  z-index: 2;
+  width: 100%;
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Affirmation Text Area */
+.affirmation-text-container {
+  width: 100%;
+  max-width: 326px;
+  text-align: left;
+}
+
+.affirmation-text {
+  font-family: var(--font-family-base, 'Space Grotesk', sans-serif);
+  font-size: 22px;
+  font-weight: 700;
+  line-height: 1.35;
+  letter-spacing: -0.614px;
+  color: #FFFFFF;
+  word-break: break-word;
+  min-height: 90px;
+}
+
+/* Blinking Typing Cursor */
+.typing-cursor {
+  display: inline-block;
+  margin-left: 2px;
+  font-weight: 300;
+  color: rgba(255, 255, 255, 0.85);
+  animation: blink-cursor 0.75s infinite ease-in-out;
+}
+
+@keyframes blink-cursor {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0;
+  }
+}
+
+/* Bottom CTA Button Container */
+.affirmation-button-wrapper {
+  position: relative;
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  z-index: 3;
+  opacity: 0;
+  transform: translateY(16px);
+  pointer-events: none;
+  transition: opacity 0.45s cubic-bezier(0.16, 1, 0.3, 1),
+              transform 0.45s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.affirmation-button-wrapper.visible {
+  opacity: 1;
+  transform: translateY(0);
+  pointer-events: auto;
+}
+
+/* 3D Secondary CTA Button */
+.btn-affirmation-cta {
+  width: 100%;
+  max-width: 366px;
+  height: 46px;
+  background-color: var(--color-secondary, #E8753D);
+  color: #FFFFFF;
+  border: 1px solid #8B4827;
+  border-radius: var(--radius-full, 100px);
+  font-family: var(--font-family-base, 'Space Grotesk', sans-serif);
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: 0px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  box-shadow: 0px 4px 0px 0px #8B4827;
+  transition: transform 0.12s ease, box-shadow 0.12s ease, filter 0.15s ease;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.btn-affirmation-cta:hover {
+  filter: brightness(1.05);
+}
+
+.btn-affirmation-cta:active {
+  transform: translateY(3px);
+  box-shadow: 0px 1px 0px 0px #8B4827;
+}
+
+/* Mobile viewport adjustments (< 768px) */
+@media (max-width: 767px) {
+  .positive-affirmation-screen {
+    min-height: 100vh;
+    min-height: 100dvh;
+    padding-bottom: max(32px, env(safe-area-inset-bottom, 32px));
+  }
+}

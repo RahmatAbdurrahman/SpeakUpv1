@@ -1,0 +1,1327 @@
+import React, { useState, useRef, useEffect } from "react";
+import "./LessonModul7Screen.css";
+
+// ─── Assets for Modul 7 Lesson 6 ─────────────────────────────────────────────
+import imgBlankTotal from "../assets/pages_assets/lessons/lesson-6-modul7/Image-BlankTotal.png";
+import imgPanik from "../assets/pages_assets/lessons/lesson-6-modul7/Image-Panik-Page1.png";
+import imgGakKompeten from "../assets/pages_assets/lessons/lesson-6-modul7/Image-GakKompeten-Page1.png";
+import imgBrain from "../assets/pages_assets/lessons/lesson-6-modul7/Image-Brain.png";
+import imgMascottQuotes from "../assets/pages_assets/lessons/lesson-6-modul7/Image-Mascott-Quotes.png";
+import imgMascottSenyum from "../assets/pages_assets/lessons/lesson-6-modul7/Image-Mascott-SenyumJahat.png";
+import imgMascottKhawatir from "../assets/pages_assets/lessons/lesson-6-modul7/Image-Mascott-Khawatir.png";
+import videoHappySpeaker from "../assets/pages_assets/lessons/lesson-6-modul7/Video-Happy-Speaker.webm";
+import videoGainXP from "../assets/pages_assets/gain_xp/Video-Gain-XP.webm";
+
+// ─── Assets for the practice result (AI analysis) screen ─────────────────────
+import imgAnalysisHero from "../assets/pages_assets/ai_analysis/analysis_hero.png";
+import iconSpeed from "../assets/pages_assets/ai_analysis/icon_speed.svg";
+import iconQuote from "../assets/pages_assets/ai_analysis/icon_quote.svg";
+import iconMouth from "../assets/pages_assets/ai_analysis/icon_mouth.svg";
+import iconFlash from "../assets/pages_assets/ai_analysis/icon_flash.svg";
+
+// ─── Practice scenario content (Figma frames after node 334:1838) ────────────
+const PRACTICE_FLOW_STEPS = [
+  "Mendapatkan tema secara acak",
+  "Siapkan 3 poin untuk argumenmu",
+  "Mini-presentation",
+  "Transisi Q&A",
+  "Pertanyaan menantang",
+  "Feedback",
+];
+
+const PRACTICE_TOPIC =
+  "“Apakah belajar sambil mendengarkan musik membuatmu lebih fokus?”";
+
+const PRACTICE_OUTLINE_HINTS = [
+  "Pendapat utama: aku setuju/tidak setuju karena…",
+  "Alasan atau contoh yang mendukung…",
+  "Kesimpulan atau solusi yang bisa dilakukan…",
+];
+
+const PRACTICE_QUESTIONS = [
+  "“Kamu bilang musik membantu fokus. Bagaimana kamu membuktikan bahwa fokusmu meningkat karena musik, bukan karena kamu memang sedang mengerjakan tugas yang lebih mudah atau sedang lebih termotivasi hari itu?”",
+  "“Bagaimana kalau musik memang membuatmu sanggup belajar lebih lama, tetapi hasil akhirnya tidak lebih baik—misalnya kamu menghabiskan waktu dua jam, tetapi lebih sedikit materi yang benar-benar kamu ingat? Mana yang seharusnya menjadi ukuran fokus: durasi belajar atau kualitas pemahaman?”",
+];
+
+// Sample result shown on the AI analysis screen. Replace with real scoring
+// once the speech analysis backend is wired to this lesson.
+const PRACTICE_ANALYSIS = {
+  scores: [
+    {
+      id: "argumen",
+      icon: iconSpeed,
+      label: "Argumen",
+      value: 88,
+      unit: "/ 100",
+      note: "Pendapatmu jelas dan didukung alasan yang relevan.",
+      chip: "Kuat",
+      chipTone: "good",
+    },
+    {
+      id: "relevansi",
+      icon: iconSpeed,
+      label: "Relevansi",
+      value: 88,
+      unit: "/ 100",
+      note: "Pendapatmu jelas dan didukung alasan yang relevan.",
+      chip: "Relevan",
+      chipTone: "good",
+    },
+  ],
+  metrics: [
+    {
+      id: "kata-pengisi",
+      icon: iconQuote,
+      label: "Kata Pengisi",
+      value: 20,
+      unit: "Kali",
+      chip: "Perlu Latihan",
+      chipTone: "warn",
+      valueTone: "warn",
+    },
+    {
+      id: "kecepatan",
+      icon: iconSpeed,
+      label: "Kecepatan",
+      value: 146,
+      unit: "wpm",
+      chip: "Stabil",
+      chipTone: "good",
+    },
+    {
+      id: "kejelasan",
+      icon: iconMouth,
+      label: "Kejelasan",
+      value: 88,
+      unit: "/ 100",
+      chip: "Baik",
+      chipTone: "good",
+    },
+    {
+      id: "energi",
+      icon: iconFlash,
+      label: "Energi & Intonasi",
+      value: 58,
+      unit: "/ 100",
+      chip: "Perlu Latihan",
+      chipTone: "warn",
+      valueTone: "warn",
+    },
+  ],
+  feedback:
+    "Kamu sudah menjawab pertanyaan dengan relevan dan menyampaikan argumen yang cukup kuat. Fokus berikutnya: Kurangi kata pengisi saat berpindah dari satu alasan ke alasan berikutnya.",
+};
+
+// Every page of the lesson, in order — used to drive the progress bar.
+const TOTAL_LESSON_STEPS = 17;
+
+// ─── Back Arrow Icon ─────────────────────────────────────────────────────────
+const IconArrowLeft = ({ color = "#243238" }) => (
+  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path d="M19 12H5M5 12L12 19M5 12L12 5" stroke={color} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/>
+  </svg>
+);
+
+// ─── Countdown helper — ticks once a second, fires onComplete at zero ────────
+function useCountdown(seconds, onComplete) {
+  const [remaining, setRemaining] = useState(seconds);
+  const onCompleteRef = useRef(onComplete);
+
+  useEffect(() => {
+    onCompleteRef.current = onComplete;
+  }, [onComplete]);
+
+  useEffect(() => {
+    const startedAt = Date.now();
+    const timer = setInterval(() => {
+      const left = seconds - Math.floor((Date.now() - startedAt) / 1000);
+      if (left <= 0) {
+        clearInterval(timer);
+        setRemaining(0);
+        onCompleteRef.current?.();
+      } else {
+        setRemaining(left);
+      }
+    }, 250);
+    return () => clearInterval(timer);
+  }, [seconds]);
+
+  return remaining;
+}
+
+const formatClock = (totalSeconds) => {
+  const mins = Math.floor(totalSeconds / 60);
+  const secs = totalSeconds % 60;
+  return `${mins}:${String(secs).padStart(2, "0")}`;
+};
+
+// ─── Animated voice bars shown while the user is speaking ────────────────────
+const VoiceWave = () => (
+  <div className="modul7-voice-wave" aria-hidden="true">
+    <span className="modul7-voice-bar" />
+    <span className="modul7-voice-bar" />
+    <span className="modul7-voice-bar" />
+    <span className="modul7-voice-bar" />
+    <span className="modul7-voice-bar" />
+  </div>
+);
+
+// ─── Listens to the mic while `active` and tracks whether any speech-level
+// volume was heard. A ref (not state) so the RAF loop doesn't re-render. ────
+function useSpeechCapture(active) {
+  const detectedRef = useRef(false);
+
+  useEffect(() => {
+    if (!active) return undefined;
+    detectedRef.current = false;
+
+    let cancelled = false;
+    let audioCtx;
+    let rafId;
+    let stream;
+
+    const SILENCE_THRESHOLD = 12;
+
+    (async () => {
+      try {
+        if (!navigator.mediaDevices?.getUserMedia) throw new Error("no getUserMedia");
+        stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        if (cancelled) {
+          stream.getTracks().forEach((track) => track.stop());
+          return;
+        }
+        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        const analyser = audioCtx.createAnalyser();
+        analyser.fftSize = 512;
+        audioCtx.createMediaStreamSource(stream).connect(analyser);
+        const data = new Uint8Array(analyser.frequencyBinCount);
+
+        const tick = () => {
+          analyser.getByteFrequencyData(data);
+          let sum = 0;
+          for (let i = 0; i < data.length; i++) sum += data[i];
+          if (sum / data.length > SILENCE_THRESHOLD) detectedRef.current = true;
+          rafId = requestAnimationFrame(tick);
+        };
+        tick();
+      } catch {
+        // No mic permission / no device — treated as silence when the
+        // recording ends, which is exactly the state we want to surface.
+      }
+    })();
+
+    return () => {
+      cancelled = true;
+      if (rafId) cancelAnimationFrame(rafId);
+      stream?.getTracks().forEach((track) => track.stop());
+      audioCtx?.close?.().catch(() => {});
+    };
+  }, [active]);
+
+  return detectedRef;
+}
+
+// ─── "Suaramu tidak terdengar..." — shown when a recording step ends with no
+// speech-level audio captured (mic muted/blocked/silent). ────────────────────
+function NoVoiceDetected({ step, questionIndex, onBack, onRetry, onSkip, skipLabel }) {
+  return (
+    <div className="modul7-lesson-page modul7-dark-page" data-name="Practice-Suara Tidak Terdengar">
+      <LessonTopBar currentStep={step} totalSteps={TOTAL_LESSON_STEPS} onBack={onBack} tone="dark" />
+
+      {questionIndex != null && (
+        <p className="modul7-practice-counter">
+          {questionIndex + 1}/{PRACTICE_QUESTIONS.length}
+        </p>
+      )}
+
+      <div className="modul7-lesson-content modul7-practice-bridge-content">
+        <img src={imgMascottKhawatir} alt="" className="modul7-practice-bridge-img" />
+
+        <div className="modul7-practice-bridge-text">
+          <h2 className="modul7-practice-bridge-title">Suaramu tidak terdengar...</h2>
+          <p className="modul7-practice-bridge-desc">
+            Pastikan mikrofonmu aktif dan tidak tertutup. Kalau semuanya sudah siap, kita bisa mulai lagi.
+          </p>
+        </div>
+      </div>
+
+      <div className="modul7-lesson-cta-wrapper modul7-lesson-cta-wrapper--dark modul7-cta-with-hint">
+        <button type="button" className="btn-modul7-next" onClick={onRetry}>
+          Ulangi lagi
+        </button>
+        <button type="button" className="modul7-novoice-skip" onClick={onSkip}>
+          {skipLabel}
+        </button>
+      </div>
+    </div>
+  );
+}
+
+// ─── TopBar with progress bar ─────────────────────────────────────────────────
+function LessonTopBar({ currentStep, totalSteps, onBack, tone = "light" }) {
+  const progress = (currentStep / totalSteps) * 100;
+  return (
+    <div
+      className={`modul7-lesson-topbar${tone === "dark" ? " modul7-lesson-topbar--dark" : ""}`}
+      data-node-id="329:1660"
+    >
+      <button
+        type="button"
+        className="modul7-lesson-back-btn"
+        onClick={onBack}
+        aria-label="Kembali"
+        data-node-id="339:2630"
+      >
+        <IconArrowLeft color={tone === "dark" ? "#FFFFFF" : "#243238"} />
+      </button>
+      <div className="modul7-lesson-progress-bar" data-node-id="329:1665">
+        <div className="modul7-lesson-progress-track" data-node-id="329:1666">
+          <div
+            className="modul7-lesson-progress-fill"
+            style={{ width: `${progress}%` }}
+            data-node-id="329:1667"
+          />
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ─── Page 1: Pernah nggak ngerasa... (Figma node 329:1659) ───────────────────
+function LessonPage1({ onNext, onBack }) {
+  return (
+    <div className="modul7-lesson-page" data-node-id="329:1659" data-name="Lesson-Hadapi Pertanyaan Menantang">
+      <LessonTopBar currentStep={1} totalSteps={TOTAL_LESSON_STEPS} onBack={onBack} />
+
+      <div className="modul7-lesson-content" data-node-id="329:1669">
+        <h2 className="modul7-lesson-heading" data-node-id="329:1670">
+          Pernah nggak ngerasa...
+        </h2>
+
+        <div className="modul7-cards-wrapper" data-node-id="329:1683">
+          {/* Card 1: Blank total */}
+          <div className="modul7-feeling-card" data-node-id="329:1684">
+            <div className="modul7-card-img-container" data-node-id="329:1685">
+              <img
+                src={imgBlankTotal}
+                alt="Blank total saat ditanya hal yang nggak kamu siapkan"
+                className="modul7-card-img"
+              />
+            </div>
+            <p className="modul7-card-text" data-node-id="329:1686">
+              Blank total saat ditanya hal yang nggak kamu siapkan?
+            </p>
+          </div>
+
+          {/* Card 2: Jawaban belibet */}
+          <div className="modul7-feeling-card" data-node-id="329:1687">
+            <div className="modul7-card-img-container" data-node-id="329:1688">
+              <img
+                src={imgPanik}
+                alt="Jawaban jadi belibet karena keburu panik"
+                className="modul7-card-img"
+              />
+            </div>
+            <p className="modul7-card-text" data-node-id="329:1689">
+              Jawaban jadi belibet karena keburu panik?
+            </p>
+          </div>
+
+          {/* Card 3: Takut nggak kompeten */}
+          <div className="modul7-feeling-card" data-node-id="329:1690">
+            <div className="modul7-card-img-container" data-node-id="329:1691">
+              <img
+                src={imgGakKompeten}
+                alt="Takut kelihatan nggak kompeten di depan orang lain"
+                className="modul7-card-img"
+              />
+            </div>
+            <p className="modul7-card-text" data-node-id="329:1692">
+              Takut kelihatan nggak kompeten di depan orang lain?
+            </p>
+          </div>
+        </div>
+      </div>
+
+      {/* Fixed bottom CTA Button */}
+      <div className="modul7-lesson-cta-wrapper">
+        <button
+          type="button"
+          className="btn-modul7-next"
+          onClick={onNext}
+          data-node-id="329:1680"
+        >
+          Lanjut
+        </button>
+      </div>
+    </div>
+  );
+}
+
+// ─── Page 2: Quotes / Mindset (Figma node 329:1710) ──────────────────────────
+function LessonPage2({ onNext, onBack }) {
+  return (
+    <div className="modul7-lesson-page modul7-lesson-page-2" data-node-id="329:1710" data-name="Lesson-Hadapi Pertanyaan Menantang">
+      <LessonTopBar currentStep={2} totalSteps={TOTAL_LESSON_STEPS} onBack={onBack} />
+
+      {/* Center Quotes Area */}
+      <div className="modul7-page2-content" data-node-id="329:1719">
+        <p className="modul7-page2-quote text-quotes" data-node-id="329:1720">
+          ”Menghadapi pertanyaan sulit bukan berarti kita harus jadi kamus berjalan. Tantangan sebenarnya adalah bagaimana kita tetap tenang saat otak dipaksa berpikir cepat di hadapan orang lain.”
+        </p>
+      </div>
+
+      {/* Bottom Mascot Illustration */}
+      <div className="modul7-page2-mascot-wrapper" data-node-id="331:1763">
+        <img
+          src={imgMascottQuotes}
+          alt="Mascot Quotes"
+          className="modul7-page2-mascot-img"
+        />
+      </div>
+
+      {/* Dual Bottom Buttons (Back pill + Lanjut pill) */}
+      <div className="modul7-page2-cta-wrapper" data-node-id="338:2221">
+        <button
+          type="button"
+          className="btn-modul7-round-back"
+          onClick={onBack}
+          aria-label="Kembali ke halaman sebelumnya"
+          data-node-id="338:2222"
+        >
+          <IconArrowLeft />
+        </button>
+        <button
+          type="button"
+          className="btn-modul7-next btn-modul7-next--flex"
+          onClick={onNext}
+          data-node-id="338:2227"
+        >
+          Lanjut
+        </button>
+      </div>
+    </div>
+  );
+}
+
+// ─── Dotted Arrow Connector ──────────────────────────────────────────────────
+const DottedArrow = () => (
+  <div className="modul7-arrow-divider" aria-hidden="true" data-node-id="332:1776">
+    <svg width="12" height="34" viewBox="0 0 12 34" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path
+        d="M6 0V26"
+        stroke="#243238"
+        strokeWidth="1.5"
+        strokeDasharray="2 3"
+        strokeLinecap="round"
+      />
+      <path
+        d="M2.5 23L6 28L9.5 23"
+        stroke="#243238"
+        strokeWidth="1.5"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
+  </div>
+);
+
+// ─── Page 3: Cognitive Restructuring (Figma node 329:1733) ───────────────────
+function LessonPage3({ onNext, onBack }) {
+  return (
+    <div className="modul7-lesson-page" data-node-id="329:1733" data-name="Lesson-Hadapi Pertanyaan Menantang">
+      <LessonTopBar currentStep={3} totalSteps={TOTAL_LESSON_STEPS} onBack={onBack} />
+
+      <div className="modul7-lesson-content modul7-page3-content" data-node-id="329:1742">
+        {/* Title Header */}
+        <div className="modul7-page3-header" data-node-id="334:1833">
+          <p className="modul7-page3-subtitle" data-node-id="334:1831">
+            Cognitive Restructuring
+          </p>
+          <h2 className="modul7-page3-title" data-node-id="329:1746">
+            Pikiran itu belum<br />tentu fakta
+          </h2>
+        </div>
+
+        {/* Cognitive Comparison Cards */}
+        <div className="modul7-page3-cards-container" data-node-id="332:1780">
+          {/* Dark Thought Card */}
+          <div className="modul7-thought-card-dark" data-node-id="329:1748">
+            <div className="modul7-brain-img-wrap" data-node-id="332:1774">
+              <img
+                src={imgBrain}
+                alt="Brain"
+                className="modul7-brain-img"
+              />
+            </div>
+            <p className="modul7-thought-text-dark" data-node-id="329:1754">
+              “Mereka pasti menilaiku buruk karena aku nggak bisa langsung menjawab pertanyaan ini.”
+            </p>
+          </div>
+
+          {/* Dotted Arrow Connector */}
+          <DottedArrow />
+
+          {/* Fact Card */}
+          <div className="modul7-fact-card-white" data-node-id="329:1756">
+            <h3 className="modul7-fact-card-label" data-node-id="332:1782">
+              Fakta Sebenarnya
+            </h3>
+            <p className="modul7-fact-card-text" data-node-id="329:1757">
+              “Orang lain paham ini pertanyaan sulit. Yang paling penting bukan kecepatan menjawab, tapi kemampuanku untuk tetap tenang dan fokus memprosesnya.”
+            </p>
+          </div>
+        </div>
+      </div>
+
+      {/* Dual Bottom Buttons */}
+      <div className="modul7-page2-cta-wrapper" data-node-id="338:2185">
+        <button
+          type="button"
+          className="btn-modul7-round-back"
+          onClick={onBack}
+          aria-label="Kembali ke halaman sebelumnya"
+          data-node-id="338:2186"
+        >
+          <IconArrowLeft />
+        </button>
+        <button
+          type="button"
+          className="btn-modul7-next btn-modul7-next--flex"
+          onClick={onNext}
+          data-node-id="338:2191"
+        >
+          Lanjut
+        </button>
+      </div>
+    </div>
+  );
+}
+
+// ─── Short Dotted Arrow Connector ───────────────────────────────────────────
+const DottedArrowShort = () => (
+  <div className="modul7-arrow-divider-short" aria-hidden="true">
+    <svg width="12" height="23" viewBox="0 0 12 23" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path
+        d="M6 0V15"
+        stroke="#243238"
+        strokeWidth="1.5"
+        strokeDasharray="2 3"
+        strokeLinecap="round"
+      />
+      <path
+        d="M2.5 12L6 17L9.5 12"
+        stroke="#243238"
+        strokeWidth="1.5"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
+  </div>
+);
+
+// ─── Page 4: Cognitive Defusion (Figma node 333:1784) ────────────────────────
+function LessonPage4({ onNext, onBack }) {
+  return (
+    <div className="modul7-lesson-page" data-node-id="333:1784" data-name="Lesson-Hadapi Pertanyaan Menantang">
+      <LessonTopBar currentStep={4} totalSteps={TOTAL_LESSON_STEPS} onBack={onBack} />
+
+      <div className="modul7-lesson-content modul7-page4-content" data-node-id="333:1793">
+        {/* Title Header */}
+        <div className="modul7-page4-header" data-node-id="334:1834">
+          <p className="modul7-page4-subtitle" data-node-id="334:1835">
+            Cognitive Defusion
+          </p>
+          <h2 className="modul7-page4-title" data-node-id="334:1836">
+            Kamu nggak harus<br />percaya tiap pikiran
+          </h2>
+        </div>
+
+        {/* Defusion Flow Container */}
+        <div className="modul7-page4-cards-container" data-node-id="333:1795">
+          {/* Dark Catastrophizing Thought Card */}
+          <div className="modul7-thought-card-dark" data-node-id="333:1796">
+            <div className="modul7-brain-img-wrap" data-node-id="333:1797">
+              <img
+                src={imgBrain}
+                alt="Brain"
+                className="modul7-brain-img"
+              />
+            </div>
+            <p className="modul7-thought-text-dark" data-node-id="333:1798">
+              “Gila, aku diam kelamaan pas ditanya. Habis sudah reputasiku, presentasiku pasti dianggap gagal total.”
+            </p>
+          </div>
+
+          {/* Arrow 1 */}
+          <DottedArrowShort />
+
+          {/* Center Action Tag */}
+          <p className="modul7-breath-tag" data-node-id="334:1811">
+            Ambil napas 🧘
+          </p>
+
+          {/* Arrow 2 */}
+          <DottedArrowShort />
+
+          {/* White Reframed Card */}
+          <div className="modul7-fact-card-white" data-node-id="333:1802">
+            <h3 className="modul7-fact-card-label" data-node-id="333:1803">
+              Ubah menjadi...
+            </h3>
+            <p className="modul7-fact-card-text" data-node-id="333:1804">
+              ”Aku sedang mengamati pikiranku yang lagi muterin skenario 'reputasiku hancur' hanya karena aku butuh waktu 5 detik untuk mikir.”
+            </p>
+          </div>
+        </div>
+      </div>
+
+      {/* Dual Bottom Buttons */}
+      <div className="modul7-page2-cta-wrapper" data-node-id="338:2230">
+        <button
+          type="button"
+          className="btn-modul7-round-back"
+          onClick={onBack}
+          aria-label="Kembali ke halaman sebelumnya"
+          data-node-id="338:2231"
+        >
+          <IconArrowLeft />
+        </button>
+        <button
+          type="button"
+          className="btn-modul7-next btn-modul7-next--flex"
+          onClick={onNext}
+          data-node-id="338:2236"
+        >
+          Lanjut
+        </button>
+      </div>
+    </div>
+  );
+}
+
+// ─── Page 5: Conclusion / Empowering Mindset (Figma node 334:1816) ───────────
+function LessonPage5({ onNext, onBack }) {
+  return (
+    <div className="modul7-lesson-page modul7-lesson-page-2" data-node-id="334:1816" data-name="Lesson-Hadapi Pertanyaan Menantang">
+      <LessonTopBar currentStep={5} totalSteps={TOTAL_LESSON_STEPS} onBack={onBack} />
+
+      {/* Center Quotes Area */}
+      <div className="modul7-page2-content" data-node-id="334:1825">
+        <p className="modul7-page2-quote text-quotes" data-node-id="334:1826">
+          ”Saat pertanyaan sulit datang, pikiranmu akan mencoba membunyikan alarm palsu. Uji faktanya atau beri jarak pada paniknya. Ingat: kamu adalah pengendali panggungmu, bukan tawanan dari pikiranmu sendiri.”
+        </p>
+      </div>
+
+      {/* Bottom Mascot Illustration */}
+      <div className="modul7-page2-mascot-wrapper" data-node-id="334:1827">
+        <img
+          src={imgMascottQuotes}
+          alt="Mascot Quotes"
+          className="modul7-page2-mascot-img"
+        />
+      </div>
+
+      {/* Dual Bottom Buttons */}
+      <div className="modul7-page2-cta-wrapper" data-node-id="338:2239">
+        <button
+          type="button"
+          className="btn-modul7-round-back"
+          onClick={onBack}
+          aria-label="Kembali ke halaman sebelumnya"
+          data-node-id="338:2240"
+        >
+          <IconArrowLeft />
+        </button>
+        <button
+          type="button"
+          className="btn-modul7-next btn-modul7-next--flex"
+          onClick={onNext}
+          data-node-id="338:2245"
+        >
+          Lanjut
+        </button>
+      </div>
+    </div>
+  );
+}
+
+// ─── Page 6: Teknik Merespons Kritik (Figma node 334:1838) ───────────────────
+function LessonPage6({ onNext, onBack }) {
+  return (
+    <div className="modul7-lesson-page" data-node-id="334:1838" data-name="Lesson-Hadapi Pertanyaan Menantang">
+      <LessonTopBar currentStep={6} totalSteps={TOTAL_LESSON_STEPS} onBack={onBack} />
+
+      <div className="modul7-lesson-content modul7-page6-content" data-node-id="334:1847">
+        {/* Title Header */}
+        <div className="modul7-page6-header" data-node-id="334:1848">
+          <p className="modul7-page6-subtitle" data-node-id="334:1849">
+            Teknik Merespons Kritik
+          </p>
+          <h2 className="modul7-page6-title" data-node-id="334:1850">
+            Formula 3 langkah:<br />
+            Empati → Titik Temu → Batas
+          </h2>
+        </div>
+
+        {/* 3 Step Cards */}
+        <div className="modul7-page6-cards-wrapper" data-node-id="334:1863">
+          {/* Card 1 */}
+          <div className="modul7-formula-card" data-node-id="334:1864">
+            <div className="modul7-formula-num-badge" data-node-id="334:1874">
+              1
+            </div>
+            <div className="modul7-formula-text-wrap" data-node-id="334:1883">
+              <p className="modul7-formula-card-title" data-node-id="334:1866">
+                Empati 🤝
+              </p>
+              <p className="modul7-formula-card-desc" data-node-id="334:1882">
+                "Aku ngerti kenapa itu jadi concern buat kamu."
+              </p>
+            </div>
+          </div>
+
+          {/* Card 2 */}
+          <div className="modul7-formula-card" data-node-id="334:1867">
+            <div className="modul7-formula-num-badge" data-node-id="334:1876">
+              2
+            </div>
+            <div className="modul7-formula-text-wrap" data-node-id="334:1885">
+              <p className="modul7-formula-card-title" data-node-id="334:1886">
+                Cari Titik Temu 🔎
+              </p>
+              <p className="modul7-formula-card-desc" data-node-id="334:1887">
+                "Ada bagian yang emang bisa aku perjelas lebih lanjut."
+              </p>
+            </div>
+          </div>
+
+          {/* Card 3 */}
+          <div className="modul7-formula-card" data-node-id="334:1870">
+            <div className="modul7-formula-num-badge" data-node-id="334:1879">
+              3
+            </div>
+            <div className="modul7-formula-text-wrap" data-node-id="334:1889">
+              <p className="modul7-formula-card-title" data-node-id="334:1890">
+                Sikap/Batas 🧭
+              </p>
+              <p className="modul7-formula-card-desc" data-node-id="334:1891">
+                "Tapi dari data yang aku punya, kesimpulannya tetap seperti ini."
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Dual Bottom Buttons */}
+      <div className="modul7-page2-cta-wrapper" data-node-id="338:2113">
+        <button
+          type="button"
+          className="btn-modul7-round-back"
+          onClick={onBack}
+          aria-label="Kembali ke halaman sebelumnya"
+          data-node-id="338:2248"
+        >
+          <IconArrowLeft />
+        </button>
+        <button
+          type="button"
+          className="btn-modul7-next btn-modul7-next--flex"
+          onClick={onNext}
+          data-node-id="338:2119"
+        >
+          Ayo Latihan
+        </button>
+      </div>
+    </div>
+  );
+}
+
+// ─── Page 7: Skenario Latihan — Hadapi Pertanyaan Menantang ──────────────────
+function PracticeIntro({ onNext, onBack }) {
+  return (
+    <div className="modul7-lesson-page modul7-dark-page" data-name="Practice-Skenario Latihan">
+      <LessonTopBar currentStep={7} totalSteps={TOTAL_LESSON_STEPS} onBack={onBack} tone="dark" />
+
+      <div className="modul7-lesson-content modul7-practice-intro-content">
+        <div className="modul7-practice-header">
+          <p className="modul7-practice-eyebrow">Skenario Latihan</p>
+          <h2 className="modul7-practice-title">
+            Hadapi Pertanyaan<br />Menantang
+          </h2>
+        </div>
+
+        <ol className="modul7-practice-steps">
+          {PRACTICE_FLOW_STEPS.map((label, index) => (
+            <li className="modul7-practice-step" key={label}>
+              <span className="modul7-practice-step-num">{index + 1}</span>
+              <span className="modul7-practice-step-label">{label}</span>
+            </li>
+          ))}
+        </ol>
+      </div>
+
+      <div className="modul7-page2-cta-wrapper">
+        <button
+          type="button"
+          className="btn-modul7-round-back btn-modul7-round-back--dark"
+          onClick={onBack}
+          aria-label="Kembali ke halaman sebelumnya"
+        >
+          <IconArrowLeft color="#FFFFFF" />
+        </button>
+        <button type="button" className="btn-modul7-next btn-modul7-next--flex" onClick={onNext}>
+          Aku Siap!
+        </button>
+      </div>
+    </div>
+  );
+}
+
+// ─── Page 8: Tema nya adalah — random topic reveal ───────────────────────────
+function PracticeTopic({ onNext, onBack }) {
+  const remaining = useCountdown(10, onNext);
+
+  return (
+    <div className="modul7-lesson-page modul7-dark-page" data-name="Practice-Tema">
+      <LessonTopBar currentStep={8} totalSteps={TOTAL_LESSON_STEPS} onBack={onBack} tone="dark" />
+
+      <div className="modul7-lesson-content modul7-practice-centered">
+        <p className="modul7-practice-eyebrow">Tema nya adalah</p>
+        <p className="modul7-practice-topic">{PRACTICE_TOPIC}</p>
+      </div>
+
+      <div className="modul7-page2-cta-wrapper modul7-cta-with-hint">
+        <p className="modul7-practice-autostart">Mulai otomatis dalam {remaining}</p>
+        <div className="modul7-cta-row">
+          <button
+            type="button"
+            className="btn-modul7-round-back btn-modul7-round-back--dark"
+            onClick={onBack}
+            aria-label="Kembali ke halaman sebelumnya"
+          >
+            <IconArrowLeft color="#FFFFFF" />
+          </button>
+          <button type="button" className="btn-modul7-next btn-modul7-next--flex" onClick={onNext}>
+            Mulai
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ─── Page 9: Waktu Persiapan — 2 minute prep with a quick outline ────────────
+function PracticePrep({ onNext, onBack }) {
+  const [outline, setOutline] = useState(["", "", ""]);
+  const remaining = useCountdown(120, onNext);
+
+  const updateOutline = (index, value) => {
+    setOutline((prev) => prev.map((item, i) => (i === index ? value : item)));
+  };
+
+  return (
+    <div className="modul7-lesson-page modul7-dark-page" data-name="Practice-Waktu Persiapan">
+      <LessonTopBar currentStep={9} totalSteps={TOTAL_LESSON_STEPS} onBack={onBack} tone="dark" />
+
+      <div className="modul7-lesson-content modul7-practice-prep-content">
+        <div className="modul7-practice-timer-bar">
+          <span className="modul7-practice-timer-label">Waktu Persiapan</span>
+          <span className="modul7-practice-timer-value">{formatClock(remaining)}</span>
+        </div>
+
+        <div className="modul7-practice-prompt">
+          <p className="modul7-practice-prompt-topic">{PRACTICE_TOPIC}</p>
+          <p className="modul7-practice-prompt-ask">Apa pendapatmu?</p>
+        </div>
+
+        <div className="modul7-outline-panel">
+          <div className="modul7-outline-header">
+            <span className="modul7-outline-title">Kerangka cepat</span>
+            <span className="modul7-outline-optional">Opsional</span>
+          </div>
+
+          {PRACTICE_OUTLINE_HINTS.map((hint, index) => (
+            <div className="modul7-outline-field" key={hint}>
+              <span className="modul7-outline-num">{index + 1}</span>
+              <textarea
+                className="modul7-outline-input"
+                placeholder={hint}
+                value={outline[index]}
+                onChange={(event) => updateOutline(index, event.target.value)}
+                rows={2}
+                aria-label={`Poin ${index + 1}`}
+              />
+            </div>
+          ))}
+        </div>
+      </div>
+
+      <div className="modul7-lesson-cta-wrapper modul7-lesson-cta-wrapper--dark">
+        <button type="button" className="btn-modul7-next" onClick={onNext}>
+          Mulai Bicara
+        </button>
+      </div>
+    </div>
+  );
+}
+
+// ─── Page 10: Sampaikan pendapatmu — 2 minute mini-presentation ──────────────
+function PracticeSpeak({ onNext, onBack }) {
+  const [attempt, setAttempt] = useState(0);
+  const [silent, setSilent] = useState(false);
+
+  if (silent) {
+    return (
+      <NoVoiceDetected
+        step={10}
+        onBack={onBack}
+        onRetry={() => {
+          setSilent(false);
+          setAttempt((a) => a + 1);
+        }}
+        onSkip={onNext}
+        skipLabel="Tidak tahu apa yang harus disampaikan"
+      />
+    );
+  }
+
+  return (
+    <PracticeSpeakRecording
+      key={attempt}
+      onBack={onBack}
+      onDone={(heard) => (heard ? onNext() : setSilent(true))}
+    />
+  );
+}
+
+function PracticeSpeakRecording({ onDone, onBack }) {
+  const detectedRef = useSpeechCapture(true);
+  const finish = () => onDone(detectedRef.current);
+  const remaining = useCountdown(120, finish);
+
+  return (
+    <div className="modul7-lesson-page modul7-dark-page" data-name="Practice-Sampaikan Pendapat">
+      <LessonTopBar currentStep={10} totalSteps={TOTAL_LESSON_STEPS} onBack={onBack} tone="dark" />
+
+      <div className="modul7-lesson-content modul7-practice-centered">
+        <h2 className="modul7-practice-speak-title">Sampaikan pendapatmu</h2>
+        <div className="modul7-practice-dial">{formatClock(remaining)}</div>
+        <VoiceWave />
+      </div>
+
+      <div className="modul7-lesson-cta-wrapper modul7-lesson-cta-wrapper--dark">
+        <button type="button" className="btn-modul7-stop" onClick={finish}>
+          Selesai Bicara
+        </button>
+      </div>
+    </div>
+  );
+}
+
+// ─── Page 11: Argumenmu sudah siap! — bridge into the Q&A ───────────────────
+function PracticeQaIntro({ onNext, onBack }) {
+  return (
+    <div className="modul7-lesson-page modul7-dark-page" data-name="Practice-Argumen Siap">
+      <LessonTopBar currentStep={11} totalSteps={TOTAL_LESSON_STEPS} onBack={onBack} tone="dark" />
+
+      <div className="modul7-lesson-content modul7-practice-bridge-content">
+        <img src={imgMascottSenyum} alt="" className="modul7-practice-bridge-img" />
+
+        <div className="modul7-practice-bridge-text">
+          <h2 className="modul7-practice-bridge-title">Argumenmu sudah siap!</h2>
+          <p className="modul7-practice-bridge-desc">
+            Sekarang, kita latihan mempertahankan pendapatmu saat ada orang yang bertanya.
+          </p>
+        </div>
+
+        <div className="modul7-practice-next-card">
+          <p className="modul7-practice-next-label">Selanjutnya</p>
+          <p className="modul7-practice-next-desc">
+            Kamu akan menjawab {PRACTICE_QUESTIONS.length} pertanyaan tentang pendapatmu.
+          </p>
+        </div>
+      </div>
+
+      <div className="modul7-lesson-cta-wrapper modul7-lesson-cta-wrapper--dark">
+        <button type="button" className="btn-modul7-next" onClick={onNext}>
+          Mulai Tanya Jawab
+        </button>
+      </div>
+    </div>
+  );
+}
+
+// ─── Pages 12 & 15: the challenging question, before answering ──────────────
+function PracticeQuestionCue({ step, questionIndex, onNext, onBack }) {
+  const remaining = useCountdown(15, onNext);
+
+  return (
+    <div className="modul7-lesson-page modul7-dark-page" data-name="Practice-Pertanyaan">
+      <LessonTopBar currentStep={step} totalSteps={TOTAL_LESSON_STEPS} onBack={onBack} tone="dark" />
+
+      <p className="modul7-practice-counter">
+        {questionIndex + 1}/{PRACTICE_QUESTIONS.length}
+      </p>
+
+      <div className="modul7-lesson-content modul7-practice-centered">
+        <p className="modul7-practice-eyebrow">Pertanyaan #{questionIndex + 1}</p>
+        <p className="modul7-practice-question">{PRACTICE_QUESTIONS[questionIndex]}</p>
+      </div>
+
+      <div className="modul7-lesson-cta-wrapper modul7-lesson-cta-wrapper--dark modul7-cta-with-hint">
+        <p className="modul7-practice-autostart">Mulai otomatis dalam {remaining}</p>
+        <button type="button" className="btn-modul7-next" onClick={onNext}>
+          Mulai Jawab
+        </button>
+      </div>
+    </div>
+  );
+}
+
+// ─── Pages 13 & 16: answering the question with a 1 minute timer ────────────
+function PracticeAnswer({ step, questionIndex, onNext, onBack }) {
+  const [attempt, setAttempt] = useState(0);
+  const [silent, setSilent] = useState(false);
+
+  if (silent) {
+    return (
+      <NoVoiceDetected
+        step={step}
+        questionIndex={questionIndex}
+        onBack={onBack}
+        onRetry={() => {
+          setSilent(false);
+          setAttempt((a) => a + 1);
+        }}
+        onSkip={onNext}
+        skipLabel="Aku tidak tahu jawabannya"
+      />
+    );
+  }
+
+  return (
+    <PracticeAnswerRecording
+      key={attempt}
+      step={step}
+      questionIndex={questionIndex}
+      onBack={onBack}
+      onDone={(heard) => (heard ? onNext() : setSilent(true))}
+    />
+  );
+}
+
+function PracticeAnswerRecording({ step, questionIndex, onDone, onBack }) {
+  const detectedRef = useSpeechCapture(true);
+  const finish = () => onDone(detectedRef.current);
+  const remaining = useCountdown(60, finish);
+
+  return (
+    <div className="modul7-lesson-page modul7-dark-page" data-name="Practice-Jawab Pertanyaan">
+      <LessonTopBar currentStep={step} totalSteps={TOTAL_LESSON_STEPS} onBack={onBack} tone="dark" />
+
+      <p className="modul7-practice-counter">
+        {questionIndex + 1}/{PRACTICE_QUESTIONS.length}
+      </p>
+
+      <div className="modul7-lesson-content modul7-practice-centered modul7-practice-answer-content">
+        <div className="modul7-practice-question-card">
+          <p className="modul7-practice-eyebrow">Pertanyaan #{questionIndex + 1}</p>
+          <p className="modul7-practice-question-sm">{PRACTICE_QUESTIONS[questionIndex]}</p>
+        </div>
+
+        <div className="modul7-practice-dial">{formatClock(remaining)}</div>
+        <VoiceWave />
+      </div>
+
+      <div className="modul7-lesson-cta-wrapper modul7-lesson-cta-wrapper--dark">
+        <button type="button" className="btn-modul7-stop" onClick={finish}>
+          Selesai Bicara
+        </button>
+      </div>
+    </div>
+  );
+}
+
+// ─── Page 14: Hebat, Tapi... — encouragement between the two questions ──────
+function PracticeInterlude({ onNext, onBack }) {
+  return (
+    <div className="modul7-lesson-page modul7-dark-page" data-name="Practice-Hebat Tapi">
+      <LessonTopBar currentStep={14} totalSteps={TOTAL_LESSON_STEPS} onBack={onBack} tone="dark" />
+
+      <p className="modul7-practice-counter">1/{PRACTICE_QUESTIONS.length}</p>
+
+      <div className="modul7-lesson-content modul7-practice-bridge-content">
+        <img src={imgMascottSenyum} alt="" className="modul7-practice-bridge-img" />
+
+        <div className="modul7-practice-bridge-text">
+          <h2 className="modul7-practice-bridge-title">Hebat, Tapi...</h2>
+          <p className="modul7-practice-bridge-desc">
+            Masih ada pertanyaan berikutnya, ayo kamu pasti bisa!
+          </p>
+        </div>
+      </div>
+
+      <div className="modul7-lesson-cta-wrapper modul7-lesson-cta-wrapper--dark">
+        <button type="button" className="btn-modul7-next" onClick={onNext}>
+          Lanjut, Aku Pasti Bisa!
+        </button>
+      </div>
+    </div>
+  );
+}
+
+// ─── Page 17: Keren! — practice cleared ─────────────────────────────────────
+function PracticeSuccess({ onNext, onBack }) {
+  return (
+    <div className="modul7-lesson-page" data-name="Practice-Keren">
+      <LessonTopBar currentStep={17} totalSteps={TOTAL_LESSON_STEPS} onBack={onBack} />
+
+      <div className="modul7-lesson-content modul7-practice-success-content">
+        <video
+          src={videoHappySpeaker}
+          autoPlay
+          muted
+          playsInline
+          className="modul7-practice-success-video"
+          aria-label="Animasi selamat"
+        />
+
+        <div className="modul7-practice-success-text">
+          <p className="modul7-practice-success-eyebrow">Keren!</p>
+          <h2 className="modul7-practice-success-title">
+            Kamu berhasil melewati pertanyaan sulit!
+          </h2>
+          <p className="modul7-practice-success-desc">
+            Kamu baru saja menghadapi pertanyaan yang belum kamu siapkan.
+          </p>
+        </div>
+      </div>
+
+      <div className="modul7-lesson-cta-wrapper">
+        <button type="button" className="btn-modul7-next" onClick={onNext}>
+          Selesaikan Pelajaran
+        </button>
+      </div>
+    </div>
+  );
+}
+
+// ─── AI analysis result — Mantap! Kamu keren! ───────────────────────────────
+function AnalysisChip({ label, tone }) {
+  return <span className={`modul7-analysis-chip modul7-analysis-chip--${tone}`}>{label}</span>;
+}
+
+function PracticeAnalysis({ result = PRACTICE_ANALYSIS, onFinish }) {
+  return (
+    <div className="modul7-lesson-page modul7-analysis-page" data-name="Practice-Hasil Analisis AI">
+      <div className="modul7-analysis-hero">
+        <img src={imgAnalysisHero} alt="" className="modul7-analysis-hero-img" />
+      </div>
+
+      <div className="modul7-analysis-body">
+        <div className="modul7-analysis-headline">
+          <p className="modul7-analysis-eyebrow">Mantap!</p>
+          <h2 className="modul7-analysis-title">Kamu keren!</h2>
+          <p className="modul7-analysis-subtitle">
+            Dengan latihan yang konsisten, kamu akan semakin mahir dan percaya diri dalam berbicara!
+          </p>
+        </div>
+
+        {result.scores.map((score) => (
+          <div className="modul7-analysis-card" key={score.id}>
+            <div className="modul7-analysis-card-top">
+              <div className="modul7-analysis-card-heading">
+                <img src={score.icon} alt="" className="modul7-analysis-icon" />
+                <p className="modul7-analysis-card-label">{score.label}</p>
+              </div>
+              <p className="modul7-analysis-score">
+                {score.value}
+                <span className="modul7-analysis-score-unit">{score.unit}</span>
+              </p>
+            </div>
+            <p className="modul7-analysis-note">{score.note}</p>
+            <AnalysisChip label={score.chip} tone={score.chipTone} />
+          </div>
+        ))}
+
+        <div className="modul7-analysis-grid">
+          {result.metrics.map((metric) => (
+            <div className="modul7-analysis-card modul7-analysis-card--sm" key={metric.id}>
+              <img src={metric.icon} alt="" className="modul7-analysis-icon" />
+              <p className="modul7-analysis-card-label">{metric.label}</p>
+              <p
+                className={`modul7-analysis-metric${
+                  metric.valueTone === "warn" ? " modul7-analysis-metric--warn" : ""
+                }`}
+              >
+                {metric.value}
+                <span className="modul7-analysis-metric-unit">{metric.unit}</span>
+              </p>
+              <AnalysisChip label={metric.chip} tone={metric.chipTone} />
+            </div>
+          ))}
+        </div>
+
+        <div className="modul7-analysis-card">
+          <div className="modul7-analysis-card-heading">
+            <img src={iconSpeed} alt="" className="modul7-analysis-icon" />
+            <p className="modul7-analysis-card-label">Feedback AI</p>
+          </div>
+          <p className="modul7-analysis-feedback">{result.feedback}</p>
+        </div>
+      </div>
+
+      <div className="modul7-lesson-cta-wrapper">
+        <button type="button" className="btn-modul7-next" onClick={onFinish}>
+          Lanjut
+        </button>
+      </div>
+    </div>
+  );
+}
+
+// ─── Completed Lesson Gain XP Screen ─────────────────────────────────────────
+function CompletedLesson({ onFinish, xpEarned = 95 }) {
+  const [displayedXP, setDisplayedXP] = useState(0);
+  const [isCounting, setIsCounting] = useState(false);
+  const [showButton, setShowButton] = useState(false);
+  const videoRef = useRef(null);
+
+  const handleVideoEnded = () => {
+    setIsCounting(true);
+    let current = 0;
+    const target = xpEarned;
+    const duration = 2000;
+    const stepTime = 20;
+    const increment = target / (duration / stepTime);
+
+    const timer = setInterval(() => {
+      current += increment;
+      if (current >= target) {
+        setDisplayedXP(target);
+        clearInterval(timer);
+        setIsCounting(false);
+        setTimeout(() => {
+          setShowButton(true);
+        }, 1000);
+      } else {
+        setDisplayedXP(Math.floor(current));
+      }
+    }, stepTime);
+  };
+
+  return (
+    <div className="lesson-completed-screen">
+      <div className="lesson-completed-content">
+        <div className="lesson-completed-video-wrap">
+          <video
+            ref={videoRef}
+            src={videoGainXP}
+            autoPlay
+            muted
+            playsInline
+            onEnded={handleVideoEnded}
+            className="lesson-completed-video"
+            aria-label="Animasi Perolehan XP"
+          />
+        </div>
+
+        <h2 className="lesson-completed-title">Pelajaran Selesai!</h2>
+
+        {displayedXP > 0 && (
+          <div className="lesson-completed-xp-block lesson-xp-appear">
+            <p className="lesson-completed-xp-subtitle">Kamu meraih</p>
+            <div className="lesson-completed-xp-amount-wrapper">
+              <div className={`lesson-sparkle-stars ${isCounting ? "active-sparkle" : "sparkle-stopped"}`}>
+                <span className="sparkle-star star-1">✦</span>
+                <span className="sparkle-star star-2">✨</span>
+                <span className="sparkle-star star-3">✧</span>
+                <span className="sparkle-star star-4">✦</span>
+                <span className="sparkle-star star-5">✨</span>
+                <span className="sparkle-star star-6">✧</span>
+              </div>
+              <p className="lesson-completed-xp-amount">
+                +{displayedXP} XP
+              </p>
+            </div>
+          </div>
+        )}
+      </div>
+
+      {showButton && (
+        <div className="lesson-cta-wrapper lesson-cta-appear">
+          <button
+            type="button"
+            className="btn-lesson-finish"
+            onClick={onFinish}
+          >
+            Tutup
+          </button>
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ─── Main Lesson 6 Modul 7 Screen ────────────────────────────────────────────
+export default function LessonModul7Screen({ onBack, onFinish }) {
+  // 1–6 = teori, 7–17 = latihan, lalu XP dan hasil analisis AI.
+  const [step, setStep] = useState(1);
+
+  const goNext = () => {
+    setStep((prev) => {
+      if (prev === 17) return "completed";
+      if (prev === "completed") return "analysis";
+      if (prev === "analysis") {
+        onFinish?.();
+        return "analysis";
+      }
+      return prev + 1;
+    });
+  };
+
+  const goPrev = () => {
+    setStep((prev) => {
+      if (prev === 1) {
+        onBack?.();
+        return 1;
+      }
+      if (prev === "analysis") return "completed";
+      if (prev === "completed") return 17;
+      return prev - 1;
+    });
+  };
+
+  return (
+    <div className="modul7-lesson-screen">
+      {step === 1 && <LessonPage1 onNext={goNext} onBack={goPrev} />}
+      {step === 2 && <LessonPage2 onNext={goNext} onBack={goPrev} />}
+      {step === 3 && <LessonPage3 onNext={goNext} onBack={goPrev} />}
+      {step === 4 && <LessonPage4 onNext={goNext} onBack={goPrev} />}
+      {step === 5 && <LessonPage5 onNext={goNext} onBack={goPrev} />}
+      {step === 6 && <LessonPage6 onNext={goNext} onBack={goPrev} />}
+      {step === 7 && <PracticeIntro onNext={goNext} onBack={goPrev} />}
+      {step === 8 && <PracticeTopic onNext={goNext} onBack={goPrev} />}
+      {step === 9 && <PracticePrep onNext={goNext} onBack={goPrev} />}
+      {step === 10 && <PracticeSpeak onNext={goNext} onBack={goPrev} />}
+      {step === 11 && <PracticeQaIntro onNext={goNext} onBack={goPrev} />}
+      {step === 12 && (
+        <PracticeQuestionCue step={12} questionIndex={0} onNext={goNext} onBack={goPrev} />
+      )}
+      {step === 13 && (
+        <PracticeAnswer step={13} questionIndex={0} onNext={goNext} onBack={goPrev} />
+      )}
+      {step === 14 && <PracticeInterlude onNext={goNext} onBack={goPrev} />}
+      {step === 15 && (
+        <PracticeQuestionCue step={15} questionIndex={1} onNext={goNext} onBack={goPrev} />
+      )}
+      {step === 16 && (
+        <PracticeAnswer step={16} questionIndex={1} onNext={goNext} onBack={goPrev} />
+      )}
+      {step === 17 && <PracticeSuccess onNext={goNext} onBack={goPrev} />}
+      {step === "completed" && <CompletedLesson onFinish={goNext} />}
+      {step === "analysis" && <PracticeAnalysis onFinish={onFinish} />}
+    </div>
+  );
+}
