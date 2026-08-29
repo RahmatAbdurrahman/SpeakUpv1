@@ -1,5 +1,16 @@
 import React, { useState, useRef, useEffect } from "react";
 import "./LessonModul7Screen.css";
+import { supabase } from "../lib/supabaseClient";
+import {
+  createSimulation,
+  createSessionRow,
+  uploadSessionAudio,
+  updateSessionAudio,
+  runAnalysis,
+  fetchSessionResults,
+  markSimulationCompleted,
+  friendlySimulasiError,
+} from "../lib/simulasi";
 
 // ─── Assets for Modul 7 Lesson 6 ─────────────────────────────────────────────
 import imgBlankTotal from "../assets/pages_assets/lessons/lesson-6-modul7/Image-BlankTotal.png";
@@ -43,8 +54,9 @@ const PRACTICE_QUESTIONS = [
   "“Bagaimana kalau musik memang membuatmu sanggup belajar lebih lama, tetapi hasil akhirnya tidak lebih baik—misalnya kamu menghabiskan waktu dua jam, tetapi lebih sedikit materi yang benar-benar kamu ingat? Mana yang seharusnya menjadi ukuran fokus: durasi belajar atau kualitas pemahaman?”",
 ];
 
-// Sample result shown on the AI analysis screen. Replace with real scoring
-// once the speech analysis backend is wired to this lesson.
+// Fallback shown only if the real analyze-session/generate-feedback call
+// fails (or the mic couldn't be captured) and the user chooses to skip
+// past the error instead of retrying — see AnalysisErrorScreen below.
 const PRACTICE_ANALYSIS = {
   scores: [
     {
@@ -111,6 +123,89 @@ const PRACTICE_ANALYSIS = {
   feedback:
     "Kamu sudah menjawab pertanyaan dengan relevan dan menyampaikan argumen yang cukup kuat. Fokus berikutnya: Kurangi kata pengisi saat berpindah dari satu alasan ke alasan berikutnya.",
 };
+
+// Maps the real { metrics, feedback } rows from analyze-session +
+// generate-feedback (fetchSessionResults) onto the shape PracticeAnalysis
+// already renders. Same fields SimulasiScreen's ResultsStep reads: filler
+// word count / pace from simulation_metrics, sub_scores from
+// simulation_feedback (fluency, intonasi, kesesuaian_materi, skor).
+function mapSessionResultToAnalysis({ metrics, feedback } = {}) {
+  const sub = feedback?.sub_scores || {};
+  const skor = feedback?.skor ?? null;
+  const kesesuaian = sub.kesesuaian_materi ?? null;
+  const fluency = sub.fluency ?? null;
+  const intonasi = sub.intonasi ?? null;
+  const fillerCount = metrics?.filler_word_count ?? null;
+  const paceWpm = metrics?.pace_wpm != null ? Math.round(metrics.pace_wpm) : null;
+  const good = (v) => v != null && v >= 70;
+
+  return {
+    scores: [
+      {
+        id: "argumen",
+        icon: iconSpeed,
+        label: "Argumen",
+        value: skor ?? "–",
+        unit: skor != null ? "/ 100" : "",
+        note: feedback?.saran?.[0] || "Terus asah caramu menyusun argumen.",
+        chip: good(skor) ? "Kuat" : "Perlu Latihan",
+        chipTone: good(skor) ? "good" : "warn",
+      },
+      {
+        id: "relevansi",
+        icon: iconSpeed,
+        label: "Relevansi",
+        value: kesesuaian ?? "–",
+        unit: kesesuaian != null ? "/ 100" : "",
+        note: feedback?.saran?.[1] || "Pastikan jawabanmu tetap nyambung ke pertanyaan.",
+        chip: good(kesesuaian) ? "Relevan" : "Perlu Latihan",
+        chipTone: good(kesesuaian) ? "good" : "warn",
+      },
+    ],
+    metrics: [
+      {
+        id: "kata-pengisi",
+        icon: iconQuote,
+        label: "Kata Pengisi",
+        value: fillerCount ?? "–",
+        unit: "Kali",
+        chip: fillerCount != null && fillerCount <= 10 ? "Terkendali" : "Perlu Latihan",
+        chipTone: fillerCount != null && fillerCount <= 10 ? "good" : "warn",
+        valueTone: fillerCount != null && fillerCount <= 10 ? undefined : "warn",
+      },
+      {
+        id: "kecepatan",
+        icon: iconSpeed,
+        label: "Kecepatan",
+        value: paceWpm ?? "–",
+        unit: "wpm",
+        chip: paceWpm != null && paceWpm >= 110 && paceWpm <= 160 ? "Stabil" : "Perlu Latihan",
+        chipTone: paceWpm != null && paceWpm >= 110 && paceWpm <= 160 ? "good" : "warn",
+      },
+      {
+        id: "kejelasan",
+        icon: iconMouth,
+        label: "Kejelasan",
+        value: fluency ?? "–",
+        unit: fluency != null ? "/ 100" : "",
+        chip: good(fluency) ? "Baik" : "Perlu Latihan",
+        chipTone: good(fluency) ? "good" : "warn",
+      },
+      {
+        id: "energi",
+        icon: iconFlash,
+        label: "Energi & Intonasi",
+        value: intonasi ?? "–",
+        unit: intonasi != null ? "/ 100" : "",
+        chip: good(intonasi) ? "Baik" : "Perlu Latihan",
+        chipTone: good(intonasi) ? "good" : "warn",
+      },
+    ],
+    feedback:
+      [feedback?.motivasi, ...(feedback?.saran || []).slice(0, 2)].filter(Boolean).join(" ") ||
+      "Kerja bagus! Terus berlatih supaya makin percaya diri.",
+  };
+}
 
 // Every page of the lesson, in order — used to drive the progress bar.
 const TOTAL_LESSON_STEPS = 17;
@@ -1107,6 +1202,43 @@ function PracticeSuccess({ onNext, onBack }) {
   );
 }
 
+// ─── Shown while analyze-session + generate-feedback are running for real ──
+function AnalyzingScreen() {
+  return (
+    <div className="modul7-lesson-page modul7-dark-page modul7-analyzing-page" data-name="Practice-Menganalisis">
+      <div className="modul7-analyzing-spinner" />
+      <p className="modul7-analyzing-title">Menganalisis rekamanmu...</p>
+      <p className="modul7-analyzing-sub">
+        AI kami lagi dengerin jawabanmu, biasanya cuma beberapa detik. Jangan tutup halaman ini.
+      </p>
+    </div>
+  );
+}
+
+// ─── Shown when the real analysis call fails (quota/overload/timeout) ──────
+function AnalysisErrorScreen({ message, onRetry, onSkip }) {
+  return (
+    <div className="modul7-lesson-page modul7-dark-page" data-name="Practice-Analisis Gagal">
+      <div className="modul7-lesson-content modul7-practice-bridge-content">
+        <img src={imgMascottKhawatir} alt="" className="modul7-practice-bridge-img" />
+        <div className="modul7-practice-bridge-text">
+          <h2 className="modul7-practice-bridge-title">Analisis belum berhasil</h2>
+          <p className="modul7-practice-bridge-desc">{message}</p>
+        </div>
+      </div>
+
+      <div className="modul7-lesson-cta-wrapper modul7-lesson-cta-wrapper--dark modul7-cta-with-hint">
+        <button type="button" className="btn-modul7-next" onClick={onRetry}>
+          Coba Lagi
+        </button>
+        <button type="button" className="modul7-novoice-skip" onClick={onSkip}>
+          Lewati, lihat contoh hasil
+        </button>
+      </div>
+    </div>
+  );
+}
+
 // ─── AI analysis result — Mantap! Kamu keren! ───────────────────────────────
 function AnalysisChip({ label, tone }) {
   return <span className={`modul7-analysis-chip modul7-analysis-chip--${tone}`}>{label}</span>;
@@ -1268,11 +1400,118 @@ function CompletedLesson({ onFinish, xpEarned = 95 }) {
 export default function LessonModul7Screen({ onBack, onFinish }) {
   // 1–6 = teori, 7–17 = latihan, lalu XP dan hasil analisis AI.
   const [step, setStep] = useState(1);
+  const [analysisResult, setAnalysisResult] = useState(null);
+  const [analysisError, setAnalysisError] = useState("");
+
+  // Real audio capture spans the whole practice section (step 10, "Sampaikan
+  // pendapatmu", through step 16, the second Q&A answer) as ONE continuous
+  // recording — analyze-session expects a single audio file per session,
+  // same as SimulasiScreen's RecordingStep. useSpeechCapture() on the
+  // individual practice screens is untouched; it only gates the "no voice
+  // detected" retry UX and runs off its own separate mic stream.
+  const streamRef = useRef(null);
+  const recorderRef = useRef(null);
+  const chunksRef = useRef([]);
+  const recordingStartRef = useRef(null);
+  const audioResultRef = useRef(null);
+
+  useEffect(() => {
+    if (step !== 10 || recorderRef.current) return;
+    let cancelled = false;
+    (async () => {
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        if (cancelled) {
+          stream.getTracks().forEach((t) => t.stop());
+          return;
+        }
+        streamRef.current = stream;
+        const mimeType = window.MediaRecorder?.isTypeSupported?.("audio/webm") ? "audio/webm" : "";
+        const recorder = mimeType ? new MediaRecorder(stream, { mimeType }) : new MediaRecorder(stream);
+        chunksRef.current = [];
+        recorder.ondataavailable = (e) => {
+          if (e.data.size > 0) chunksRef.current.push(e.data);
+        };
+        recordingStartRef.current = Date.now();
+        recorder.start();
+        recorderRef.current = recorder;
+      } catch {
+        // Mic unavailable for real capture — submitForAnalysis() below
+        // surfaces this as "rekaman tidak ditemukan" instead of silently
+        // faking a result. The practice flow itself still works fine since
+        // useSpeechCapture() opens its own independent stream.
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [step]);
+
+  useEffect(() => {
+    if (step !== 17 || !recorderRef.current || recorderRef.current.state === "inactive") return;
+    const recorder = recorderRef.current;
+    const durationSeconds = Math.max(1, Math.round((Date.now() - recordingStartRef.current) / 1000));
+    recorder.onstop = () => {
+      audioResultRef.current = {
+        blob: new Blob(chunksRef.current, { type: recorder.mimeType || "audio/webm" }),
+        durationSeconds,
+      };
+      streamRef.current?.getTracks().forEach((t) => t.stop());
+    };
+    recorder.stop();
+  }, [step]);
+
+  // Stop the mic if the user backs out of the lesson mid-practice.
+  useEffect(() => {
+    return () => {
+      if (recorderRef.current && recorderRef.current.state !== "inactive") recorderRef.current.stop();
+      streamRef.current?.getTracks().forEach((t) => t.stop());
+    };
+  }, []);
+
+  const submitForAnalysis = async () => {
+    const recorded = audioResultRef.current;
+    if (!recorded?.blob) {
+      setAnalysisError("Rekaman latihan tidak ditemukan. Pastikan mikrofon diizinkan, lalu ulangi latihannya.");
+      setStep("analysis-error");
+      return;
+    }
+    setAnalysisError("");
+    setStep("analyzing");
+    try {
+      const {
+        data: { user },
+        error: userErr,
+      } = await supabase.auth.getUser();
+      if (userErr || !user) throw new Error("Sesi login tidak ditemukan, coba masuk ulang.");
+
+      // "spontan": no upload materials, matches this lesson's flow (fixed
+      // lesson questions, no PDF/CV step) — same DB-level kategori enum
+      // SimulasiScreen uses for its Spontaneous scenario.
+      const simulation = await createSimulation(user.id, "spontan");
+      const sessionId = crypto.randomUUID();
+      await createSessionRow({ id: sessionId, simulationId: simulation.id });
+      const audioPath = await uploadSessionAudio(user.id, sessionId, recorded.blob);
+      await updateSessionAudio(sessionId, audioPath);
+      await runAnalysis({ sessionId, audioPath, durationSeconds: recorded.durationSeconds });
+      const data = await fetchSessionResults(sessionId);
+      await markSimulationCompleted(simulation.id);
+
+      setAnalysisResult(mapSessionResultToAnalysis(data));
+      setStep("analysis");
+    } catch (err) {
+      setAnalysisError(friendlySimulasiError(err));
+      setStep("analysis-error");
+    }
+  };
 
   const goNext = () => {
     setStep((prev) => {
       if (prev === 17) return "completed";
-      if (prev === "completed") return "analysis";
+      if (prev === "completed") {
+        submitForAnalysis();
+        return "analyzing";
+      }
       if (prev === "analysis") {
         onFinish?.();
         return "analysis";
@@ -1321,7 +1560,18 @@ export default function LessonModul7Screen({ onBack, onFinish }) {
       )}
       {step === 17 && <PracticeSuccess onNext={goNext} onBack={goPrev} />}
       {step === "completed" && <CompletedLesson onFinish={goNext} />}
-      {step === "analysis" && <PracticeAnalysis onFinish={onFinish} />}
+      {step === "analyzing" && <AnalyzingScreen />}
+      {step === "analysis-error" && (
+        <AnalysisErrorScreen
+          message={analysisError}
+          onRetry={submitForAnalysis}
+          onSkip={() => {
+            setAnalysisResult(null);
+            setStep("analysis");
+          }}
+        />
+      )}
+      {step === "analysis" && <PracticeAnalysis result={analysisResult ?? PRACTICE_ANALYSIS} onFinish={onFinish} />}
     </div>
   );
 }

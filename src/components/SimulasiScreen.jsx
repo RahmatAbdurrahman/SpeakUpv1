@@ -285,6 +285,62 @@ function PrepStep({ scenario, notes, error, questionsLoading = false, onBack, on
   );
 }
 
+// Below this, an ended recording is treated as "belum selesai" rather than a
+// real finish — accidental/rushed stops shouldn't get scored the same as a
+// deliberate one. Tune here if it turns out to be too strict/lenient.
+const MIN_RECORDING_SECONDS = 15;
+// Mic energy above this (0-255 byte-frequency average) counts as "someone
+// said something" — same heuristic LessonModul7Screen's useSpeechCapture uses.
+const SILENCE_THRESHOLD = 12;
+
+// ─── Popup shown when a recording is stopped too early or in total silence.
+// Pauses (never stops) the recorder underneath so "Lanjutkan"/"Ulangi" can
+// pick back up without a fresh mic-permission prompt. ─────────────────────
+function RecordingGateModal({ variant, secondsElapsed, onResume, onRestart, onAbandon }) {
+  if (variant === "silent") {
+    return (
+      <div className="simulasi-gate-backdrop">
+        <div className="simulasi-gate-sheet">
+          <h2 className="simulasi-gate-title">Sepertinya kamu belum ngomong sama sekali</h2>
+          <p className="simulasi-gate-desc">
+            Mikrofon nggak mendeteksi suara selama rekaman ini, jadi belum bisa dianalisis. Coba ulangi dan pastikan mikrofon aktif.
+          </p>
+          <div className="simulasi-gate-actions">
+            <button type="button" className="btn-simulasi-lanjut" onClick={onRestart}>
+              Ulangi Rekaman
+            </button>
+            <button type="button" className="btn-simulasi-gate-ghost" onClick={onAbandon}>
+              Batal, pilih latihan lain
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="simulasi-gate-backdrop">
+      <div className="simulasi-gate-sheet">
+        <h2 className="simulasi-gate-title">Sesi kamu belum selesai</h2>
+        <p className="simulasi-gate-desc">
+          Baru {secondsElapsed} detik terekam — hasil analisisnya bisa kurang akurat kalau dipotong sekarang. Mau gimana?
+        </p>
+        <div className="simulasi-gate-actions">
+          <button type="button" className="btn-simulasi-lanjut" onClick={onResume}>
+            Lanjutkan Rekaman
+          </button>
+          <button type="button" className="btn-simulasi-gate-secondary" onClick={onRestart}>
+            Ulangi dari Awal
+          </button>
+          <button type="button" className="btn-simulasi-gate-ghost" onClick={onAbandon}>
+            Langsung ke Sesi Berikutnya
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 // ─── Recording step ─────────────────────────────────────────────────────────
 // `questions` non-empty = mode wawancara: satu rekaman berjalan terus, tapi
 // pertanyaan berganti satu per satu di layar (tanya-jawab bergantian), dan
@@ -292,7 +348,7 @@ function PrepStep({ scenario, notes, error, questionsLoading = false, onBack, on
 // TIDAK dipotong per pertanyaan supaya analyze-session tetap menerima satu file
 // audio utuh seperti kategori lain — transkrip lengkapnya sudah memuat semua
 // jawaban, jadi tidak perlu menggabung blob webm di sisi client.
-function RecordingStep({ scenario, cheatSheet, questions = [], onBack, onFinish }) {
+function RecordingStep({ scenario, cheatSheet, questions = [], onBack, onFinish, onAbandon }) {
   const videoRef = useRef(null);
   const [stream, setStream] = useState(null);
   const [camError, setCamError] = useState(null);
@@ -300,6 +356,8 @@ function RecordingStep({ scenario, cheatSheet, questions = [], onBack, onFinish 
   const [seconds, setSeconds] = useState(0);
   const [showCheatSheet, setShowCheatSheet] = useState(false);
   const [qIndex, setQIndex] = useState(0);
+  // null | "silent" | "incomplete" — see attemptFinish() below.
+  const [gate, setGate] = useState(null);
   const isInterview = questions.length > 0;
   const isLastQuestion = qIndex >= questions.length - 1;
   const mediaRecorderRef = useRef(null);
@@ -308,6 +366,7 @@ function RecordingStep({ scenario, cheatSheet, questions = [], onBack, onFinish 
   // recorder.onstop is a closure created once at recorder-start time, so it
   // would otherwise see a stale `seconds` (0) — a ref always has the latest.
   const secondsRef = useRef(0);
+  const detectedSpeechRef = useRef(false);
 
   useEffect(() => {
     let active = true;
@@ -340,18 +399,59 @@ function RecordingStep({ scenario, cheatSheet, questions = [], onBack, onFinish 
     if (videoRef.current && stream) videoRef.current.srcObject = stream;
   }, [stream]);
 
-  const handleToggle = () => {
-    if (isRecording) {
-      clearInterval(timerRef.current);
-      setIsRecording(false);
-      if (mediaRecorderRef.current && mediaRecorderRef.current.state !== "inactive") {
-        mediaRecorderRef.current.stop();
-      }
-      return;
+  // Listens to the mic the whole time the stream is live and flags whether
+  // any speech-level volume was ever heard — attemptFinish() below reads
+  // this ref (not state, so no re-renders) to decide whether to show the
+  // "belum ngomong apa-apa" gate. Runs off the SAME audio track the
+  // recorder itself uses, so no second getUserMedia prompt is needed.
+  useEffect(() => {
+    if (!stream) return undefined;
+    const audioTracks = stream.getAudioTracks();
+    if (audioTracks.length === 0) return undefined;
+
+    let rafId;
+    let audioCtx;
+    try {
+      audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      const analyser = audioCtx.createAnalyser();
+      analyser.fftSize = 512;
+      audioCtx.createMediaStreamSource(new MediaStream(audioTracks)).connect(analyser);
+      const data = new Uint8Array(analyser.frequencyBinCount);
+      const tick = () => {
+        analyser.getByteFrequencyData(data);
+        let sum = 0;
+        for (let i = 0; i < data.length; i++) sum += data[i];
+        if (sum / data.length > SILENCE_THRESHOLD) detectedSpeechRef.current = true;
+        rafId = requestAnimationFrame(tick);
+      };
+      tick();
+    } catch {
+      // No AudioContext support in this browser — treat as "detected" so we
+      // never falsely block a real recording client-side. analyze-session's
+      // own transcript-length check is the authoritative backstop either way.
+      detectedSpeechRef.current = true;
     }
 
+    return () => {
+      if (rafId) cancelAnimationFrame(rafId);
+      audioCtx?.close?.().catch(() => {});
+    };
+  }, [stream]);
+
+  const startTimer = () => {
+    timerRef.current = setInterval(() => {
+      setSeconds((s) => {
+        const next = s + 1;
+        secondsRef.current = next;
+        return next;
+      });
+    }, 1000);
+  };
+
+  const startRecording = () => {
     if (!stream) return;
     chunksRef.current = [];
+    detectedSpeechRef.current = false;
     // analyze-session only wants audio, so record just the audio track even
     // though the preview above shows the full video+audio stream.
     const audioOnlyStream = new MediaStream(stream.getAudioTracks());
@@ -369,15 +469,67 @@ function RecordingStep({ scenario, cheatSheet, questions = [], onBack, onFinish 
     mediaRecorderRef.current = recorder;
     recorder.start();
     setIsRecording(true);
+    setGate(null);
     setSeconds(0);
     secondsRef.current = 0;
-    timerRef.current = setInterval(() => {
-      setSeconds((s) => {
-        const next = s + 1;
-        secondsRef.current = next;
-        return next;
-      });
-    }, 1000);
+    startTimer();
+  };
+
+  // Gate before finalizing a recording: silence -> nothing to analyse at
+  // all; too short -> probably an accidental/rushed stop. Both PAUSE the
+  // recorder (not stop it) so "Lanjutkan" can resume the same take.
+  const attemptFinish = () => {
+    const recorder = mediaRecorderRef.current;
+    if (!recorder || recorder.state === "inactive") return;
+    clearInterval(timerRef.current);
+
+    if (!detectedSpeechRef.current) {
+      recorder.pause();
+      setGate("silent");
+      return;
+    }
+    if (secondsRef.current < MIN_RECORDING_SECONDS) {
+      recorder.pause();
+      setGate("incomplete");
+      return;
+    }
+    setIsRecording(false);
+    recorder.stop();
+  };
+
+  const handleToggle = () => {
+    if (isRecording) {
+      attemptFinish();
+      return;
+    }
+    startRecording();
+  };
+
+  const handleGateResume = () => {
+    mediaRecorderRef.current?.resume();
+    setGate(null);
+    startTimer();
+  };
+
+  const handleGateRestart = () => {
+    const recorder = mediaRecorderRef.current;
+    if (recorder && recorder.state !== "inactive") {
+      recorder.onstop = null; // discard — don't fire the stale onFinish
+      recorder.stop();
+    }
+    if (isInterview) setQIndex(0);
+    startRecording();
+  };
+
+  const handleGateAbandon = () => {
+    const recorder = mediaRecorderRef.current;
+    if (recorder && recorder.state !== "inactive") {
+      recorder.onstop = null;
+      recorder.stop();
+    }
+    stream?.getTracks().forEach((t) => t.stop());
+    setGate(null);
+    onAbandon?.();
   };
 
   const formatTime = (s) => {
@@ -388,6 +540,16 @@ function RecordingStep({ scenario, cheatSheet, questions = [], onBack, onFinish 
 
   return (
     <div className="simulasi-recording-screen">
+      {gate && (
+        <RecordingGateModal
+          variant={gate}
+          secondsElapsed={seconds}
+          onResume={handleGateResume}
+          onRestart={handleGateRestart}
+          onAbandon={handleGateAbandon}
+        />
+      )}
+
       <header className="simulasi-recording-topbar">
         <button type="button" className="simulasi-back-btn" onClick={onBack} aria-label="Kembali">
           <img src={arrowLeftIcon} alt="" className="simulasi-back-icon" />
@@ -799,6 +961,7 @@ export default function SimulasiScreen({ onNavigateHome, onNavigateSosial, onNav
         questions={scenario.kategori === "interview" ? questions : []}
         onBack={() => setStep(scenario.needsUpload ? "prep" : "topic")}
         onFinish={handleRecordingFinished}
+        onAbandon={resetToPicker}
       />
     );
   }
