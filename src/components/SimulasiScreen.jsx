@@ -5,6 +5,14 @@ import iconNavHome from "../assets/pages_assets/bottom-nav-icons/Home.svg";
 import iconNavMic from "../assets/pages_assets/bottom-nav-icons/Mic.svg";
 import iconNavUser from "../assets/pages_assets/bottom-nav-icons/User.svg";
 import iconNavGroup from "../assets/pages_assets/practice/icon_group.svg";
+import imgAnalysisHero from "../assets/pages_assets/ai_analysis/analysis_hero.png";
+import iconArgument from "../assets/pages_assets/ai_analysis/Icons/Argument-Icon.svg";
+import iconRelevance from "../assets/pages_assets/ai_analysis/Icons/Relevance-Icon.svg";
+import iconSpeed from "../assets/pages_assets/ai_analysis/Icons/Speed-Icon.svg";
+import iconQuote from "../assets/pages_assets/ai_analysis/Icons/Quote-Icon.svg";
+import iconMouth from "../assets/pages_assets/ai_analysis/Icons/Mouth-Icon.svg";
+import iconFlash from "../assets/pages_assets/ai_analysis/Icons/Flash-Icon.svg";
+import iconAI from "../assets/pages_assets/ai_analysis/Icons/AI.svg";
 import { supabase } from "../lib/supabaseClient";
 import {
   SCENARIOS,
@@ -666,7 +674,11 @@ function RecordingStep({ scenario, cheatSheet, questions = [], onBack, onFinish,
   );
 }
 
-// ─── Results step ───────────────────────────────────────────────────────────
+// ─── Results step (AI Analysis UI aligned with Lesson 6) ───────────────────
+function SimulasiAnalysisChip({ label, tone }) {
+  return <span className={`simulasi-analysis-chip simulasi-analysis-chip--${tone}`}>{label}</span>;
+}
+
 function ResultsStep({ results, onDone, canGoLive, onGoLive }) {
   const metrics = results?.metrics;
   const feedback = results?.feedback;
@@ -685,53 +697,150 @@ function ResultsStep({ results, onDone, canGoLive, onGoLive }) {
     }
   };
 
+  const argScore = sub.argumentasi ?? sub.kesesuaian_materi ?? (feedback?.skor ? Math.round(feedback.skor) : 88);
+  const relScore = sub.relevansi ?? sub.kesesuaian_materi ?? sub.fluency ?? 88;
+  const fillerCount = metrics?.filler_word_count != null ? metrics.filler_word_count : 0;
+  const paceWpm = metrics?.pace_wpm != null ? Math.round(metrics.pace_wpm) : 140;
+  const clarityScore = sub.fluency ?? 88;
+  const energyScore = sub.intonasi ?? 80;
+
+  const scores = [
+    {
+      id: "argumentasi",
+      icon: iconArgument,
+      label: "Argumentasi",
+      value: argScore,
+      unit: "/ 100",
+      note: "Gagasan terstruktur dan didukung alasan yang logis.",
+      chip: argScore >= 75 ? "Kuat" : "Perlu Latihan",
+      chipTone: argScore >= 75 ? "good" : "warn",
+    },
+    {
+      id: "relevansi",
+      icon: iconRelevance,
+      label: "Relevansi",
+      value: relScore,
+      unit: "/ 100",
+      note: "Penyampaian selaras dengan topik dan konteks yang dibahas.",
+      chip: relScore >= 75 ? "Relevan" : "Perlu Latihan",
+      chipTone: relScore >= 75 ? "good" : "warn",
+    },
+  ];
+
+  const gridMetrics = [
+    {
+      id: "kata-pengisi",
+      icon: iconQuote,
+      label: "Kata Pengisi",
+      value: fillerCount,
+      unit: "Kali",
+      chip: fillerCount <= 5 ? "Stabil" : "Perlu Latihan",
+      chipTone: fillerCount <= 5 ? "good" : "warn",
+      valueTone: fillerCount <= 5 ? "good" : "warn",
+    },
+    {
+      id: "kecepatan",
+      icon: iconSpeed,
+      label: "Kecepatan",
+      value: paceWpm,
+      unit: "wpm",
+      chip: paceWpm >= 110 && paceWpm <= 165 ? "Stabil" : "Perlu Latihan",
+      chipTone: paceWpm >= 110 && paceWpm <= 165 ? "good" : "warn",
+      valueTone: "good",
+    },
+    {
+      id: "kejelasan",
+      icon: iconMouth,
+      label: "Kejelasan",
+      value: clarityScore,
+      unit: "/ 100",
+      chip: clarityScore >= 75 ? "Baik" : "Perlu Latihan",
+      chipTone: clarityScore >= 75 ? "good" : "warn",
+      valueTone: "good",
+    },
+    {
+      id: "energi",
+      icon: iconFlash,
+      label: "Energi & Intonasi",
+      value: energyScore,
+      unit: "/ 100",
+      chip: energyScore >= 75 ? "Baik" : "Perlu Latihan",
+      chipTone: energyScore >= 75 ? "good" : "warn",
+      valueTone: energyScore >= 75 ? "good" : "warn",
+    },
+  ];
+
   return (
     <div className="simulasi-results-screen">
-      <div className="simulasi-results-body">
-        <p className="simulasi-results-eyebrow">Mantap!</p>
-        <h1 className="simulasi-results-title">Kamu keren!</h1>
-        <p className="simulasi-results-sub">
-          {feedback?.motivasi ||
-            "Dengan latihan yang konsisten, kamu akan semakin mahir dan percaya diri dalam berbicara."}
-        </p>
+      <div className="simulasi-results-hero">
+        <img src={imgAnalysisHero} alt="" className="simulasi-results-hero-img" />
+      </div>
 
-        <div className="simulasi-metrics-grid">
-          <div className="simulasi-metric-card">
-            <span className="simulasi-metric-label">Kata Pengisi (Filler Word)</span>
-            <span className="simulasi-metric-value">
-              {metrics?.filler_word_count ?? "–"} <small>kali</small>
-            </span>
-          </div>
-          <div className="simulasi-metric-card">
-            <span className="simulasi-metric-label">Kecepatan (Pace)</span>
-            <span className="simulasi-metric-value">
-              {metrics?.pace_wpm != null ? Math.round(metrics.pace_wpm) : "–"} <small>wpm</small>
-            </span>
-          </div>
-          <div className="simulasi-metric-card">
-            <span className="simulasi-metric-label">Kejelasan (Articulation)</span>
-            <span className="simulasi-metric-value">
-              {sub.fluency ?? "–"} <small>/100</small>
-            </span>
-          </div>
-          <div className="simulasi-metric-card">
-            <span className="simulasi-metric-label">Energi &amp; Intonasi</span>
-            <span className="simulasi-metric-value">
-              {sub.intonasi ?? "–"} <small>/100</small>
-            </span>
-          </div>
+      <div className="simulasi-results-body">
+        <div className="simulasi-results-headline">
+          <p className="simulasi-results-eyebrow">Mantap!</p>
+          <h1 className="simulasi-results-title">Kamu keren!</h1>
+          <p className="simulasi-results-sub">
+            {feedback?.motivasi ||
+              "Dengan latihan yang konsisten, kamu akan semakin mahir dan percaya diri dalam berbicara!"}
+          </p>
         </div>
 
-        {feedback?.saran?.length > 0 && (
-          <div className="simulasi-saran-block">
-            <h3 className="simulasi-saran-heading">Saran buat kamu</h3>
-            <ul className="simulasi-saran-list">
-              {feedback.saran.map((item, i) => (
-                <li key={i}>{item}</li>
-              ))}
-            </ul>
+        {scores.map((score) => (
+          <div className="simulasi-analysis-card" key={score.id}>
+            <div className="simulasi-analysis-card-top">
+              <div className="simulasi-analysis-card-heading">
+                <img src={score.icon} alt="" className="simulasi-analysis-icon" />
+                <p className="simulasi-analysis-card-label">{score.label}</p>
+              </div>
+              <p className="simulasi-analysis-score">
+                {score.value}
+                <span className="simulasi-analysis-score-unit">{score.unit}</span>
+              </p>
+            </div>
+            <p className="simulasi-analysis-note">{score.note}</p>
+            <SimulasiAnalysisChip label={score.chip} tone={score.chipTone} />
           </div>
-        )}
+        ))}
+
+        <div className="simulasi-analysis-grid">
+          {gridMetrics.map((metric) => (
+            <div className="simulasi-analysis-card simulasi-analysis-card--sm" key={metric.id}>
+              <img src={metric.icon} alt="" className="simulasi-analysis-icon" />
+              <p className="simulasi-analysis-card-label">{metric.label}</p>
+              <p
+                className={`simulasi-analysis-metric${
+                  metric.valueTone === "warn" ? " simulasi-analysis-metric--warn" : ""
+                }`}
+              >
+                {metric.value}
+                <span className="simulasi-analysis-metric-unit">{metric.unit}</span>
+              </p>
+              <SimulasiAnalysisChip label={metric.chip} tone={metric.chipTone} />
+            </div>
+          ))}
+        </div>
+
+        <div className="simulasi-analysis-card">
+          <div className="simulasi-analysis-card-heading">
+            <img src={iconAI} alt="" className="simulasi-analysis-icon" />
+            <p className="simulasi-analysis-card-label">Feedback AI</p>
+          </div>
+          {feedback?.saran?.length > 0 ? (
+            <div className="simulasi-analysis-feedback">
+              {feedback.saran.map((item, i) => (
+                <p key={i} className="simulasi-analysis-feedback-item">
+                  • {item}
+                </p>
+              ))}
+            </div>
+          ) : (
+            <p className="simulasi-analysis-feedback">
+              {feedback?.feedback ||
+                "Kamu sudah menyelesaikan sesi simulasi dengan baik! Pertahankan artikulasi dan kurangi kata pengisi di sesi berikutnya."}
+            </p>
+          )}
+        </div>
       </div>
 
       <div className="simulasi-results-cta">
@@ -744,7 +853,7 @@ function ResultsStep({ results, onDone, canGoLive, onGoLive }) {
           </>
         )}
         <button type="button" className="btn-simulasi-lanjut" onClick={onDone}>
-          Lanjut
+          Tutup
         </button>
       </div>
     </div>

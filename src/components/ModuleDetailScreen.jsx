@@ -2,8 +2,6 @@ import React from "react";
 import "./ModuleDetailScreen.css";
 
 // ─── Assets ──────────────────────────────────────────────────────────────────
-import heroBgDecor from "../assets/pages_assets/modul_details/hero-bg-decor.svg";
-import iconCheckCircle from "../assets/pages_assets/modul_details/icons/Check-Circle-Icon.svg";
 import iconOpenDoor from "../assets/pages_assets/modul_details/icons/Open-Door-Icon.svg";
 import iconPlay from "../assets/pages_assets/home/icons/Play-Icon.svg";
 import iconBook from "../assets/pages_assets/home/icons/Book-Outline.svg";
@@ -259,7 +257,6 @@ export default function ModuleDetailScreen({
               alt={modTitle}
               className="module-detail-hero-bg-img"
             />
-            <img src={heroBgDecor} alt="" aria-hidden="true" className="module-detail-hero-bg-decor" />
           </div>
 
           {/* Top Bar Back Button */}

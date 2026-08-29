@@ -25,10 +25,13 @@ import videoGainXP from "../assets/pages_assets/gain_xp/Video-Gain-XP.webm";
 
 // ─── Assets for the practice result (AI analysis) screen ─────────────────────
 import imgAnalysisHero from "../assets/pages_assets/ai_analysis/analysis_hero.png";
-import iconSpeed from "../assets/pages_assets/ai_analysis/icon_speed.svg";
-import iconQuote from "../assets/pages_assets/ai_analysis/icon_quote.svg";
-import iconMouth from "../assets/pages_assets/ai_analysis/icon_mouth.svg";
-import iconFlash from "../assets/pages_assets/ai_analysis/icon_flash.svg";
+import iconArgument from "../assets/pages_assets/ai_analysis/Icons/Argument-Icon.svg";
+import iconRelevance from "../assets/pages_assets/ai_analysis/Icons/Relevance-Icon.svg";
+import iconSpeed from "../assets/pages_assets/ai_analysis/Icons/Speed-Icon.svg";
+import iconQuote from "../assets/pages_assets/ai_analysis/Icons/Quote-Icon.svg";
+import iconMouth from "../assets/pages_assets/ai_analysis/Icons/Mouth-Icon.svg";
+import iconFlash from "../assets/pages_assets/ai_analysis/Icons/Flash-Icon.svg";
+import iconAI from "../assets/pages_assets/ai_analysis/Icons/AI.svg";
 
 // ─── Practice scenario content (Figma frames after node 334:1838) ────────────
 const PRACTICE_FLOW_STEPS = [
@@ -67,7 +70,7 @@ const PRACTICE_ANALYSIS = {
   scores: [
     {
       id: "argumen",
-      icon: iconSpeed,
+      icon: iconArgument,
       label: "Argumen",
       value: 88,
       unit: "/ 100",
@@ -77,7 +80,7 @@ const PRACTICE_ANALYSIS = {
     },
     {
       id: "relevansi",
-      icon: iconSpeed,
+      icon: iconRelevance,
       label: "Relevansi",
       value: 88,
       unit: "/ 100",
@@ -1392,7 +1395,7 @@ function PracticeAnalysis({ result = PRACTICE_ANALYSIS, onFinish }) {
 
         <div className="modul7-analysis-card">
           <div className="modul7-analysis-card-heading">
-            <img src={iconSpeed} alt="" className="modul7-analysis-icon" />
+            <img src={iconAI} alt="" className="modul7-analysis-icon" />
             <p className="modul7-analysis-card-label">Feedback AI</p>
           </div>
           <p className="modul7-analysis-feedback">{result.feedback}</p>
