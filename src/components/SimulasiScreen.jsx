@@ -14,6 +14,7 @@ import iconMouth from "../assets/pages_assets/ai_analysis/Icons/Mouth-Icon.svg";
 import iconFlash from "../assets/pages_assets/ai_analysis/Icons/Flash-Icon.svg";
 import iconAI from "../assets/pages_assets/ai_analysis/Icons/AI.svg";
 import videoGainXP from "../assets/pages_assets/gain_xp/Video-Gain-XP.webm";
+import { useGainXpPreloader, getPreloadedVideoSrc } from "../lib/assetPreloader";
 import { supabase } from "../lib/supabaseClient";
 import {
   SCENARIOS,
@@ -686,6 +687,7 @@ function ResultsStep({ results, onDone, canGoLive, onGoLive }) {
   const sub = feedback?.sub_scores || {};
   const [goingLive, setGoingLive] = useState(false);
   const [goLiveError, setGoLiveError] = useState("");
+  const { isReady: isXpReady } = useGainXpPreloader(videoGainXP);
 
   const handleGoLive = async () => {
     setGoingLive(true);
@@ -853,8 +855,14 @@ function ResultsStep({ results, onDone, canGoLive, onGoLive }) {
             </button>
           </>
         )}
-        <button type="button" className="btn-simulasi-lanjut" onClick={onDone}>
-          Lanjut
+        <button
+          type="button"
+          className="btn-simulasi-lanjut"
+          onClick={onDone}
+          disabled={!isXpReady}
+          style={!isXpReady ? { opacity: 0.75, cursor: "not-allowed" } : undefined}
+        >
+          {!isXpReady ? "Menyiapkan XP..." : "Lanjut"}
         </button>
       </div>
     </div>
@@ -867,6 +875,7 @@ function SimulasiGainXpStep({ onClaim, xpEarned = 75 }) {
   const [isCounting, setIsCounting] = useState(false);
   const [showButton, setShowButton] = useState(false);
   const videoRef = useRef(null);
+  const videoSrc = getPreloadedVideoSrc(videoGainXP);
 
   const handleVideoEnded = () => {
     setIsCounting(true);
@@ -897,7 +906,7 @@ function SimulasiGainXpStep({ onClaim, xpEarned = 75 }) {
         <div className="lesson-completed-video-wrap">
           <video
             ref={videoRef}
-            src={videoGainXP}
+            src={videoSrc}
             autoPlay
             muted
             playsInline

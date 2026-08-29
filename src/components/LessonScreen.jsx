@@ -2,6 +2,7 @@ import React, { useState, useRef, useEffect } from "react";
 import LessonAffirmation from "./LessonAffirmation";
 import LessonModul7Screen from "./LessonModul7Screen";
 import LessonExitModal from "./LessonExitModal";
+import { useAssetPreloader, useGainXpPreloader, getPreloadedVideoSrc } from "../lib/assetPreloader";
 import "./LessonScreen.css";
 
 // ─── Assets ──────────────────────────────────────────────────────────────────
@@ -25,6 +26,20 @@ import relaxCloud from "../assets/pages_assets/lessons/lesson1-modul2/page5/Rela
 
 // Completed Lesson XP video asset
 import videoGainXP from "../assets/pages_assets/gain_xp/Video-Gain-XP.webm";
+
+const LESSON1_ASSETS = [
+  imgGugup,
+  imgTenang,
+  ritmKencang,
+  ritmesSantai,
+  imgTarik,
+  imgTahan,
+  imgHembuskan,
+  videoHaleAnimation,
+  tutorialBanner,
+  relaxCloud,
+  videoGainXP,
+];
 
 // ─── Back Arrow Icon ─────────────────────────────────────────────────────────
 const IconArrowLeft = () => (
@@ -436,65 +451,9 @@ function LessonPage4({ onNext, onBack }) {
   );
 }
 
-// ─── Hook: Preload Gain XP video before navigation ──────────────────────────
-function useVideoPreloader(videoSrc) {
-  const [isReady, setIsReady] = useState(false);
-
-  useEffect(() => {
-    if (!videoSrc) return;
-    const video = document.createElement("video");
-    video.preload = "auto";
-    video.src = videoSrc;
-    video.muted = true;
-
-    const onCanPlay = () => setIsReady(true);
-
-    if (video.readyState >= 3) {
-      setIsReady(true);
-    } else {
-      video.addEventListener("canplaythrough", onCanPlay, { once: true });
-      video.addEventListener("canplay", onCanPlay, { once: true });
-      video.addEventListener("loadeddata", onCanPlay, { once: true });
-      video.load();
-    }
-
-    return () => {
-      video.removeEventListener("canplaythrough", onCanPlay);
-      video.removeEventListener("canplay", onCanPlay);
-      video.removeEventListener("loadeddata", onCanPlay);
-    };
-  }, [videoSrc]);
-
-  return isReady;
-}
-
 // ─── Page 5: Conclusion (node 281:849) ──────────────────────────────────────
 function LessonPage5({ onNext, onBack }) {
-  const isVideoReady = useVideoPreloader(videoGainXP);
-  const [waitingForVideo, setWaitingForVideo] = useState(false);
-
-  const handleClick = () => {
-    if (isVideoReady) {
-      onNext();
-    } else {
-      setWaitingForVideo(true);
-    }
-  };
-
-  useEffect(() => {
-    if (waitingForVideo && isVideoReady) {
-      onNext();
-    }
-  }, [waitingForVideo, isVideoReady, onNext]);
-
-  // Safety fallback: proceed after 3s if network is slow
-  useEffect(() => {
-    if (!waitingForVideo) return;
-    const timeout = setTimeout(() => {
-      onNext();
-    }, 3000);
-    return () => clearTimeout(timeout);
-  }, [waitingForVideo, onNext]);
+  const { isReady: isXpReady } = useGainXpPreloader(videoGainXP);
 
   return (
     <div className="lesson-page lesson-page-5" data-node-id="281:849">
@@ -528,12 +487,12 @@ function LessonPage5({ onNext, onBack }) {
         <button
           type="button"
           className="btn-lesson-finish"
-          onClick={handleClick}
-          disabled={waitingForVideo}
-          style={waitingForVideo ? { opacity: 0.75, cursor: "not-allowed" } : undefined}
+          onClick={onNext}
+          disabled={!isXpReady}
+          style={!isXpReady ? { opacity: 0.75, cursor: "not-allowed" } : undefined}
           data-node-id="281:898"
         >
-          {waitingForVideo ? "Menyiapkan XP..." : "Selesaikan Pelajaran"}
+          {!isXpReady ? "Menyiapkan XP..." : "Selesaikan Pelajaran"}
         </button>
       </div>
     </div>
@@ -546,6 +505,8 @@ function CompletedLesson({ onFinish, xpEarned = 25 }) {
   const [isVideoEnded, setIsVideoEnded] = useState(false);
   const [isCounting, setIsCounting] = useState(false);
   const [showButton, setShowButton] = useState(false);
+  const videoRef = useRef(null);
+  const videoSrc = getPreloadedVideoSrc(videoGainXP);
 
   // Trigger XP appearance and counting animation after video finishes playing
   const handleVideoEnded = () => {
@@ -569,7 +530,7 @@ function CompletedLesson({ onFinish, xpEarned = 25 }) {
         setDisplayedXP(xpEarned);
         setIsCounting(false); // Stop sparkles when counting ends
 
-        // Show Tutup button exactly 1 second after XP finishes counting
+        // Show Klaim XP button exactly 1 second after XP finishes counting
         setTimeout(() => {
           setShowButton(true);
         }, 1000);
@@ -586,7 +547,8 @@ function CompletedLesson({ onFinish, xpEarned = 25 }) {
         {/* Gain XP Video Animation */}
         <div className="lesson-completed-video-wrap" data-node-id="302:888">
           <video
-            src={videoGainXP}
+            ref={videoRef}
+            src={videoSrc}
             autoPlay
             muted
             playsInline
@@ -625,7 +587,7 @@ function CompletedLesson({ onFinish, xpEarned = 25 }) {
         )}
       </div>
 
-      {/* Fixed bottom CTA Tutup Button - appears 1 second after XP finishes counting */}
+      {/* Fixed bottom CTA Klaim XP Button - appears 1 second after XP finishes counting */}
       {showButton && (
         <div className="lesson-cta-wrapper lesson-cta-appear">
           <button
@@ -649,6 +611,9 @@ export default function LessonScreen({ lessonData, onBack, onFinish }) {
   // step: "affirmation" | 1 | 2 | 3 | 4 | 5 | "completed"
   const [step, setStep] = useState("affirmation");
   const [showExitModal, setShowExitModal] = useState(false);
+
+  // Asset preloading: ensure >= 50% assets are ready before leaving affirmation
+  const { isThresholdMet } = useAssetPreloader(LESSON1_ASSETS, 0.5);
 
   if (isModul7) {
     return (
@@ -680,6 +645,7 @@ export default function LessonScreen({ lessonData, onBack, onFinish }) {
       {step === "affirmation" && (
         <LessonAffirmation
           quote={lessonData?.affirmationQuote}
+          isReady={isThresholdMet}
           onComplete={goNext}
         />
       )}

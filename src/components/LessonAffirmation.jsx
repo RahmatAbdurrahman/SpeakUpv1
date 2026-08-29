@@ -8,9 +8,11 @@ export default function LessonAffirmation({
   quote = DEFAULT_QUOTE,
   loadingText = "Memuat...",
   onComplete,
-  duration = 3000,
+  duration = 2500,
+  isReady = true,
 }) {
   const [dots, setDots] = useState("");
+  const [minTimeElapsed, setMinTimeElapsed] = useState(false);
 
   useEffect(() => {
     // Subtle animated dots for loading state
@@ -18,16 +20,22 @@ export default function LessonAffirmation({
       setDots((prev) => (prev.length >= 3 ? "" : prev + "."));
     }, 450);
 
-    // Auto-advance to lesson when loading completes
+    // Minimum time on affirmation screen
     const timer = setTimeout(() => {
-      onComplete?.();
+      setMinTimeElapsed(true);
     }, duration);
 
     return () => {
       clearInterval(dotInterval);
       clearTimeout(timer);
     };
-  }, [onComplete, duration]);
+  }, [duration]);
+
+  useEffect(() => {
+    if (minTimeElapsed && isReady) {
+      onComplete?.();
+    }
+  }, [minTimeElapsed, isReady, onComplete]);
 
   return (
     <div

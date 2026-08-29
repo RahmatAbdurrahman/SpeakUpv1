@@ -1,6 +1,8 @@
 import React, { useState, useRef, useEffect } from "react";
 import "./LessonModul7Screen.css";
 import LessonExitModal from "./LessonExitModal";
+import LessonAffirmation from "./LessonAffirmation";
+import { useAssetPreloader, useGainXpPreloader, getPreloadedVideoSrc } from "../lib/assetPreloader";
 import { supabase } from "../lib/supabaseClient";
 import {
   createSimulation,
@@ -33,6 +35,26 @@ import iconQuote from "../assets/pages_assets/ai_analysis/Icons/Quote-Icon.svg";
 import iconMouth from "../assets/pages_assets/ai_analysis/Icons/Mouth-Icon.svg";
 import iconFlash from "../assets/pages_assets/ai_analysis/Icons/Flash-Icon.svg";
 import iconAI from "../assets/pages_assets/ai_analysis/Icons/AI.svg";
+
+const MODUL7_ASSETS = [
+  imgBlankTotal,
+  imgPanik,
+  imgGakKompeten,
+  imgBrain,
+  imgMascottQuotes,
+  imgMascottSenyum,
+  imgMascottKhawatir,
+  videoHappySpeaker,
+  videoGainXP,
+  imgAnalysisHero,
+  iconArgument,
+  iconRelevance,
+  iconSpeed,
+  iconQuote,
+  iconMouth,
+  iconFlash,
+  iconAI,
+];
 
 // ─── Practice scenario content (Figma frames after node 334:1838) ────────────
 const PRACTICE_FLOW_STEPS = [
@@ -1265,37 +1287,7 @@ function PracticeInterlude({ onNext, onBack }) {
   );
 }
 
-// ─── Hook: Preload Gain XP video before navigation ──────────────────────────
-function useVideoPreloader(videoSrc) {
-  const [isReady, setIsReady] = useState(false);
 
-  useEffect(() => {
-    if (!videoSrc) return;
-    const video = document.createElement("video");
-    video.preload = "auto";
-    video.src = videoSrc;
-    video.muted = true;
-
-    const onCanPlay = () => setIsReady(true);
-
-    if (video.readyState >= 3) {
-      setIsReady(true);
-    } else {
-      video.addEventListener("canplaythrough", onCanPlay, { once: true });
-      video.addEventListener("canplay", onCanPlay, { once: true });
-      video.addEventListener("loadeddata", onCanPlay, { once: true });
-      video.load();
-    }
-
-    return () => {
-      video.removeEventListener("canplaythrough", onCanPlay);
-      video.removeEventListener("canplay", onCanPlay);
-      video.removeEventListener("loadeddata", onCanPlay);
-    };
-  }, [videoSrc]);
-
-  return isReady;
-}
 
 // ─── Page 17: Keren! — practice cleared ─────────────────────────────────────
 function PracticeSuccess({ onNext, onBack }) {
@@ -1380,31 +1372,7 @@ function AnalysisChip({ label, tone }) {
 }
 
 function PracticeAnalysis({ result = PRACTICE_ANALYSIS, onFinish }) {
-  const isVideoReady = useVideoPreloader(videoGainXP);
-  const [waitingForVideo, setWaitingForVideo] = useState(false);
-
-  const handleClick = () => {
-    if (isVideoReady) {
-      onFinish();
-    } else {
-      setWaitingForVideo(true);
-    }
-  };
-
-  useEffect(() => {
-    if (waitingForVideo && isVideoReady) {
-      onFinish();
-    }
-  }, [waitingForVideo, isVideoReady, onFinish]);
-
-  // Safety fallback: proceed after 3s if network is slow
-  useEffect(() => {
-    if (!waitingForVideo) return;
-    const timeout = setTimeout(() => {
-      onFinish();
-    }, 3000);
-    return () => clearTimeout(timeout);
-  }, [waitingForVideo, onFinish]);
+  const { isReady: isXpReady } = useGainXpPreloader(videoGainXP);
 
   return (
     <div className="modul7-lesson-page modul7-analysis-page" data-name="Practice-Hasil Analisis AI">
@@ -1469,11 +1437,11 @@ function PracticeAnalysis({ result = PRACTICE_ANALYSIS, onFinish }) {
         <button
           type="button"
           className="btn-modul7-next"
-          onClick={handleClick}
-          disabled={waitingForVideo}
-          style={waitingForVideo ? { opacity: 0.75, cursor: "not-allowed" } : undefined}
+          onClick={onFinish}
+          disabled={!isXpReady}
+          style={!isXpReady ? { opacity: 0.75, cursor: "not-allowed" } : undefined}
         >
-          {waitingForVideo ? "Menyiapkan XP..." : "Lanjut"}
+          {!isXpReady ? "Menyiapkan XP..." : "Lanjut"}
         </button>
       </div>
     </div>
@@ -1486,6 +1454,7 @@ function CompletedLesson({ onFinish, xpEarned = 95 }) {
   const [isCounting, setIsCounting] = useState(false);
   const [showButton, setShowButton] = useState(false);
   const videoRef = useRef(null);
+  const videoSrc = getPreloadedVideoSrc(videoGainXP);
 
   const handleVideoEnded = () => {
     setIsCounting(true);
@@ -1516,7 +1485,7 @@ function CompletedLesson({ onFinish, xpEarned = 95 }) {
         <div className="lesson-completed-video-wrap">
           <video
             ref={videoRef}
-            src={videoGainXP}
+            src={videoSrc}
             autoPlay
             muted
             playsInline
@@ -1567,8 +1536,12 @@ function CompletedLesson({ onFinish, xpEarned = 95 }) {
 export default function LessonModul7Screen({ onBack, onFinish }) {
   // 1–6 = teori, 7–17 = latihan, lalu XP dan hasil analisis AI.
   const [step, setStep] = useState(1);
+  const [initialAffirmationDone, setInitialAffirmationDone] = useState(false);
   const [analysisResult, setAnalysisResult] = useState(null);
   const [analysisError, setAnalysisError] = useState("");
+
+  // Asset preloading: ensure >= 50% assets are ready before proceeding
+  const { isThresholdMet } = useAssetPreloader(MODUL7_ASSETS, 0.5);
 
   // Real audio capture spans the whole practice section (step 10, "Sampaikan
   // pendapatmu", through step 16, the second Q&A answer) as ONE continuous
@@ -1698,6 +1671,16 @@ export default function LessonModul7Screen({ onBack, onFinish }) {
       return prev + 1;
     });
   };
+
+  if (!initialAffirmationDone) {
+    return (
+      <LessonAffirmation
+        quote="“Ketenangan adalah kunci kejernihan berpikir. Kamu memiliki kemampuan untuk berbicara dengan terstruktur dan meyakinkan.”"
+        isReady={isThresholdMet}
+        onComplete={() => setInitialAffirmationDone(true)}
+      />
+    );
+  }
 
   return (
     <div className="modul7-lesson-screen">
