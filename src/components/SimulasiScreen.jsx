@@ -193,7 +193,7 @@ function ManualNotesStep({ scenario, saving, onBack, onSubmit }) {
 // live front-camera preview (same getUserMedia pattern as RecordingStep) so
 // there's nothing heavy to wait for, and the user can check their framing
 // before recording, same as the Spontan scenario already does.
-function PrepStep({ scenario, notes, error, onBack, onStart }) {
+function PrepStep({ scenario, notes, error, questionsLoading = false, onBack, onStart }) {
   const videoRef = useRef(null);
   const [stream, setStream] = useState(null);
   const [camError, setCamError] = useState(null);
@@ -270,11 +270,15 @@ function PrepStep({ scenario, notes, error, onBack, onStart }) {
         </div>
       )}
 
-      <p className="simulasi-recording-hint">Cek posisi kamera & pencahayaan kamu, lalu mulai kalau sudah siap.</p>
+      <p className="simulasi-recording-hint">
+        {questionsLoading
+          ? "Pewawancara lagi menyiapkan pertanyaan dari CV kamu. Sambil nunggu, cek posisi kamera & pencahayaan."
+          : "Cek posisi kamera & pencahayaan kamu, lalu mulai kalau sudah siap."}
+      </p>
 
       <div className="simulasi-prep-cta">
-        <button type="button" className="btn-simulasi-lanjut" onClick={onStart}>
-          Mulai Simulasi
+        <button type="button" className="btn-simulasi-lanjut" onClick={onStart} disabled={questionsLoading}>
+          {questionsLoading ? "Menyiapkan pertanyaan..." : "Mulai Simulasi"}
         </button>
       </div>
     </div>
@@ -282,13 +286,22 @@ function PrepStep({ scenario, notes, error, onBack, onStart }) {
 }
 
 // ─── Recording step ─────────────────────────────────────────────────────────
-function RecordingStep({ scenario, cheatSheet, onBack, onFinish }) {
+// `questions` non-empty = mode wawancara: satu rekaman berjalan terus, tapi
+// pertanyaan berganti satu per satu di layar (tanya-jawab bergantian), dan
+// feedback baru keluar setelah pertanyaan terakhir dijawab. Rekamannya sengaja
+// TIDAK dipotong per pertanyaan supaya analyze-session tetap menerima satu file
+// audio utuh seperti kategori lain — transkrip lengkapnya sudah memuat semua
+// jawaban, jadi tidak perlu menggabung blob webm di sisi client.
+function RecordingStep({ scenario, cheatSheet, questions = [], onBack, onFinish }) {
   const videoRef = useRef(null);
   const [stream, setStream] = useState(null);
   const [camError, setCamError] = useState(null);
   const [isRecording, setIsRecording] = useState(false);
   const [seconds, setSeconds] = useState(0);
   const [showCheatSheet, setShowCheatSheet] = useState(false);
+  const [qIndex, setQIndex] = useState(0);
+  const isInterview = questions.length > 0;
+  const isLastQuestion = qIndex >= questions.length - 1;
   const mediaRecorderRef = useRef(null);
   const chunksRef = useRef([]);
   const timerRef = useRef(null);
@@ -401,6 +414,14 @@ function RecordingStep({ scenario, cheatSheet, onBack, onFinish }) {
             <span>{formatTime(seconds)}</span>
           </div>
         )}
+        {isInterview && (
+          <div className="simulasi-question-panel">
+            <p className="simulasi-question-counter">
+              Pertanyaan {qIndex + 1}/{questions.length}
+            </p>
+            <p className="simulasi-question-text">{questions[qIndex]}</p>
+          </div>
+        )}
         {cheatSheet && (
           <button
             type="button"
@@ -414,18 +435,39 @@ function RecordingStep({ scenario, cheatSheet, onBack, onFinish }) {
       </div>
 
       <p className="simulasi-recording-hint">
-        {isRecording ? "Lagi rekam — tekan tombol lagi kalau sudah selesai." : "Tekan tombol rekam buat mulai latihan."}
+        {isInterview
+          ? isRecording
+            ? isLastQuestion
+              ? "Pertanyaan terakhir — tekan selesai kalau jawabanmu sudah tuntas."
+              : "Jawab pertanyaan di atas, lalu lanjut ke pertanyaan berikutnya."
+            : "Pewawancara sudah siap. Tekan tombol rekam buat mulai wawancara."
+          : isRecording
+            ? "Lagi rekam — tekan tombol lagi kalau sudah selesai."
+            : "Tekan tombol rekam buat mulai latihan."}
       </p>
 
-      <button
-        type="button"
-        className={`simulasi-btn-record ${isRecording ? "is-recording" : ""}`}
-        onClick={handleToggle}
-        disabled={!stream}
-        aria-label={isRecording ? "Berhenti rekam" : "Mulai rekam"}
-      >
-        {isRecording ? <span className="simulasi-record-stop" /> : <span className="simulasi-record-dot-icon" />}
-      </button>
+      {/* Saat wawancara sedang berjalan, tombol utamanya jadi navigasi
+          pertanyaan — tombol bulat merah cuma dipakai untuk MEMULAI supaya
+          tidak ada dua kontrol berhenti yang membingungkan. */}
+      {isInterview && isRecording ? (
+        <button
+          type="button"
+          className="btn-simulasi-lanjut simulasi-question-cta"
+          onClick={() => (isLastQuestion ? handleToggle() : setQIndex((i) => i + 1))}
+        >
+          {isLastQuestion ? "Selesai Wawancara" : "Pertanyaan Berikutnya"}
+        </button>
+      ) : (
+        <button
+          type="button"
+          className={`simulasi-btn-record ${isRecording ? "is-recording" : ""}`}
+          onClick={handleToggle}
+          disabled={!stream}
+          aria-label={isRecording ? "Berhenti rekam" : "Mulai rekam"}
+        >
+          {isRecording ? <span className="simulasi-record-stop" /> : <span className="simulasi-record-dot-icon" />}
+        </button>
+      )}
     </div>
   );
 }
@@ -526,6 +568,8 @@ export default function SimulasiScreen({ onNavigateHome, onNavigateSosial, onNav
   const [sessionId, setSessionId] = useState(null);
   const [notes, setNotes] = useState("");
   const [topics, setTopics] = useState([]);
+  const [questions, setQuestions] = useState([]);
+  const [questionsLoading, setQuestionsLoading] = useState(false);
   const [results, setResults] = useState(null);
   const [xp, setXp] = useState(0);
 
@@ -554,6 +598,8 @@ export default function SimulasiScreen({ onNavigateHome, onNavigateSosial, onNav
     setSessionId(null);
     setNotes("");
     setTopics([]);
+    setQuestions([]);
+    setQuestionsLoading(false);
     setStep("picker");
   };
 
@@ -639,6 +685,25 @@ export default function SimulasiScreen({ onNavigateHome, onNavigateSosial, onNav
     await createSessionRow({ id: newSessionId, simulationId });
     setSessionId(newSessionId);
     setStep("prep");
+
+    // Interview butuh daftar pertanyaan sebelum sesi mulai. Diambil di
+    // BELAKANG layar prep (bukan ditambahkan ke loading upload) supaya
+    // waktu tunggunya tertutup sambil user mengecek kamera — tombol "Mulai
+    // Simulasi" yang menunggu hasilnya, bukan layar penuh.
+    if (scenario.kategori === "interview") {
+      setQuestionsLoading(true);
+      try {
+        const generated = await fetchGeneratedQuestions(newSessionId, "interview");
+        setQuestions(generated);
+      } catch {
+        // Bukan blocker: kalau gagal, sesi tetap jalan sebagai rekaman
+        // tunggal seperti kategori lain (lihat RecordingStep) daripada
+        // menggagalkan wawancara yang materinya sudah diproses.
+        setQuestions([]);
+      } finally {
+        setQuestionsLoading(false);
+      }
+    }
   };
 
   const handleRecordingFinished = async (audioBlob, durationSeconds) => {
@@ -719,6 +784,7 @@ export default function SimulasiScreen({ onNavigateHome, onNavigateSosial, onNav
         scenario={scenario}
         notes={notes}
         error={errorMessage}
+        questionsLoading={questionsLoading}
         onBack={resetToPicker}
         onStart={() => setStep("recording")}
       />
@@ -730,6 +796,7 @@ export default function SimulasiScreen({ onNavigateHome, onNavigateSosial, onNav
       <RecordingStep
         scenario={scenario}
         cheatSheet={scenario.kategori === "spontan" ? topics.join(" / ") : scenario.kategori !== "interview" ? notes : ""}
+        questions={scenario.kategori === "interview" ? questions : []}
         onBack={() => setStep(scenario.needsUpload ? "prep" : "topic")}
         onFinish={handleRecordingFinished}
       />

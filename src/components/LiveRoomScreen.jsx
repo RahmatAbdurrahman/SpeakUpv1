@@ -187,10 +187,15 @@ export default function LiveRoomScreen({ roomData, onLeaveRoom }) {
   // never looks empty while waiting on an actual viewer. Only for
   // Presentasi-category rooms (the only category that can ever go live —
   // see SimulasiScreen's Go Live gate), so kategori is fixed to "kelas".
+  // generate-live-questions mencari baris simulation_sessions lewat id-nya,
+  // jadi yang dikirim WAJIB sessionId — bukan roomId (live_rooms.id). Sempat
+  // salah kirim roomId dan selalu balik 404 "Sesi tidak ditemukan", tapi
+  // errornya ditelan .catch() di bawah sehingga icebreaker-nya diam-diam
+  // tidak pernah muncul.
   useEffect(() => {
-    if (!roomData?.roomId || questions.length > 0 || aiQuestion) return;
+    if (!roomData?.sessionId || questions.length > 0 || aiQuestion) return;
     let active = true;
-    fetchGeneratedQuestions(roomData.roomId, "kelas")
+    fetchGeneratedQuestions(roomData.sessionId, "kelas")
       .then((qs) => {
         if (active && qs?.[0]) setAiQuestion(qs[0]);
       })
@@ -200,7 +205,7 @@ export default function LiveRoomScreen({ roomData, onLeaveRoom }) {
     return () => {
       active = false;
     };
-  }, [roomData?.roomId, questions.length, aiQuestion]);
+  }, [roomData?.sessionId, questions.length, aiQuestion]);
 
   const formatTimer = (totalSeconds) => {
     const m = Math.floor(totalSeconds / 60);

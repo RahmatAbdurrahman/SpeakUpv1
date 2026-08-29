@@ -675,3 +675,45 @@
   line-height: 1.5;
   white-space: pre-wrap;
 }
+
+/* ==========================================================================
+   Panel pertanyaan wawancara (mode tanya-jawab bergantian, kategori Interview)
+   ========================================================================== */
+.simulasi-question-panel {
+  position: absolute;
+  top: 16px;
+  left: 12px;
+  right: 12px;
+  background: rgba(0, 0, 0, 0.72);
+  border-radius: 14px;
+  padding: 12px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  max-height: 45%;
+  overflow-y: auto;
+}
+.simulasi-question-counter {
+  font-family: var(--font-family-base, 'Space Grotesk', sans-serif);
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--color-primary, #24A981);
+  letter-spacing: 0.4px;
+  margin: 0;
+}
+.simulasi-question-text {
+  font-family: var(--font-family-base, 'Space Grotesk', sans-serif);
+  font-size: 13px;
+  font-weight: 600;
+  color: #FFFFFF;
+  line-height: 1.45;
+  margin: 0;
+}
+
+/* Tombol navigasi pertanyaan menggantikan tombol rekam bulat saat wawancara
+   berjalan — dibatasi lebarnya supaya sejajar dengan CTA layar lain. */
+.simulasi-question-cta {
+  width: 100%;
+  max-width: 366px;
+  align-self: center;
+}
