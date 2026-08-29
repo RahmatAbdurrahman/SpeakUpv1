@@ -293,6 +293,31 @@ const MIN_RECORDING_SECONDS = 15;
 // said something" — same heuristic LessonModul7Screen's useSpeechCapture uses.
 const SILENCE_THRESHOLD = 12;
 
+// ─── Simulated "penonton" counter — purely cosmetic social-proof pressure
+// for practice, no real viewers/backend involved. Ticks by a small random
+// step on an irregular cadence (recursive setTimeout, not setInterval) so it
+// reads as organic rather than a mechanical, evenly-spaced tick. Deliberately
+// never touches live_rooms — that table is for REAL viewer counts on actual
+// Sosial live rooms (see lib/sosial.js) and must stay untouched by this.
+function useFakeViewerCount(active) {
+  const [count, setCount] = useState(() => 8 + Math.floor(Math.random() * 15));
+
+  useEffect(() => {
+    if (!active) return undefined;
+    let timeoutId;
+    const scheduleNext = () => {
+      timeoutId = setTimeout(() => {
+        setCount((c) => Math.min(64, Math.max(4, c + Math.floor(Math.random() * 5) - 2)));
+        scheduleNext();
+      }, 1800 + Math.random() * 2800);
+    };
+    scheduleNext();
+    return () => clearTimeout(timeoutId);
+  }, [active]);
+
+  return count;
+}
+
 // ─── Popup shown when a recording is stopped too early or in total silence.
 // Pauses (never stops) the recorder underneath so "Lanjutkan"/"Ulangi" can
 // pick back up without a fresh mic-permission prompt. ─────────────────────
@@ -367,6 +392,7 @@ function RecordingStep({ scenario, cheatSheet, questions = [], onBack, onFinish,
   // would otherwise see a stale `seconds` (0) — a ref always has the latest.
   const secondsRef = useRef(0);
   const detectedSpeechRef = useRef(false);
+  const viewerCount = useFakeViewerCount(isRecording);
 
   useEffect(() => {
     let active = true;
@@ -574,6 +600,12 @@ function RecordingStep({ scenario, cheatSheet, questions = [], onBack, onFinish,
           <div className="simulasi-rec-badge">
             <span className="simulasi-rec-dot" />
             <span>{formatTime(seconds)}</span>
+          </div>
+        )}
+        {isRecording && (
+          <div className="simulasi-viewer-badge" aria-hidden="true">
+            <span className="simulasi-viewer-icon">👁</span>
+            <span>{viewerCount} menonton</span>
           </div>
         )}
         {isInterview && (

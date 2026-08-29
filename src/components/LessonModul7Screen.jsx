@@ -49,6 +49,12 @@ const PRACTICE_OUTLINE_HINTS = [
   "Kesimpulan atau solusi yang bisa dilakukan…",
 ];
 
+// Below this, an early "Selesai Bicara" click is treated as "belum selesai"
+// rather than a real finish — same rationale/threshold as SimulasiScreen's
+// RecordingStep. Applies to the opinion statement (120s budget) and both
+// Q&A answers (60s budget) alike.
+const MIN_SEGMENT_SECONDS = 10;
+
 const PRACTICE_QUESTIONS = [
   "“Kamu bilang musik membantu fokus. Bagaimana kamu membuktikan bahwa fokusmu meningkat karena musik, bukan karena kamu memang sedang mengerjakan tugas yang lebih mudah atau sedang lebih termotivasi hari itu?”",
   "“Bagaimana kalau musik memang membuatmu sanggup belajar lebih lama, tetapi hasil akhirnya tidak lebih baik—misalnya kamu menghabiskan waktu dua jam, tetapi lebih sedikit materi yang benar-benar kamu ingat? Mana yang seharusnya menjadi ukuran fokus: durasi belajar atau kualitas pemahaman?”",
@@ -314,6 +320,35 @@ function useSpeechCapture(active) {
   }, [active]);
 
   return detectedRef;
+}
+
+// ─── Overlay shown when "Selesai Bicara" is pressed too early (speech WAS
+// heard, but well under MIN_SEGMENT_SECONDS). Renders ON TOP of the still-
+// mounted recording screen underneath rather than replacing it, so
+// "Lanjutkan" is just closing this overlay — the countdown/mic never
+// stopped, nothing to resume from a saved state. ─────────────────────────
+function PracticeIncompleteGate({ elapsedSeconds, onResume, onRestart, onSkip }) {
+  return (
+    <div className="modul7-gate-backdrop">
+      <div className="modul7-gate-sheet">
+        <h2 className="modul7-gate-title">Sesi kamu belum selesai</h2>
+        <p className="modul7-gate-desc">
+          Baru {elapsedSeconds} detik ngomong — hasil analisisnya bisa kurang akurat kalau dipotong sekarang. Mau gimana?
+        </p>
+        <div className="modul7-gate-actions">
+          <button type="button" className="btn-modul7-next" onClick={onResume}>
+            Lanjutkan Rekaman
+          </button>
+          <button type="button" className="btn-modul7-gate-secondary" onClick={onRestart}>
+            Ulangi dari Awal
+          </button>
+          <button type="button" className="btn-modul7-gate-ghost" onClick={onSkip}>
+            Langsung ke Sesi Berikutnya
+          </button>
+        </div>
+      </div>
+    </div>
+  );
 }
 
 // ─── "Suaramu tidak terdengar..." — shown when a recording step ends with no
@@ -985,15 +1020,36 @@ function PracticeSpeak({ onNext, onBack }) {
     <PracticeSpeakRecording
       key={attempt}
       onBack={onBack}
+      onRestart={() => setAttempt((a) => a + 1)}
       onDone={(heard) => (heard ? onNext() : setSilent(true))}
     />
   );
 }
 
-function PracticeSpeakRecording({ onDone, onBack }) {
+function PracticeSpeakRecording({ onDone, onRestart, onBack }) {
   const detectedRef = useSpeechCapture(true);
-  const finish = () => onDone(detectedRef.current);
-  const remaining = useCountdown(120, finish);
+  const [gate, setGate] = useState(null); // null | "incomplete"
+  // Populated from an effect (not during render) each time `remaining`
+  // ticks, so attemptFinish() — a click handler / countdown callback, never
+  // called mid-render — always reads a fresh value.
+  const elapsedRef = useRef(0);
+
+  const attemptFinish = () => {
+    if (!detectedRef.current) {
+      onDone(false);
+      return;
+    }
+    if (elapsedRef.current < MIN_SEGMENT_SECONDS) {
+      setGate("incomplete");
+      return;
+    }
+    onDone(true);
+  };
+
+  const remaining = useCountdown(120, attemptFinish);
+  useEffect(() => {
+    elapsedRef.current = 120 - remaining;
+  }, [remaining]);
 
   return (
     <div className="modul7-lesson-page modul7-dark-page" data-name="Practice-Sampaikan Pendapat">
@@ -1006,10 +1062,19 @@ function PracticeSpeakRecording({ onDone, onBack }) {
       </div>
 
       <div className="modul7-lesson-cta-wrapper modul7-lesson-cta-wrapper--dark">
-        <button type="button" className="btn-modul7-stop" onClick={finish}>
+        <button type="button" className="btn-modul7-stop" onClick={attemptFinish}>
           Selesai Bicara
         </button>
       </div>
+
+      {gate === "incomplete" && (
+        <PracticeIncompleteGate
+          elapsedSeconds={120 - remaining}
+          onResume={() => setGate(null)}
+          onRestart={onRestart}
+          onSkip={() => onDone(true)}
+        />
+      )}
     </div>
   );
 }
@@ -1101,15 +1166,36 @@ function PracticeAnswer({ step, questionIndex, onNext, onBack }) {
       step={step}
       questionIndex={questionIndex}
       onBack={onBack}
+      onRestart={() => setAttempt((a) => a + 1)}
       onDone={(heard) => (heard ? onNext() : setSilent(true))}
     />
   );
 }
 
-function PracticeAnswerRecording({ step, questionIndex, onDone, onBack }) {
+function PracticeAnswerRecording({ step, questionIndex, onDone, onRestart, onBack }) {
   const detectedRef = useSpeechCapture(true);
-  const finish = () => onDone(detectedRef.current);
-  const remaining = useCountdown(60, finish);
+  const [gate, setGate] = useState(null); // null | "incomplete"
+  // Populated from an effect (not during render) each time `remaining`
+  // ticks, so attemptFinish() — a click handler / countdown callback, never
+  // called mid-render — always reads a fresh value.
+  const elapsedRef = useRef(0);
+
+  const attemptFinish = () => {
+    if (!detectedRef.current) {
+      onDone(false);
+      return;
+    }
+    if (elapsedRef.current < MIN_SEGMENT_SECONDS) {
+      setGate("incomplete");
+      return;
+    }
+    onDone(true);
+  };
+
+  const remaining = useCountdown(60, attemptFinish);
+  useEffect(() => {
+    elapsedRef.current = 60 - remaining;
+  }, [remaining]);
 
   return (
     <div className="modul7-lesson-page modul7-dark-page" data-name="Practice-Jawab Pertanyaan">
@@ -1130,10 +1216,19 @@ function PracticeAnswerRecording({ step, questionIndex, onDone, onBack }) {
       </div>
 
       <div className="modul7-lesson-cta-wrapper modul7-lesson-cta-wrapper--dark">
-        <button type="button" className="btn-modul7-stop" onClick={finish}>
+        <button type="button" className="btn-modul7-stop" onClick={attemptFinish}>
           Selesai Bicara
         </button>
       </div>
+
+      {gate === "incomplete" && (
+        <PracticeIncompleteGate
+          elapsedSeconds={60 - remaining}
+          onResume={() => setGate(null)}
+          onRestart={onRestart}
+          onSkip={() => onDone(true)}
+        />
+      )}
     </div>
   );
 }

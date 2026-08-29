@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import "./LiveRoomScreen.css";
-import { fetchLiveQuestions, postLiveQuestion, requestLiveToken, friendlySosialError } from "../lib/sosial";
+import { fetchLiveQuestions, postLiveQuestion, requestLiveToken, endLiveRoom, friendlySosialError } from "../lib/sosial";
 import { fetchGeneratedQuestions } from "../lib/simulasi";
 import { supabase } from "../lib/supabaseClient";
 import {
@@ -74,6 +74,14 @@ export default function LiveRoomScreen({ roomData, onLeaveRoom }) {
   // Viewers get asked to rate the presenter on their way out; broadcasters
   // (rating themselves would be meaningless) leave straight away.
   const handleLeaveClick = () => {
+    // Flip the room out of "Live Sekarang" when the HOST leaves — otherwise
+    // it was never touched again after goLive() and stays status='live'
+    // forever, so it keeps showing up for other users indefinitely. Viewers
+    // leaving must never do this: other viewers (and the host) may still be
+    // in the room. Fire-and-forget so leaving feels instant either way.
+    if (isBroadcaster && roomData?.roomId) {
+      endLiveRoom(roomData.roomId).catch(() => {});
+    }
     if (isBroadcaster || !roomData?.sessionId) {
       onLeaveRoom?.();
     } else {

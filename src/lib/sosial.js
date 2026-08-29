@@ -79,6 +79,18 @@ export async function goLive(sessionId) {
   return data;
 }
 
+/**
+ * Flips a room back out of "Live Sekarang" once its host leaves. Without
+ * this, a room inserted by goLive() stays status='live' forever (nothing
+ * else ever wrote to it) and keeps showing in fetchLiveRooms() long after
+ * the host's session ended — call this from the host's own leave action,
+ * never from a viewer leaving (other viewers may still be watching).
+ */
+export async function endLiveRoom(roomId) {
+  const { error } = await supabase.from("live_rooms").update({ status: "ended" }).eq("id", roomId);
+  if (error) throw error;
+}
+
 /** role: 'broadcaster' | 'viewer' — see get-live-token for the authorization rules. */
 export async function requestLiveToken(roomId, role) {
   return invokeFunction("get-live-token", { room_id: roomId, role });
@@ -106,6 +118,22 @@ export async function fetchOwnQueueStatus(userId) {
   const { data, error } = await supabase.from("match_queue").select("*").eq("user_id", userId).maybeSingle();
   if (error) throw error;
   return data;
+}
+
+/**
+ * Keeps a "Live Sekarang" list fresh while its screen stays mounted — without
+ * this, a screen that was already open when a room went live or ended only
+ * ever saw the snapshot from its initial fetchLiveRooms() call. Fires
+ * onChange() on ANY insert/update/delete in live_rooms (a host going live,
+ * ending their room via endLiveRoom, etc.) so the caller can just re-run
+ * fetchLiveRooms(). Returns an unsubscribe fn.
+ */
+export function subscribeToLiveRooms(onChange) {
+  const channel = supabase
+    .channel("live_rooms_changes")
+    .on("postgres_changes", { event: "*", schema: "public", table: "live_rooms" }, () => onChange())
+    .subscribe();
+  return () => supabase.removeChannel(channel);
 }
 
 /** Calls onMatched(row) once this user's queue row flips to 'matched'. Returns an unsubscribe fn. */

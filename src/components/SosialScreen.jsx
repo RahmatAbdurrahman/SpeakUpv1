@@ -11,6 +11,7 @@ import {
   joinMatchQueue,
   cancelMatchQueue,
   subscribeToMatchQueue,
+  subscribeToLiveRooms,
   fetchFriends,
   fetchIncomingFriendRequests,
   sendFriendRequest,
@@ -92,6 +93,29 @@ export default function SosialScreen({ onNavigateHome, onNavigateSimulasi, onNav
     return () => {
       active = false;
       unsubscribeRef.current?.();
+    };
+  }, []);
+
+  // Keeps "Live Sekarang" correct while this screen stays open — otherwise
+  // it only ever reflects the one-time fetchLiveRooms() snapshot above from
+  // when the screen mounted. The realtime subscription catches a NEW room
+  // going live instantly; it can't be relied on for a room ENDING though —
+  // live_rooms' own SELECT policy is (status='live' OR host_id=auth.uid()),
+  // so once a host's room flips to 'ended' it stops matching a non-host
+  // viewer's row-level access and Realtime simply never delivers that
+  // update to them. The periodic refetch is what actually guarantees an
+  // ended room disappears from a browsing viewer's already-open list.
+  useEffect(() => {
+    const reloadRooms = () => {
+      fetchLiveRooms()
+        .then(setLiveRooms)
+        .catch(() => {});
+    };
+    const unsubscribeRealtime = subscribeToLiveRooms(reloadRooms);
+    const pollId = setInterval(reloadRooms, 20000);
+    return () => {
+      unsubscribeRealtime();
+      clearInterval(pollId);
     };
   }, []);
 

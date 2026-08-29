@@ -237,6 +237,26 @@
 }
 @keyframes simulasi-pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.3; } }
 
+.simulasi-viewer-badge {
+  position: absolute;
+  top: 16px;
+  left: 16px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(0, 0, 0, 0.55);
+  border-radius: 20px;
+  padding: 6px 12px;
+  color: #FFFFFF;
+  font-family: var(--font-family-base, 'Space Grotesk', sans-serif);
+  font-size: 12px;
+  font-weight: 700;
+}
+.simulasi-viewer-icon {
+  font-size: 12px;
+  line-height: 1;
+}
+
 .simulasi-recording-hint {
   font-family: var(--font-family-base, 'Space Grotesk', sans-serif);
   font-size: 13px;
