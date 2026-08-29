@@ -15,6 +15,7 @@ import iconFlash from "../assets/pages_assets/ai_analysis/Icons/Flash-Icon.svg";
 import iconAI from "../assets/pages_assets/ai_analysis/Icons/AI.svg";
 import videoGainXP from "../assets/pages_assets/gain_xp/Video-Gain-XP.webm";
 import { useGainXpPreloader, getPreloadedVideoSrc } from "../lib/assetPreloader";
+import SessionLoadingScreen from "./SessionLoadingScreen";
 import { supabase } from "../lib/supabaseClient";
 import {
   SCENARIOS,
@@ -1126,12 +1127,7 @@ export default function SimulasiScreen({ onNavigateHome, onNavigateSosial, onNav
   };
 
   if (step === "creating") {
-    return (
-      <div className="simulasi-processing-screen">
-        <div className="simulasi-processing-spinner" />
-        <p className="simulasi-processing-title">Menyiapkan sesi...</p>
-      </div>
-    );
+    return <SessionLoadingScreen text="Menyiapkan sesi..." />;
   }
 
   if (step === "topic" && scenario) {
