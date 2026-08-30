@@ -8,6 +8,7 @@ import iconFlash from "../assets/pages_assets/ai_analysis/Icons/Flash-Icon.svg";
 import iconMouth from "../assets/pages_assets/ai_analysis/Icons/Mouth-Icon.svg";
 import iconSpeed from "../assets/pages_assets/ai_analysis/Icons/Speed-Icon.svg";
 import iconArgument from "../assets/pages_assets/ai_analysis/Icons/Argument-Icon.svg";
+import iconSettings from "../assets/icons/Settings.svg";
 import { supabase } from "../lib/supabaseClient";
 import { fetchProfile } from "../lib/profile";
 import { fetchProgressSummary } from "../lib/progress";
@@ -116,20 +117,7 @@ export default function ProfileScreen({ onNavigateHome, onNavigatePractice, onNa
             onClick={onOpenSettings}
             aria-label="Pengaturan"
           >
-            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <path
-                d="M12 15a3 3 0 100-6 3 3 0 000 6z"
-                stroke="#243238"
-                strokeWidth="1.8"
-              />
-              <path
-                d="M19.4 13a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 11-2.83 2.83l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V19a2 2 0 11-4 0v-.09a1.65 1.65 0 00-1-1.51 1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 11-2.83-2.83l.06-.06a1.65 1.65 0 00.33-1.82 1.65 1.65 0 00-1.51-1H4a2 2 0 110-4h.09a1.65 1.65 0 001.51-1 1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 112.83-2.83l.06.06a1.65 1.65 0 001.82.33H10a1.65 1.65 0 001-1.51V4a2 2 0 114 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 112.83 2.83l-.06.06a1.65 1.65 0 00-.33 1.82V10a1.65 1.65 0 001.51 1H20a2 2 0 110 4h-.09a1.65 1.65 0 00-1.51 1z"
-                stroke="#243238"
-                strokeWidth="1.8"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              />
-            </svg>
+            <img src={iconSettings} alt="" className="profile-settings-icon" />
           </button>
         </div>
       </div>

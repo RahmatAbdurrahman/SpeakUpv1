@@ -16,6 +16,7 @@ import iconQuote from "../assets/pages_assets/ai_analysis/Icons/Quote-Icon.svg";
 import iconMouth from "../assets/pages_assets/ai_analysis/Icons/Mouth-Icon.svg";
 import iconFlash from "../assets/pages_assets/ai_analysis/Icons/Flash-Icon.svg";
 import iconAI from "../assets/pages_assets/ai_analysis/Icons/AI.svg";
+import iconDice from "../assets/icons/dice.svg";
 import videoGainXP from "../assets/pages_assets/gain_xp/Video-Gain-XP.webm";
 import { useGainXpPreloader, getPreloadedVideoSrc } from "../lib/assetPreloader";
 import { playXpTickSound, playXpCompleteSound, playGainXpIntroSound } from "../lib/soundEffects";
@@ -115,7 +116,8 @@ function TopicStep({ topics, loading, error, onBack, onStart, onShuffle, shuffli
               onClick={onShuffle}
               disabled={shuffling}
             >
-              {shuffling ? "⏳ Mengacak..." : "🎲 Ganti Topik Lain"}
+              <img src={iconDice} alt="" className="simulasi-topic-shuffle-icon" />
+              <span>{shuffling ? "Mengacak..." : "Ganti Topik Lain"}</span>
             </button>
           </div>
         )}

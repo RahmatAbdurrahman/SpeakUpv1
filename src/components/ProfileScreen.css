@@ -77,6 +77,13 @@
   transition: transform 0.1s ease;
 }
 
+.profile-settings-icon {
+  width: 20px;
+  height: 20px;
+  display: block;
+  filter: invert(16%) sepia(18%) saturate(563%) hue-rotate(152deg) brightness(95%) contrast(92%);
+}
+
 .btn-profile-settings:hover {
   background-color: #F8FAF9;
 }

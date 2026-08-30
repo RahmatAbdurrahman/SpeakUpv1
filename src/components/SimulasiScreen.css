@@ -792,10 +792,17 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 6px;
+  gap: 8px;
   transition: transform 0.12s ease, box-shadow 0.12s ease, filter 0.15s ease, background-color 0.15s ease;
   margin-top: 6px;
   -webkit-tap-highlight-color: transparent;
+}
+.simulasi-topic-shuffle-icon {
+  width: 15px;
+  height: 15px;
+  display: block;
+  flex-shrink: 0;
+  filter: invert(53%) sepia(85%) saturate(395%) hue-rotate(117deg) brightness(92%) contrast(87%);
 }
 .simulasi-topic-shuffle-btn:hover {
   background-color: #F0FAF6;
