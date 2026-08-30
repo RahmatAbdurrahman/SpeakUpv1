@@ -18,13 +18,20 @@ const KATEGORI_LABEL = {
   interview: "Interview",
 };
 
+const KATEGORI_CLASS = {
+  spontan: "profile-cat--spontan",
+  kelas: "profile-cat--presentasi",
+  lomba: "profile-cat--presentasi",
+  interview: "profile-cat--interview",
+};
+
 function formatDate(iso) {
   if (!iso) return "";
   return new Date(iso).toLocaleDateString("id-ID", { day: "numeric", month: "short", year: "numeric" });
 }
 
 export default function ProfileScreen({ onNavigateHome, onNavigatePractice, onNavigateSosial, onOpenSettings }) {
-  const { progressSummary } = useUserProgress();
+  const { progressSummary, xp } = useUserProgress();
   const [loading, setLoading] = useState(!progressSummary);
   const [errorMessage, setErrorMessage] = useState("");
   const [displayName, setDisplayName] = useState("");
@@ -73,6 +80,7 @@ export default function ProfileScreen({ onNavigateHome, onNavigatePractice, onNa
   const initial = displayName.trim().charAt(0).toUpperCase() || "?";
   const dnaScore = summary?.dnaScore != null ? Math.round(summary.dnaScore) : null;
   const maxTrend = Math.max(1, ...(summary?.dnaTrend ?? []).map((p) => p.agregat_skor));
+  const userLevel = Math.max(1, Math.floor((xp || 0) / 100) + 1);
 
   if (loading && !summary) {
     return (
@@ -87,9 +95,15 @@ export default function ProfileScreen({ onNavigateHome, onNavigatePractice, onNa
 
   return (
     <div className="profile-screen" data-name="Profile">
+      {/* ── Top Bar ─────────────────────────────────────────────── */}
       <div className="profile-topbar">
         <h1 className="profile-topbar-title">Progress</h1>
-        <button type="button" className="btn-profile-settings" onClick={onOpenSettings} aria-label="Pengaturan">
+        <button
+          type="button"
+          className="btn-profile-settings"
+          onClick={onOpenSettings}
+          aria-label="Pengaturan"
+        >
           <svg width="22" height="22" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
             <path
               d="M12 15a3 3 0 100-6 3 3 0 000 6z"
@@ -108,86 +122,199 @@ export default function ProfileScreen({ onNavigateHome, onNavigatePractice, onNa
       </div>
 
       <div className="profile-scroll-body">
-        {loading && <p className="profile-hint-text">Memuat...</p>}
+        {loading && <p className="profile-hint-text">Memuat profil...</p>}
         {!loading && errorMessage && <p className="profile-error-banner">{errorMessage}</p>}
 
         {!loading && !errorMessage && summary && (
           <>
+            {/* ── User Header Card ─────────────────────────────────── */}
             <div className="profile-header-card">
-              <div className="profile-avatar">{initial}</div>
+              <div className="profile-avatar-wrap">
+                <div className="profile-avatar">{initial}</div>
+                <div className="profile-level-badge">Lv. {userLevel}</div>
+              </div>
               <div className="profile-header-text">
                 <span className="profile-header-name">{displayName}</span>
-                <span className="profile-header-email">{summary.totalSesi} sesi latihan selesai</span>
+                <div className="profile-header-meta">
+                  <span className="profile-meta-pill">
+                    🎯 {summary.totalSesi} Sesi Latihan
+                  </span>
+                  <span className="profile-meta-pill profile-meta-pill--xp">
+                    ⚡ {(xp || 0).toLocaleString("id-ID")} XP
+                  </span>
+                </div>
               </div>
             </div>
 
+            {/* ── Speaking DNA Card ────────────────────────────────── */}
             <div className="profile-dna-card">
-              <span className="profile-dna-label">Speaking DNA</span>
+              <div className="profile-dna-badge">
+                <span className="profile-dna-badge-dot" />
+                <span>Speaking DNA</span>
+              </div>
+
               {dnaScore != null ? (
-                <span className="profile-dna-score">{dnaScore}</span>
+                <>
+                  <div className="profile-dna-score-wrap">
+                    <span className="profile-dna-score">{dnaScore}</span>
+                    <span className="profile-dna-max">/100</span>
+                  </div>
+                  <span className="profile-dna-status-pill">
+                    {dnaScore >= 80 ? "✨ Pembicara Percaya Diri" : dnaScore >= 60 ? "🔥 Performa Solid" : "🌱 Sedang Berkembang"}
+                  </span>
+                </>
               ) : (
-                <span className="profile-dna-empty">Selesaikan sesi pertamamu buat lihat skor ini</span>
+                <div className="profile-dna-empty-box">
+                  <span className="profile-dna-empty-icon">📊</span>
+                  <span className="profile-dna-empty">Selesaikan sesi latihan pertamamu untuk membuka skor Speaking DNA</span>
+                </div>
               )}
+
               {summary.dnaTrend.length > 1 && (
-                <div className="profile-dna-trend">
-                  {summary.dnaTrend.map((point) => (
-                    <div
-                      key={point.tanggal_snapshot}
-                      className="profile-dna-trend-bar"
-                      style={{ height: `${Math.max(10, (point.agregat_skor / maxTrend) * 40)}px` }}
-                      title={`${formatDate(point.tanggal_snapshot)}: ${Math.round(point.agregat_skor)}`}
-                    />
-                  ))}
+                <div className="profile-dna-trend-section">
+                  <span className="profile-dna-trend-title">Tren Perkembangan Terakhir</span>
+                  <div className="profile-dna-trend">
+                    {summary.dnaTrend.map((point) => (
+                      <div
+                        key={point.tanggal_snapshot}
+                        className="profile-dna-trend-col"
+                      >
+                        <div
+                          className="profile-dna-trend-bar"
+                          style={{ height: `${Math.max(12, (point.agregat_skor / maxTrend) * 44)}px` }}
+                          title={`${formatDate(point.tanggal_snapshot)}: ${Math.round(point.agregat_skor)}`}
+                        />
+                        <span className="profile-dna-trend-label">
+                          {new Date(point.tanggal_snapshot).toLocaleDateString("id-ID", { day: "numeric" })}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
                 </div>
               )}
             </div>
 
+            {/* ── Sub-Scores Breakdown ─────────────────────────────── */}
             <section className="profile-section">
-              <h2 className="profile-section-title">Rata-rata Skor</h2>
+              <div className="profile-section-header">
+                <h2 className="profile-section-title">4 Pilar Kemampuan Bicara</h2>
+                {summary.avgSkor != null && (
+                  <span className="profile-avg-badge">Rata-rata: {Math.round(summary.avgSkor)}</span>
+                )}
+              </div>
+
               {summary.avgSkor == null ? (
-                <p className="profile-hint-text">Belum ada sesi dengan feedback.</p>
+                <div className="profile-empty-card">
+                  <span className="profile-empty-icon">📈</span>
+                  <p className="profile-empty-title">Belum ada analisis skor</p>
+                  <p className="profile-empty-desc">Selesaikan minimal satu simulasi untuk melihat rincian 4 pilar kemampuan.</p>
+                </div>
               ) : (
-                <div className="profile-subscore-list">
-                  <div className="profile-subscore-row profile-subscore-row--total">
-                    <span>Keseluruhan</span>
-                    <span>{Math.round(summary.avgSkor)}</span>
+                <div className="profile-metrics-grid">
+                  {/* Fluency */}
+                  <div className="profile-metric-card">
+                    <div className="profile-metric-header">
+                      <div className="profile-metric-title-group">
+                        <span className="profile-metric-icon">⚡</span>
+                        <span className="profile-metric-title">Kelancaran</span>
+                      </div>
+                      <span className="profile-metric-score">
+                        {summary.avgSubScores.fluency != null ? Math.round(summary.avgSubScores.fluency) : "—"}
+                      </span>
+                    </div>
+                    <div className="profile-metric-bar-bg">
+                      <div
+                        className="profile-metric-bar-fill profile-bar--fluency"
+                        style={{ width: `${Math.min(100, summary.avgSubScores.fluency || 0)}%` }}
+                      />
+                    </div>
                   </div>
-                  <div className="profile-subscore-row">
-                    <span>Kelancaran (Fluency)</span>
-                    <span>{summary.avgSubScores.fluency != null ? Math.round(summary.avgSubScores.fluency) : "—"}</span>
+
+                  {/* Eye Contact */}
+                  <div className="profile-metric-card">
+                    <div className="profile-metric-header">
+                      <div className="profile-metric-title-group">
+                        <span className="profile-metric-icon">👁️</span>
+                        <span className="profile-metric-title">Kontak Mata</span>
+                      </div>
+                      <span className="profile-metric-score">
+                        {summary.avgSubScores.eye_contact != null ? Math.round(summary.avgSubScores.eye_contact) : "—"}
+                      </span>
+                    </div>
+                    <div className="profile-metric-bar-bg">
+                      <div
+                        className="profile-metric-bar-fill profile-bar--eye"
+                        style={{ width: `${Math.min(100, summary.avgSubScores.eye_contact || 0)}%` }}
+                      />
+                    </div>
                   </div>
-                  <div className="profile-subscore-row">
-                    <span>Kontak Mata</span>
-                    <span>{summary.avgSubScores.eye_contact != null ? Math.round(summary.avgSubScores.eye_contact) : "—"}</span>
+
+                  {/* Intonasi */}
+                  <div className="profile-metric-card">
+                    <div className="profile-metric-header">
+                      <div className="profile-metric-title-group">
+                        <span className="profile-metric-icon">🎙️</span>
+                        <span className="profile-metric-title">Intonasi</span>
+                      </div>
+                      <span className="profile-metric-score">
+                        {summary.avgSubScores.intonasi != null ? Math.round(summary.avgSubScores.intonasi) : "—"}
+                      </span>
+                    </div>
+                    <div className="profile-metric-bar-bg">
+                      <div
+                        className="profile-metric-bar-fill profile-bar--intonasi"
+                        style={{ width: `${Math.min(100, summary.avgSubScores.intonasi || 0)}%` }}
+                      />
+                    </div>
                   </div>
-                  <div className="profile-subscore-row">
-                    <span>Kesesuaian Materi</span>
-                    <span>
-                      {summary.avgSubScores.kesesuaian_materi != null ? Math.round(summary.avgSubScores.kesesuaian_materi) : "—"}
-                    </span>
-                  </div>
-                  <div className="profile-subscore-row">
-                    <span>Intonasi</span>
-                    <span>{summary.avgSubScores.intonasi != null ? Math.round(summary.avgSubScores.intonasi) : "—"}</span>
+
+                  {/* Struktur Materi */}
+                  <div className="profile-metric-card">
+                    <div className="profile-metric-header">
+                      <div className="profile-metric-title-group">
+                        <span className="profile-metric-icon">📑</span>
+                        <span className="profile-metric-title">Struktur Materi</span>
+                      </div>
+                      <span className="profile-metric-score">
+                        {summary.avgSubScores.kesesuaian_materi != null
+                          ? Math.round(summary.avgSubScores.kesesuaian_materi)
+                          : "—"}
+                      </span>
+                    </div>
+                    <div className="profile-metric-bar-bg">
+                      <div
+                        className="profile-metric-bar-fill profile-bar--materi"
+                        style={{ width: `${Math.min(100, summary.avgSubScores.kesesuaian_materi || 0)}%` }}
+                      />
+                    </div>
                   </div>
                 </div>
               )}
             </section>
 
+            {/* ── Peer Feedback Rating ─────────────────────────────── */}
             {peerRating && peerRating.count > 0 && (
               <section className="profile-section">
-                <h2 className="profile-section-title">Rating dari Penonton</h2>
-                <div className="profile-peer-rating-card">
-                  <div className="profile-peer-rating-score">
-                    <span className="profile-peer-rating-star">⭐</span>
-                    <span>{peerRating.avgStars.toFixed(1)}</span>
+                <div className="profile-section-header">
+                  <h2 className="profile-section-title">Rating dari Penonton</h2>
+                  <span className="profile-section-badge">{peerRating.count} Ulasan</span>
+                </div>
+
+                <div className="profile-peer-card">
+                  <div className="profile-peer-header">
+                    <div className="profile-peer-stars-wrap">
+                      <span className="profile-peer-star-icon">⭐</span>
+                      <span className="profile-peer-score-val">{peerRating.avgStars.toFixed(1)}</span>
+                      <span className="profile-peer-score-max">/5.0</span>
+                    </div>
+                    <span className="profile-peer-rating-count">Berdasarkan {peerRating.count} rating latihan</span>
                   </div>
-                  <span className="profile-peer-rating-count">{peerRating.count} rating</span>
+
                   {peerRating.topTags.length > 0 && (
-                    <div className="profile-peer-rating-tags">
+                    <div className="profile-peer-tags-wrap">
                       {peerRating.topTags.map((tag) => (
-                        <span key={tag} className="profile-peer-rating-tag">
-                          {tag}
+                        <span key={tag} className="profile-peer-tag">
+                          ✨ {tag}
                         </span>
                       ))}
                     </div>
@@ -196,27 +323,66 @@ export default function ProfileScreen({ onNavigateHome, onNavigatePractice, onNa
               </section>
             )}
 
+            {/* ── Riwayat Sesi ─────────────────────────────────────── */}
             <section className="profile-section">
-              <h2 className="profile-section-title">Riwayat Sesi</h2>
-              {summary.recentSessions.length === 0 && (
-                <p className="profile-hint-text">Belum ada sesi latihan. Yuk mulai dari tab Simulasi.</p>
-              )}
-              <div className="profile-history-list">
-                {summary.recentSessions.map((s) => (
-                  <div key={s.id} className="profile-history-row">
-                    <div className="profile-history-meta">
-                      <span className="profile-history-kategori">{KATEGORI_LABEL[s.kategori] || "Latihan"}</span>
-                      <span className="profile-history-date">{formatDate(s.date)}</span>
-                    </div>
-                    <span className="profile-history-skor">{s.skor != null ? s.skor : "—"}</span>
-                  </div>
-                ))}
+              <div className="profile-section-header">
+                <h2 className="profile-section-title">Riwayat Sesi Latihan</h2>
+                {summary.recentSessions.length > 0 && (
+                  <span className="profile-section-badge">{summary.recentSessions.length} Terakhir</span>
+                )}
               </div>
+
+              {summary.recentSessions.length === 0 && (
+                <div className="profile-empty-card">
+                  <span className="profile-empty-icon">🎙️</span>
+                  <p className="profile-empty-title">Belum ada riwayat sesi</p>
+                  <p className="profile-empty-desc">Mulai latihan di tab Simulasi untuk merekam sesi latihan pertamamu!</p>
+                </div>
+              )}
+
+              {summary.recentSessions.length > 0 && (
+                <div className="profile-history-list">
+                  {summary.recentSessions.map((s) => {
+                    const score = s.skor != null ? Math.round(s.skor) : null;
+                    const catClass = KATEGORI_CLASS[s.kategori] || "profile-cat--presentasi";
+                    const isHighScore = score != null && score >= 80;
+                    const isMidScore = score != null && score >= 60 && score < 80;
+
+                    return (
+                      <div key={s.id} className="profile-history-card">
+                        <div className="profile-history-left">
+                          <div className="profile-history-tags">
+                            <span className={`profile-cat-pill ${catClass}`}>
+                              {KATEGORI_LABEL[s.kategori] || "Latihan"}
+                            </span>
+                            <span className="profile-history-date">{formatDate(s.date)}</span>
+                          </div>
+                          <span className="profile-history-desc">Sesi Latihan Simulasi</span>
+                        </div>
+
+                        <div
+                          className={`profile-history-score-pill ${
+                            isHighScore
+                              ? "profile-score--high"
+                              : isMidScore
+                              ? "profile-score--mid"
+                              : "profile-score--low"
+                          }`}
+                        >
+                          <span className="profile-score-num">{score != null ? score : "—"}</span>
+                          <span className="profile-score-label">Skor</span>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
             </section>
           </>
         )}
       </div>
 
+      {/* ── Bottom Navigation Bar ───────────────────────────────── */}
       <div className="home-bottom-nav">
         <button type="button" className="home-nav-item" onClick={onNavigateHome} aria-label="Home">
           <img src={iconNavHome} alt="Home" className="home-nav-icon" />
