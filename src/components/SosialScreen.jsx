@@ -291,7 +291,7 @@ export default function SosialScreen({ onNavigateHome, onNavigateSimulasi, onNav
                 onClick={handleCreateLive}
                 disabled={creatingLive}
               >
-                {creatingLive ? "Menyiapkan..." : "🎙️ Buat Sesi Presentasi Live"}
+                {creatingLive ? "Menyiapkan..." : "Buat Sesi Presentasi Live"}
               </button>
             </div>
           )}
