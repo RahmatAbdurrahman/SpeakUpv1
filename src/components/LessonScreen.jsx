@@ -352,11 +352,19 @@ function LessonPage4({ onNext, onBack }) {
   };
 
   useEffect(() => {
-    playBreathingStartSound();
+    // Gentle delay after entering page before starting audio and video
+    const timer = setTimeout(() => {
+      playBreathingStartSound();
+      if (videoRef.current && !isCompleted) {
+        videoRef.current.play().catch(() => {});
+      }
+    }, 650);
+
+    return () => clearTimeout(timer);
   }, []);
 
   useEffect(() => {
-    if (videoRef.current && !isCompleted) {
+    if (cycle > 1 && videoRef.current && !isCompleted) {
       videoRef.current.play().catch(() => {});
     }
   }, [cycle, isCompleted]);
@@ -424,7 +432,6 @@ function LessonPage4({ onNext, onBack }) {
               ref={videoRef}
               src={videoHaleAnimation}
               className="lesson-p4-anim-video"
-              autoPlay
               muted
               playsInline
               onEnded={handleVideoEnded}
