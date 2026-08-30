@@ -90,7 +90,16 @@ export function playTapSound() {
 }
 
 /**
- * Play a crisp, pleasant rising tick sound when XP is counting up
+ * Pentatonic scale notes for Brilliant-style melodic XP count-up
+ * (C5, D5, E5, G5, A5, C6, D6, E6, G6, A6)
+ */
+const PENTATONIC_SCALE = [
+  523.25, 587.33, 659.25, 783.99, 880.00,
+  1046.50, 1174.66, 1318.51, 1567.98, 1760.00
+];
+
+/**
+ * Play a Brilliant.org style crisp wooden marimba/kalimba pop when XP counts up
  * @param {number} progress - 0.0 to 1.0 representing count-up progression
  */
 export function playXpTickSound(progress = 0) {
@@ -99,53 +108,109 @@ export function playXpTickSound(progress = 0) {
     if (!ctx) return;
 
     const now = ctx.currentTime;
-    const osc = ctx.createOscillator();
-    const gain = ctx.createGain();
+    const clampedProgress = Math.max(0, Math.min(1, progress));
+    
+    // Pick note from pentatonic scale based on progress
+    const noteIndex = Math.min(
+      Math.floor(clampedProgress * (PENTATONIC_SCALE.length - 1)),
+      PENTATONIC_SCALE.length - 1
+    );
+    const fundamentalFreq = PENTATONIC_SCALE[noteIndex];
 
-    osc.type = "sine";
-    // Pitch gently ascends as XP counts up (from 420Hz up to 860Hz)
-    const baseFreq = 420 + Math.max(0, Math.min(1, progress)) * 440;
-    osc.frequency.setValueAtTime(baseFreq, now);
-    osc.frequency.exponentialRampToValueAtTime(baseFreq * 1.05, now + 0.025);
+    // Master gain for the tick
+    const masterGain = ctx.createGain();
+    masterGain.gain.setValueAtTime(0.001, now);
+    masterGain.gain.linearRampToValueAtTime(0.18, now + 0.002);
+    masterGain.gain.exponentialRampToValueAtTime(0.0001, now + 0.065);
+    masterGain.connect(ctx.destination);
 
-    gain.gain.setValueAtTime(0.001, now);
-    gain.gain.linearRampToValueAtTime(0.09, now + 0.003);
-    gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.03);
+    // 1. Primary Marimba Fundamental (Sine with quick mallet attack)
+    const osc1 = ctx.createOscillator();
+    osc1.type = "sine";
+    osc1.frequency.setValueAtTime(fundamentalFreq * 1.35, now);
+    osc1.frequency.exponentialRampToValueAtTime(fundamentalFreq, now + 0.006);
+    osc1.connect(masterGain);
+    osc1.start(now);
+    osc1.stop(now + 0.07);
 
-    osc.connect(gain);
-    gain.connect(ctx.destination);
+    // 2. Woody Overtone (Triangle harmonic 2.76x for wooden bar resonance)
+    const osc2 = ctx.createOscillator();
+    const gain2 = ctx.createGain();
+    osc2.type = "triangle";
+    osc2.frequency.setValueAtTime(fundamentalFreq * 2.76, now);
+    gain2.gain.setValueAtTime(0.07, now);
+    gain2.gain.exponentialRampToValueAtTime(0.0001, now + 0.025);
+    osc2.connect(gain2);
+    gain2.connect(masterGain);
+    osc2.start(now);
+    osc2.stop(now + 0.03);
 
-    osc.start(now);
-    osc.stop(now + 0.035);
+    // 3. Subtle sub-pop for tactile punch (45Hz drop)
+    const oscSub = ctx.createOscillator();
+    const gainSub = ctx.createGain();
+    oscSub.type = "sine";
+    oscSub.frequency.setValueAtTime(fundamentalFreq * 0.5, now);
+    gainSub.gain.setValueAtTime(0.05, now);
+    gainSub.gain.exponentialRampToValueAtTime(0.0001, now + 0.015);
+    oscSub.connect(gainSub);
+    gainSub.connect(masterGain);
+    oscSub.start(now);
+    oscSub.stop(now + 0.02);
   } catch {}
 }
 
 /**
- * Play celebration chord when XP count finishes
+ * Play Brilliant-style sparkling celebration arpeggio when XP finishes counting
  */
 export function playXpCompleteSound() {
   try {
     const ctx = getAudioContext();
     if (!ctx) return;
 
-    const chord = [523.25, 659.25, 783.99, 1046.5]; // C5, E5, G5, C6
+    // Brilliant-style sparkling major triad + major 7th flourish
+    const chord = [523.25, 659.25, 783.99, 987.77, 1046.50, 1318.51]; // C5, E5, G5, B5, C6, E6
     chord.forEach((freq, i) => {
-      const now = ctx.currentTime + i * 0.06;
+      const noteTime = ctx.currentTime + i * 0.05;
+      
       const osc = ctx.createOscillator();
       const gain = ctx.createGain();
+      const filter = ctx.createBiquadFilter();
 
-      osc.type = "triangle";
-      osc.frequency.setValueAtTime(freq, now);
+      filter.type = "lowpass";
+      filter.frequency.setValueAtTime(3200, noteTime);
 
-      gain.gain.setValueAtTime(0.001, now);
-      gain.gain.linearRampToValueAtTime(0.12, now + 0.01);
-      gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.35);
+      osc.type = "sine";
+      osc.frequency.setValueAtTime(freq * 1.05, noteTime);
+      osc.frequency.exponentialRampToValueAtTime(freq, noteTime + 0.008);
 
-      osc.connect(gain);
+      gain.gain.setValueAtTime(0.001, noteTime);
+      gain.gain.linearRampToValueAtTime(0.14, noteTime + 0.006);
+      gain.gain.exponentialRampToValueAtTime(0.0001, noteTime + 0.55);
+
+      osc.connect(filter);
+      filter.connect(gain);
       gain.connect(ctx.destination);
 
-      osc.start(now);
-      osc.stop(now + 0.36);
+      osc.start(noteTime);
+      osc.stop(noteTime + 0.56);
+
+      // Shimmer octave overtone for the last 2 notes
+      if (i >= 4) {
+        const shimmerOsc = ctx.createOscillator();
+        const shimmerGain = ctx.createGain();
+        shimmerOsc.type = "triangle";
+        shimmerOsc.frequency.setValueAtTime(freq * 2, noteTime + 0.01);
+
+        shimmerGain.gain.setValueAtTime(0.001, noteTime + 0.01);
+        shimmerGain.gain.linearRampToValueAtTime(0.05, noteTime + 0.02);
+        shimmerGain.gain.exponentialRampToValueAtTime(0.0001, noteTime + 0.4);
+
+        shimmerOsc.connect(shimmerGain);
+        shimmerGain.connect(ctx.destination);
+
+        shimmerOsc.start(noteTime + 0.01);
+        shimmerOsc.stop(noteTime + 0.42);
+      }
     });
   } catch {}
 }
