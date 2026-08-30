@@ -344,26 +344,6 @@
 }
 @keyframes simulasi-pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.3; } }
 
-.simulasi-viewer-badge {
-  position: absolute;
-  top: 16px;
-  left: 16px;
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  background: rgba(0, 0, 0, 0.55);
-  border-radius: 20px;
-  padding: 6px 12px;
-  color: #FFFFFF;
-  font-family: var(--font-family-base, 'Space Grotesk', sans-serif);
-  font-size: 12px;
-  font-weight: 700;
-}
-.simulasi-viewer-icon {
-  font-size: 12px;
-  line-height: 1;
-}
-
 .simulasi-recording-hint {
   font-family: var(--font-family-base, 'Space Grotesk', sans-serif);
   font-size: 13px;
@@ -691,30 +671,6 @@
   flex-direction: column;
   gap: 10px;
   z-index: 10;
-}
-
-.btn-simulasi-golive {
-  width: 100%;
-  max-width: 366px;
-  height: 46px;
-  background-color: #FFFFFF;
-  color: #DC2626;
-  border: 1px solid rgba(220, 38, 38, 0.35);
-  border-radius: var(--buttons, 100px);
-  font-family: var(--font-family-base, 'Space Grotesk', sans-serif);
-  font-size: 14px;
-  font-weight: 700;
-  cursor: pointer;
-  transition: transform 0.12s ease;
-  margin: 0 auto;
-}
-.btn-simulasi-golive:active {
-  transform: translateY(1px);
-}
-.btn-simulasi-golive:disabled {
-  opacity: 0.6;
-  cursor: not-allowed;
-  transform: none;
 }
 
 .btn-simulasi-lanjut {

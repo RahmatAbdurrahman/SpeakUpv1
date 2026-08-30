@@ -6,9 +6,19 @@ import {
   subscribeToLiveQuestions,
   requestLiveToken,
   endLiveRoom,
+  fetchRoomViewerCount,
+  bumpViewerCount,
   friendlySosialError,
 } from "../lib/sosial";
-import { fetchGeneratedQuestions } from "../lib/simulasi";
+import {
+  fetchGeneratedQuestions,
+  uploadSessionAudio,
+  updateSessionAudio,
+  runAnalysis,
+  fetchSessionResults,
+  markSimulationCompleted,
+  friendlySimulasiError,
+} from "../lib/simulasi";
 import { supabase } from "../lib/supabaseClient";
 import {
   connectToRoom,
@@ -21,6 +31,7 @@ import {
   Track,
 } from "../lib/livekit";
 import PeerRatingModal from "./PeerRatingModal";
+import SessionLoadingScreen from "./SessionLoadingScreen";
 
 const AVATAR_COLORS = ["#E0F2FE:#0369A1", "#FEF3C7:#B45309", "#DCFCE7:#15803D", "#FCE7F3:#BE185D"];
 
@@ -44,9 +55,36 @@ function timeAgoShort(iso) {
   return `${Math.round(mins / 60)} jam lalu`;
 }
 
-export default function LiveRoomScreen({ roomData, onLeaveRoom }) {
+// ─── Presenter-only cosmetic boost on top of the REAL viewer_count. Never
+// shown to viewers themselves or on Sosial's "Live Sekarang" cards — those
+// always read the real, unmodified count (see fetchLiveRooms/SosialScreen).
+// Same irregular-cadence pattern as the old solo-Simulasi counter. ─────────
+function useFakeViewerBoost(active) {
+  const [boost, setBoost] = useState(() => 5 + Math.floor(Math.random() * 10));
+
+  useEffect(() => {
+    if (!active) return undefined;
+    let timeoutId;
+    const scheduleNext = () => {
+      timeoutId = setTimeout(() => {
+        setBoost((b) => Math.min(40, Math.max(2, b + Math.floor(Math.random() * 5) - 2)));
+        scheduleNext();
+      }, 2000 + Math.random() * 3000);
+    };
+    scheduleNext();
+    return () => clearTimeout(timeoutId);
+  }, [active]);
+
+  return boost;
+}
+
+export default function LiveRoomScreen({ roomData, onLeaveRoom, onSessionEnded }) {
   const roomTitle = roomData?.title || "Sesi Live";
   const speakerName = roomData?.hostName || "Host";
+  // Live Presentation always hands off simulationId (see LivePresentationScreen);
+  // duet/legacy rooms never do. That alone is enough to gate the new
+  // record-while-live + phase machinery to only the flow that needs it.
+  const isLivePresentation = Boolean(roomData?.simulationId);
 
   // LiveKit connection
   const roomRef = useRef(null);
@@ -63,6 +101,20 @@ export default function LiveRoomScreen({ roomData, onLeaveRoom }) {
   const [showMutedSnackbar, setShowMutedSnackbar] = useState(true);
   const mutedTimerRef = useRef(null);
 
+  // Live Presentation only: presenting -> qna, ended via "Selesaikan Sesi".
+  // Recording is a SEPARATE local getUserMedia+MediaRecorder, independent of
+  // the LiveKit publish — same reasoning as SimulasiScreen/LessonModul7Screen's
+  // recorders: keeps "what we analyse" decoupled from "what we broadcast".
+  const [livePhase, setLivePhase] = useState("presenting"); // "presenting" | "qna"
+  const [finishing, setFinishing] = useState(false);
+  const [finishError, setFinishError] = useState("");
+  const [realViewerCount, setRealViewerCount] = useState(0);
+  const recStreamRef = useRef(null);
+  const recorderRef = useRef(null);
+  const recChunksRef = useRef([]);
+  const recStartRef = useRef(null);
+  const viewerBoost = useFakeViewerBoost(isBroadcaster && isLivePresentation);
+
   // Q&A Drawer Bottom Sheet state
   const [isQaDrawerOpen, setIsQaDrawerOpen] = useState(false);
   const [questions, setQuestions] = useState([]);
@@ -78,9 +130,70 @@ export default function LiveRoomScreen({ roomData, onLeaveRoom }) {
   const [secondsElapsed, setSecondsElapsed] = useState(0);
   const [showRatingModal, setShowRatingModal] = useState(false);
 
-  // Viewers get asked to rate the presenter on their way out; broadcasters
-  // (rating themselves would be meaningless) leave straight away.
+  // Stops the local recorder and returns { blob, durationSeconds } — or null
+  // if nothing was ever captured (mic denied, or ended before it started).
+  const stopLocalRecording = () =>
+    new Promise((resolve) => {
+      const recorder = recorderRef.current;
+      if (!recorder || recorder.state === "inactive") {
+        resolve(null);
+        return;
+      }
+      const durationSeconds = Math.max(1, Math.round((Date.now() - recStartRef.current) / 1000));
+      recorder.onstop = () => {
+        const blob = new Blob(recChunksRef.current, { type: recorder.mimeType || "audio/webm" });
+        recStreamRef.current?.getTracks().forEach((t) => t.stop());
+        resolve({ blob, durationSeconds });
+      };
+      recorder.stop();
+    });
+
+  // The one way a Live Presentation ends, whether the presenter taps
+  // "Selesaikan Sesi" during Q&A or bails out early via the hang-up button —
+  // same finalize pipeline either way, matching how SimulasiScreen's
+  // handleRecordingFinished works: upload -> analyze-session ->
+  // generate-feedback -> mark the simulation done -> hand off the results.
+  const handleFinishLivePresentation = async () => {
+    setFinishing(true);
+    setFinishError("");
+    try {
+      if (roomData?.roomId) await endLiveRoom(roomData.roomId).catch(() => {});
+      roomRef.current?.disconnect();
+      roomRef.current = null;
+
+      const recorded = await stopLocalRecording();
+      if (!recorded) {
+        throw new Error("Rekaman tidak ditemukan — mikrofon mungkin tidak pernah aktif. Coba live lagi.");
+      }
+
+      const {
+        data: { user },
+        error: userErr,
+      } = await supabase.auth.getUser();
+      if (userErr || !user) throw new Error("Sesi login tidak ditemukan, coba masuk ulang.");
+
+      const audioPath = await uploadSessionAudio(user.id, roomData.sessionId, recorded.blob);
+      await updateSessionAudio(roomData.sessionId, audioPath);
+      await runAnalysis({ sessionId: roomData.sessionId, audioPath, durationSeconds: recorded.durationSeconds });
+      const results = await fetchSessionResults(roomData.sessionId);
+      await markSimulationCompleted(roomData.simulationId);
+
+      onSessionEnded?.({ sessionId: roomData.sessionId, results });
+    } catch (err) {
+      setFinishError(friendlySimulasiError(err));
+      setFinishing(false);
+    }
+  };
+
+  // Viewers get asked to rate the presenter on their way out; a Live
+  // Presentation broadcaster goes through the finalize pipeline above
+  // instead. Everything else (duet, legacy rooms with no simulationId)
+  // keeps the old plain leave.
   const handleLeaveClick = () => {
+    if (isBroadcaster && isLivePresentation) {
+      handleFinishLivePresentation();
+      return;
+    }
     if (isBroadcaster && roomData?.roomId) {
       endLiveRoom(roomData.roomId).catch(() => {});
     }
@@ -201,6 +314,85 @@ export default function LiveRoomScreen({ roomData, onLeaveRoom }) {
       roomRef.current = null;
     };
   }, [roomData?.roomId, roomData?.hostId]);
+
+  // ── Local recording for the AI pipeline (Live Presentation, broadcaster
+  // only) — deliberately independent of the LiveKit publish above. Starts
+  // once we're actually connected as the broadcaster; stopped explicitly by
+  // handleFinishLivePresentation, never by this effect's own cleanup, since
+  // the recording must survive the presenting -> qna phase change without
+  // interruption. ──────────────────────────────────────────────────────────
+  useEffect(() => {
+    if (!isBroadcaster || !isLivePresentation || connecting || connectionError) return undefined;
+    if (recorderRef.current) return undefined;
+    let cancelled = false;
+
+    (async () => {
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        if (cancelled) {
+          stream.getTracks().forEach((t) => t.stop());
+          return;
+        }
+        recStreamRef.current = stream;
+        const mimeType = window.MediaRecorder?.isTypeSupported?.("audio/webm") ? "audio/webm" : "";
+        const recorder = mimeType ? new MediaRecorder(stream, { mimeType }) : new MediaRecorder(stream);
+        recChunksRef.current = [];
+        recorder.ondataavailable = (e) => {
+          if (e.data.size > 0) recChunksRef.current.push(e.data);
+        };
+        recStartRef.current = Date.now();
+        recorder.start();
+        recorderRef.current = recorder;
+      } catch {
+        // Mic unavailable for the local recorder — handleFinishLivePresentation
+        // surfaces this as "rekaman tidak ditemukan" rather than faking a
+        // result. The broadcast itself (via LiveKit) is unaffected either way.
+      }
+    })();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [isBroadcaster, isLivePresentation, connecting, connectionError]);
+
+  // Stop the local recorder if the presenter backs out some other way
+  // (device back gesture, app close) without ever hitting "Selesaikan Sesi".
+  useEffect(() => {
+    return () => {
+      if (recorderRef.current && recorderRef.current.state !== "inactive") recorderRef.current.stop();
+      recStreamRef.current?.getTracks().forEach((t) => t.stop());
+    };
+  }, []);
+
+  // ── Viewer count: real, unmodified count for everyone (including the
+  // broadcaster's own blended badge below) — bumping only ever happens for
+  // actual viewers, never the broadcaster watching their own room. ────────
+  useEffect(() => {
+    if (!roomData?.roomId) return undefined;
+
+    if (!isBroadcaster) {
+      bumpViewerCount(roomData.roomId, 1).catch(() => {});
+      return () => {
+        bumpViewerCount(roomData.roomId, -1).catch(() => {});
+      };
+    }
+
+    if (!isLivePresentation) return undefined;
+    let active = true;
+    const poll = () => {
+      fetchRoomViewerCount(roomData.roomId)
+        .then((count) => {
+          if (active) setRealViewerCount(count);
+        })
+        .catch(() => {});
+    };
+    poll();
+    const intervalId = setInterval(poll, 5000);
+    return () => {
+      active = false;
+      clearInterval(intervalId);
+    };
+  }, [roomData?.roomId, isBroadcaster, isLivePresentation]);
 
   useEffect(() => {
     // Reset scroll on mount so parent doesn't hold previous scroll offset
@@ -336,6 +528,10 @@ export default function LiveRoomScreen({ roomData, onLeaveRoom }) {
     }
   };
 
+  if (finishing) {
+    return <SessionLoadingScreen text="Menganalisis presentasimu..." />;
+  }
+
   return (
     <div className="teams-call-container">
       {/* ── Toast Alert ─────────────────────────────────────────── */}
@@ -373,7 +569,15 @@ export default function LiveRoomScreen({ roomData, onLeaveRoom }) {
 
         <div className="teams-header-info">
           <h1 className="teams-room-title">{roomTitle}</h1>
-          <span className="teams-call-duration">{formatTimer(secondsElapsed)}</span>
+          <span className="teams-call-duration">
+            {formatTimer(secondsElapsed)}
+            {isBroadcaster && isLivePresentation && (
+              <span className="teams-viewer-badge" aria-hidden="true">
+                {" "}
+                · 👁 {realViewerCount + viewerBoost} menonton
+              </span>
+            )}
+          </span>
         </div>
 
         <div className="teams-top-actions">
@@ -454,21 +658,61 @@ export default function LiveRoomScreen({ roomData, onLeaveRoom }) {
         )}
       </div>
 
-      {/* ── Quick Q&A Open Trigger Banner ───────────────────────── */}
-      <button
-        type="button"
-        className="teams-qa-quick-trigger"
-        onClick={() => setIsQaDrawerOpen(true)}
-      >
-        <div className="teams-qa-trigger-left">
-          <span className="teams-qa-icon-bubble">💬</span>
-          <div className="teams-qa-trigger-text">
-            <span className="teams-qa-trigger-title">Q&A Sesi Terbuka ({questions.length} Pertanyaan)</span>
-            <span className="teams-qa-trigger-sub">Ketuk untuk bertanya ke {speakerName}</span>
+      {/* ── Quick Q&A Open Trigger Banner — Live Presentation's presenter
+          gets the phase-transition CTA here instead; everyone else (viewers,
+          duet) keeps the plain "open the Q&A drawer" trigger. ──────────── */}
+      {isBroadcaster && isLivePresentation ? (
+        livePhase === "presenting" ? (
+          <button
+            type="button"
+            className="teams-qa-quick-trigger teams-phase-trigger"
+            onClick={() => {
+              setLivePhase("qna");
+              setIsQaDrawerOpen(true);
+            }}
+          >
+            <div className="teams-qa-trigger-left">
+              <span className="teams-qa-icon-bubble">▶</span>
+              <div className="teams-qa-trigger-text">
+                <span className="teams-qa-trigger-title">Lanjut ke Sesi Tanya Jawab</span>
+                <span className="teams-qa-trigger-sub">{questions.length} pertanyaan sudah menunggu</span>
+              </div>
+            </div>
+          </button>
+        ) : (
+          <button
+            type="button"
+            className="teams-qa-quick-trigger teams-phase-trigger teams-phase-trigger--finish"
+            onClick={handleFinishLivePresentation}
+            disabled={finishing}
+          >
+            <div className="teams-qa-trigger-left">
+              <span className="teams-qa-icon-bubble">✅</span>
+              <div className="teams-qa-trigger-text">
+                <span className="teams-qa-trigger-title">{finishing ? "Menyelesaikan sesi..." : "Selesaikan Sesi"}</span>
+                <span className="teams-qa-trigger-sub">Analisis AI akan langsung diproses</span>
+              </div>
+            </div>
+          </button>
+        )
+      ) : (
+        <button
+          type="button"
+          className="teams-qa-quick-trigger"
+          onClick={() => setIsQaDrawerOpen(true)}
+        >
+          <div className="teams-qa-trigger-left">
+            <span className="teams-qa-icon-bubble">💬</span>
+            <div className="teams-qa-trigger-text">
+              <span className="teams-qa-trigger-title">Q&A Sesi Terbuka ({questions.length} Pertanyaan)</span>
+              <span className="teams-qa-trigger-sub">Ketuk untuk bertanya ke {speakerName}</span>
+            </div>
           </div>
-        </div>
-        <span className="teams-qa-trigger-arrow">▲</span>
-      </button>
+          <span className="teams-qa-trigger-arrow">▲</span>
+        </button>
+      )}
+
+      {finishError && <p className="teams-finish-error">{finishError}</p>}
 
       {/* ── Bottom Call Controls (Teams/Zoom Style) ─────────────── */}
       <div className="teams-bottom-controls">

@@ -34,7 +34,7 @@ function formatDate(iso) {
   return new Date(iso).toLocaleDateString("id-ID", { day: "numeric", month: "short", year: "numeric" });
 }
 
-export default function ProfileScreen({ onNavigateHome, onNavigatePractice, onNavigateSosial, onOpenSettings }) {
+export default function ProfileScreen({ onNavigateHome, onNavigatePractice, onNavigateSosial, onOpenSettings, onOpenSessionDetail }) {
   const { progressSummary, xp } = useUserProgress();
   const [loading, setLoading] = useState(!progressSummary);
   const [errorMessage, setErrorMessage] = useState("");
@@ -389,15 +389,35 @@ export default function ProfileScreen({ onNavigateHome, onNavigatePractice, onNa
                       const isMidScore = score != null && score >= 60 && score < 80;
 
                       return (
-                        <div key={s.id} className="profile-history-card">
+                        <div
+                          key={s.id}
+                          className="profile-history-card profile-history-card--tappable"
+                          role="button"
+                          tabIndex={0}
+                          onClick={() =>
+                            onOpenSessionDetail?.({ sessionId: s.id, kategori: s.kategori, date: s.date, isLive: s.isLive })
+                          }
+                          onKeyDown={(e) => {
+                            if (e.key === "Enter" || e.key === " ") {
+                              e.preventDefault();
+                              onOpenSessionDetail?.({ sessionId: s.id, kategori: s.kategori, date: s.date, isLive: s.isLive });
+                            }
+                          }}
+                        >
                           <div className="profile-history-left">
                             <div className="profile-history-tags">
                               <span className={`profile-cat-pill ${catClass}`}>
                                 {KATEGORI_LABEL[s.kategori] || "Latihan"}
                               </span>
+                              {s.isLive && <span className="profile-live-pill">Live</span>}
                               <span className="profile-history-date">{formatDate(s.date)}</span>
                             </div>
-                            <span className="profile-history-desc">Sesi Latihan Simulasi</span>
+                            <span className="profile-history-desc">
+                              {s.isLive ? "Sesi Live Presentasi" : "Sesi Latihan Simulasi"}
+                              {s.isLive && s.peerRatingCount > 0 && (
+                                <> · ⭐ {s.peerAvgStars.toFixed(1)} ({s.peerRatingCount})</>
+                              )}
+                            </span>
                           </div>
 
                           <div

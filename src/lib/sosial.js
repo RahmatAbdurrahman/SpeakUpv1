@@ -91,16 +91,20 @@ export async function goLive(sessionId) {
 }
 
 /**
- * Creates a brand new live presentation room from the Sosial screen,
- * making it immediately joinable by everyone in "Live Sekarang".
+ * Live Presentation now reuses the exact same "simulasi" pre-flight as the
+ * Presentasi scenario (upload materi → generate-notes → prep kamera) — the
+ * only thing that changes is what happens AFTER prep: instead of recording
+ * solo, the presenter goes live immediately. This just creates the
+ * simulation + session rows; going live itself is a separate step (see
+ * goLive() below) once materi/prep are done, same as LivePresentationScreen
+ * orchestrates it.
  */
-export async function createLivePresentationRoom(kategori = "kelas") {
+export async function createLivePresentationSession(kategori = "kelas") {
   const {
     data: { user },
   } = await supabase.auth.getUser();
   if (!user) throw new Error("Sesi pengguna tidak ditemukan");
 
-  // 1. Create a simulation record
   const { data: sim, error: simErr } = await supabase
     .from("simulations")
     .insert({ user_id: user.id, kategori, status: "in_progress" })
@@ -108,7 +112,6 @@ export async function createLivePresentationRoom(kategori = "kelas") {
     .single();
   if (simErr) throw simErr;
 
-  // 2. Create simulation_sessions record
   const { data: session, error: sessErr } = await supabase
     .from("simulation_sessions")
     .insert({ simulation_id: sim.id, session_status: "completed" })
@@ -116,31 +119,44 @@ export async function createLivePresentationRoom(kategori = "kelas") {
     .single();
   if (sessErr) throw sessErr;
 
-  // 3. Create live_rooms record
-  const { data: room, error: roomErr } = await supabase
-    .from("live_rooms")
-    .insert({ session_id: session.id, host_id: user.id, status: "live" })
-    .select()
-    .single();
-  if (roomErr) throw roomErr;
+  return { simulationId: sim.id, sessionId: session.id };
+}
 
-  // Get user display name
+export async function fetchOwnDisplayName() {
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return "Kamu";
   const { data: profile } = await supabase
     .from("profiles")
     .select("nama_panggilan, username")
     .eq("id", user.id)
     .maybeSingle();
+  return profile?.nama_panggilan || profile?.username || "Kamu";
+}
 
-  const hostName = profile?.nama_panggilan || profile?.username || "Kamu";
+/**
+ * Presenter-only viewer count for the live call UI itself — separate from
+ * the real-time list on Sosial. Polled rather than subscribed since it's
+ * only needed while this one screen is mounted and a short delay here isn't
+ * noticeable (same tradeoff as SosialScreen's own live-room polling).
+ */
+export async function fetchRoomViewerCount(roomId) {
+  const { data, error } = await supabase.from("live_rooms").select("viewer_count").eq("id", roomId).maybeSingle();
+  if (error) throw error;
+  return data?.viewer_count ?? 0;
+}
 
-  return {
-    roomId: room.id,
-    hostId: user.id,
-    sessionId: session.id,
-    title: `Live Presentasi: ${hostName}`,
-    hostName,
-    isHost: true,
-  };
+/**
+ * increment_viewer_count(p_room_id, delta) already existed in the DB but was
+ * never called from anywhere — viewer_count has sat at 0 on every live_rooms
+ * row ever created (confirmed by querying production). Call +1 when a viewer
+ * mounts LiveRoomScreen, -1 on their way out; never for the broadcaster
+ * themselves (they're not a viewer of their own room).
+ */
+export async function bumpViewerCount(roomId, delta) {
+  const { error } = await supabase.rpc("increment_viewer_count", { p_room_id: roomId, delta });
+  if (error) throw error;
 }
 
 /**

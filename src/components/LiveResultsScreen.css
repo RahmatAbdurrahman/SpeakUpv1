@@ -1,0 +1,31 @@
+/* ── Gain XP step (2 CTAs) — mirrors .lesson-cta-wrapper's positioning but
+   stacks two buttons instead of one, so it's a dedicated class rather than
+   overriding the shared single-button wrapper other screens still use. ──── */
+.live-gainxp-cta-wrapper {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  padding: 16px 20px 40px;
+  background: linear-gradient(to bottom, transparent 0%, #FAF8F3 40%);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  align-items: center;
+  z-index: 10;
+  box-sizing: border-box;
+}
+
+.btn-live-view-feedback {
+  width: 100%;
+  max-width: 366px;
+  height: 44px;
+  background: none;
+  border: 1px solid var(--color-border, rgba(20, 60, 63, 0.12));
+  border-radius: 34px;
+  color: var(--color-text-primary, #243238);
+  font-family: var(--font-family-base, 'Space Grotesk', sans-serif);
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+}

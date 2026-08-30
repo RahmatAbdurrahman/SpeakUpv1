@@ -9,7 +9,6 @@ import { supabase } from "../lib/supabaseClient";
 import {
   fetchLeaderboard,
   fetchLiveRooms,
-  createLivePresentationRoom,
   joinMatchQueue,
   cancelMatchQueue,
   subscribeToMatchQueue,
@@ -38,7 +37,7 @@ function timeAgo(iso) {
   return `${Math.round(mins / 60)} jam lalu`;
 }
 
-export default function SosialScreen({ onNavigateHome, onNavigateSimulasi, onNavigateProfile, onJoinRoom }) {
+export default function SosialScreen({ onNavigateHome, onNavigateSimulasi, onNavigateProfile, onJoinRoom, onStartLivePresentation }) {
   const [userId, setUserId] = useState(null);
   const [leaderboard, setLeaderboard] = useState([]);
   const [liveRooms, setLiveRooms] = useState([]);
@@ -50,7 +49,6 @@ export default function SosialScreen({ onNavigateHome, onNavigateSimulasi, onNav
   const [friendUsername, setFriendUsername] = useState("");
   const [friendActionMessage, setFriendActionMessage] = useState("");
   const [sendingRequest, setSendingRequest] = useState(false);
-  const [creatingLive, setCreatingLive] = useState(false);
   const { xp } = useUserProgress();
   const unsubscribeRef = useRef(null);
 
@@ -181,20 +179,10 @@ export default function SosialScreen({ onNavigateHome, onNavigateSimulasi, onNav
     }
   };
 
-  const handleCreateLive = async () => {
-    if (creatingLive) return;
-    setCreatingLive(true);
-    setErrorMessage("");
-    try {
-      const roomData = await createLivePresentationRoom("kelas");
-      if (onJoinRoom) {
-        onJoinRoom(roomData);
-      }
-    } catch (err) {
-      setErrorMessage(friendlySosialError(err));
-    } finally {
-      setCreatingLive(false);
-    }
+  // Materi upload + prep now happens BEFORE going live (LivePresentationScreen
+  // owns that whole wizard) — this screen just hands off, nothing async here.
+  const handleCreateLive = () => {
+    onStartLivePresentation?.();
   };
 
   if (loading && leaderboard.length === 0 && friends.length === 0 && liveRooms.length === 0) {
@@ -269,13 +257,8 @@ export default function SosialScreen({ onNavigateHome, onNavigateSimulasi, onNav
                 <span className="sosial-section-badge">{liveRooms.length} Aktif</span>
               )}
             </div>
-            <button
-              type="button"
-              className="btn-sosial-create-live"
-              onClick={handleCreateLive}
-              disabled={creatingLive}
-            >
-              {creatingLive ? "Menyiapkan..." : "➕ Mulai Live"}
+            <button type="button" className="btn-sosial-create-live" onClick={handleCreateLive}>
+              ➕ Mulai Live
             </button>
           </div>
 
@@ -285,13 +268,8 @@ export default function SosialScreen({ onNavigateHome, onNavigateSimulasi, onNav
               <img src={imgLive} alt="Live" className="sosial-live-empty-img" />
               <p className="sosial-empty-title">Belum ada sesi live saat ini</p>
               <p className="sosial-empty-desc">Mulai sesi presentasi live agar pengguna lain dapat bergabung dan menonton!</p>
-              <button
-                type="button"
-                className="btn-sosial-create-live-cta"
-                onClick={handleCreateLive}
-                disabled={creatingLive}
-              >
-                {creatingLive ? "Menyiapkan..." : "Buat Sesi Presentasi Live"}
+              <button type="button" className="btn-sosial-create-live-cta" onClick={handleCreateLive}>
+                Buat Sesi Presentasi Live
               </button>
             </div>
           )}

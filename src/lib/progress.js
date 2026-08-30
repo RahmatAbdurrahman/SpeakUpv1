@@ -110,9 +110,16 @@ export async function fetchProgressSummary(userId) {
       .limit(7),
     supabase
       .from("simulation_sessions")
-      .select("id, started_at, simulations!inner(kategori, user_id), simulation_feedback!inner(skor, sub_scores)", {
-        count: "exact",
-      })
+      .select(
+        // simulation_feedback dropped from !inner to a plain (optional) embed
+        // so Live Presentation sessions still show up even before/without AI
+        // feedback (e.g. the pre-Tahap-2 test rows that were never analysed
+        // at all — recorded in memory, real production rows). live_rooms and
+        // peer_feedback have no unique constraint on session_id, so Supabase
+        // treats both as one-to-many and returns arrays, not objects.
+        "id, started_at, simulations!inner(kategori, user_id), simulation_feedback(skor, sub_scores), live_rooms(id), peer_feedback(stars)",
+        { count: "exact" },
+      )
       .eq("simulations.user_id", userId)
       .eq("session_status", "completed")
       .order("started_at", { ascending: false })
@@ -139,11 +146,17 @@ export async function fetchProgressSummary(userId) {
     dnaTrend: (dnaHistory ?? []).slice().reverse(),
     avgSkor,
     avgSubScores,
-    recentSessions: (sessions ?? []).map((s) => ({
-      id: s.id,
-      date: s.started_at,
-      kategori: s.simulations?.kategori ?? null,
-      skor: s.simulation_feedback?.skor ?? null,
-    })),
+    recentSessions: (sessions ?? []).map((s) => {
+      const peerRows = Array.isArray(s.peer_feedback) ? s.peer_feedback : [];
+      return {
+        id: s.id,
+        date: s.started_at,
+        kategori: s.simulations?.kategori ?? null,
+        skor: s.simulation_feedback?.skor ?? null,
+        isLive: Array.isArray(s.live_rooms) && s.live_rooms.length > 0,
+        peerRatingCount: peerRows.length,
+        peerAvgStars: peerRows.length > 0 ? peerRows.reduce((sum, r) => sum + r.stars, 0) / peerRows.length : null,
+      };
+    }),
   };
 }

@@ -406,6 +406,37 @@
   color: #FFFFFF;
 }
 
+/* ── Live Presentation: presenter-only viewer badge + phase CTA ─────────── */
+.teams-viewer-badge {
+  font-weight: 500;
+  color: #94A3B8;
+}
+
+.teams-phase-trigger {
+  justify-content: flex-start;
+}
+
+.teams-phase-trigger--finish {
+  background: #DC2626;
+  box-shadow: 0 2px 8px rgba(220, 38, 38, 0.35);
+}
+.teams-phase-trigger--finish:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+.teams-finish-error {
+  margin: 0 8px 6px;
+  padding: 8px 12px;
+  border-radius: 10px;
+  background: rgba(220, 38, 38, 0.14);
+  border: 1px solid rgba(220, 38, 38, 0.35);
+  color: #FCA5A5;
+  font-size: 11px;
+  font-weight: 600;
+  text-align: center;
+}
+
 /* ── Bottom Call Controls ─────────────────────────────────────────────────── */
 .teams-bottom-controls {
   flex-shrink: 0;

@@ -40,7 +40,6 @@ import {
 } from "../lib/simulasi";
 import { useUserProgress } from "../context/UserProgressContext";
 import { SimulasiSkeleton } from "./SkeletonLoader";
-import { goLive } from "../lib/sosial";
 
 // ─── Simple category icons (placeholder — real Figma illustrations weren't
 // exportable this round; swap for real assets when available) ─────────────
@@ -144,7 +143,9 @@ function TopicStep({ topics, loading, error, onBack, onStart, onShuffle, shuffli
 }
 
 // ─── Upload step (Presentasi / Interview — PDF or CV) ──────────────────────
-function UploadStep({ scenario, uploading, error, onBack, onSubmit }) {
+// Exported: LivePresentationScreen reuses this verbatim for its own materi
+// upload step, since "logic Presentasi" now also powers Live Presentation.
+export function UploadStep({ scenario, uploading, error, onBack, onSubmit }) {
   const [file, setFile] = useState(null);
   const [localError, setLocalError] = useState("");
 
@@ -197,7 +198,8 @@ function UploadStep({ scenario, uploading, error, onBack, onSubmit }) {
 }
 
 // ─── Manual notes fallback (edge case 11.1 — PDF gagal diparse) ───────────
-function ManualNotesStep({ scenario, saving, onBack, onSubmit }) {
+// Exported for the same reason as UploadStep above (edge case 11.1 fallback).
+export function ManualNotesStep({ scenario, saving, onBack, onSubmit }) {
   const [text, setText] = useState("");
   return (
     <div className="simulasi-upload-screen">
@@ -243,7 +245,8 @@ function ManualNotesStep({ scenario, saving, onBack, onSubmit }) {
 // live front-camera preview (same getUserMedia pattern as RecordingStep) so
 // there's nothing heavy to wait for, and the user can check their framing
 // before recording, same as the Spontan scenario already does.
-function PrepStep({ scenario, notes, error, questionsLoading = false, onBack, onStart }) {
+// Exported for the same reason as UploadStep above.
+export function PrepStep({ scenario, notes, error, questionsLoading = false, startLabel = "Mulai Simulasi", onBack, onStart }) {
   const videoRef = useRef(null);
   const [stream, setStream] = useState(null);
   const [camError, setCamError] = useState(null);
@@ -328,7 +331,7 @@ function PrepStep({ scenario, notes, error, questionsLoading = false, onBack, on
 
       <div className="simulasi-prep-cta">
         <button type="button" className="btn-simulasi-lanjut" onClick={onStart} disabled={questionsLoading}>
-          {questionsLoading ? "Menyiapkan pertanyaan..." : "Mulai Simulasi"}
+          {questionsLoading ? "Menyiapkan pertanyaan..." : startLabel}
         </button>
       </div>
     </div>
@@ -342,31 +345,6 @@ const MIN_RECORDING_SECONDS = 15;
 // Mic energy above this (0-255 byte-frequency average) counts as "someone
 // said something" — same heuristic LessonModul7Screen's useSpeechCapture uses.
 const SILENCE_THRESHOLD = 12;
-
-// ─── Simulated "penonton" counter — purely cosmetic social-proof pressure
-// for practice, no real viewers/backend involved. Ticks by a small random
-// step on an irregular cadence (recursive setTimeout, not setInterval) so it
-// reads as organic rather than a mechanical, evenly-spaced tick. Deliberately
-// never touches live_rooms — that table is for REAL viewer counts on actual
-// Sosial live rooms (see lib/sosial.js) and must stay untouched by this.
-function useFakeViewerCount(active) {
-  const [count, setCount] = useState(() => 8 + Math.floor(Math.random() * 15));
-
-  useEffect(() => {
-    if (!active) return undefined;
-    let timeoutId;
-    const scheduleNext = () => {
-      timeoutId = setTimeout(() => {
-        setCount((c) => Math.min(64, Math.max(4, c + Math.floor(Math.random() * 5) - 2)));
-        scheduleNext();
-      }, 1800 + Math.random() * 2800);
-    };
-    scheduleNext();
-    return () => clearTimeout(timeoutId);
-  }, [active]);
-
-  return count;
-}
 
 // ─── Popup shown when a recording is stopped too early or in total silence.
 // Pauses (never stops) the recorder underneath so "Lanjutkan"/"Ulangi" can
@@ -442,7 +420,6 @@ function RecordingStep({ scenario, cheatSheet, questions = [], onBack, onFinish,
   // would otherwise see a stale `seconds` (0) — a ref always has the latest.
   const secondsRef = useRef(0);
   const detectedSpeechRef = useRef(false);
-  const viewerCount = useFakeViewerCount(isRecording);
 
   useEffect(() => {
     let active = true;
@@ -652,12 +629,6 @@ function RecordingStep({ scenario, cheatSheet, questions = [], onBack, onFinish,
             <span>{formatTime(seconds)}</span>
           </div>
         )}
-        {isRecording && !isInterview && (
-          <div className="simulasi-viewer-badge" aria-hidden="true">
-            <span className="simulasi-viewer-icon">👁</span>
-            <span>{viewerCount} menonton</span>
-          </div>
-        )}
         {isInterview && (
           <div className="simulasi-question-panel">
             <p className="simulasi-question-counter">
@@ -727,24 +698,15 @@ function SimulasiAnalysisChip({ label, tone }) {
   return <span className={`simulasi-analysis-chip simulasi-analysis-chip--${tone}`}>{label}</span>;
 }
 
-function ResultsStep({ results, onDone, canGoLive, onGoLive }) {
+// Exported: SessionDetailScreen (Riwayat Sesi drill-down) reuses this exact
+// scoring/metrics rendering — same fallback-default logic, so a history
+// detail view can never silently drift out of sync with the live results
+// screen. Deliberately excludes the hero/headline and the CTA (XP-gated
+// "Lanjut" doesn't mean anything when just looking back at old history).
+export function AnalysisCards({ results }) {
   const metrics = results?.metrics;
   const feedback = results?.feedback;
   const sub = feedback?.sub_scores || {};
-  const [goingLive, setGoingLive] = useState(false);
-  const [goLiveError, setGoLiveError] = useState("");
-  const { isReady: isXpReady } = useGainXpPreloader(videoGainXP);
-
-  const handleGoLive = async () => {
-    setGoingLive(true);
-    setGoLiveError("");
-    try {
-      await onGoLive();
-    } catch (err) {
-      setGoLiveError(friendlySimulasiError(err));
-      setGoingLive(false);
-    }
-  };
 
   const argScore = sub.argumentasi ?? sub.kesesuaian_materi ?? (feedback?.skor ? Math.round(feedback.skor) : 88);
   const relScore = sub.relevansi ?? sub.kesesuaian_materi ?? sub.fluency ?? 88;
@@ -820,6 +782,72 @@ function ResultsStep({ results, onDone, canGoLive, onGoLive }) {
   ];
 
   return (
+    <>
+      {scores.map((score) => (
+        <div className="simulasi-analysis-card" key={score.id}>
+          <div className="simulasi-analysis-card-top">
+            <div className="simulasi-analysis-card-heading">
+              <img src={score.icon} alt="" className="simulasi-analysis-icon" />
+              <p className="simulasi-analysis-card-label">{score.label}</p>
+            </div>
+            <p className="simulasi-analysis-score">
+              {score.value}
+              <span className="simulasi-analysis-score-unit">{score.unit}</span>
+            </p>
+          </div>
+          <p className="simulasi-analysis-note">{score.note}</p>
+          <SimulasiAnalysisChip label={score.chip} tone={score.chipTone} />
+        </div>
+      ))}
+
+      <div className="simulasi-analysis-grid">
+        {gridMetrics.map((metric) => (
+          <div className="simulasi-analysis-card simulasi-analysis-card--sm" key={metric.id}>
+            <img src={metric.icon} alt="" className="simulasi-analysis-icon" />
+            <p className="simulasi-analysis-card-label">{metric.label}</p>
+            <p
+              className={`simulasi-analysis-metric${
+                metric.valueTone === "warn" ? " simulasi-analysis-metric--warn" : ""
+              }`}
+            >
+              {metric.value}
+              <span className="simulasi-analysis-metric-unit">{metric.unit}</span>
+            </p>
+            <SimulasiAnalysisChip label={metric.chip} tone={metric.chipTone} />
+          </div>
+        ))}
+      </div>
+
+      <div className="simulasi-analysis-card">
+        <div className="simulasi-analysis-card-heading">
+          <img src={iconAI} alt="" className="simulasi-analysis-icon" />
+          <p className="simulasi-analysis-card-label">Feedback AI</p>
+        </div>
+        {feedback?.saran?.length > 0 ? (
+          <div className="simulasi-analysis-feedback">
+            {feedback.saran.map((item, i) => (
+              <p key={i} className="simulasi-analysis-feedback-item">
+                • {item}
+              </p>
+            ))}
+          </div>
+        ) : (
+          <p className="simulasi-analysis-feedback">
+            {feedback?.feedback ||
+              "Kamu sudah menyelesaikan sesi simulasi dengan baik! Pertahankan artikulasi dan kurangi kata pengisi di sesi berikutnya."}
+          </p>
+        )}
+      </div>
+    </>
+  );
+}
+
+// Exported: LiveResultsScreen reuses this verbatim for the post-live AI
+// feedback card — same shape (results, onDone), same visual language.
+export function ResultsStep({ results, onDone }) {
+  const { isReady: isXpReady } = useGainXpPreloader(videoGainXP);
+
+  return (
     <div className="simulasi-results-screen">
       <div className="simulasi-results-hero">
         <img src={imgAnalysisHero} alt="" className="simulasi-results-hero-img" />
@@ -830,77 +858,15 @@ function ResultsStep({ results, onDone, canGoLive, onGoLive }) {
           <p className="simulasi-results-eyebrow">Mantap!</p>
           <h1 className="simulasi-results-title">Kamu keren!</h1>
           <p className="simulasi-results-sub">
-            {feedback?.motivasi ||
+            {results?.feedback?.motivasi ||
               "Dengan latihan yang konsisten, kamu akan semakin mahir dan percaya diri dalam berbicara!"}
           </p>
         </div>
 
-        {scores.map((score) => (
-          <div className="simulasi-analysis-card" key={score.id}>
-            <div className="simulasi-analysis-card-top">
-              <div className="simulasi-analysis-card-heading">
-                <img src={score.icon} alt="" className="simulasi-analysis-icon" />
-                <p className="simulasi-analysis-card-label">{score.label}</p>
-              </div>
-              <p className="simulasi-analysis-score">
-                {score.value}
-                <span className="simulasi-analysis-score-unit">{score.unit}</span>
-              </p>
-            </div>
-            <p className="simulasi-analysis-note">{score.note}</p>
-            <SimulasiAnalysisChip label={score.chip} tone={score.chipTone} />
-          </div>
-        ))}
-
-        <div className="simulasi-analysis-grid">
-          {gridMetrics.map((metric) => (
-            <div className="simulasi-analysis-card simulasi-analysis-card--sm" key={metric.id}>
-              <img src={metric.icon} alt="" className="simulasi-analysis-icon" />
-              <p className="simulasi-analysis-card-label">{metric.label}</p>
-              <p
-                className={`simulasi-analysis-metric${
-                  metric.valueTone === "warn" ? " simulasi-analysis-metric--warn" : ""
-                }`}
-              >
-                {metric.value}
-                <span className="simulasi-analysis-metric-unit">{metric.unit}</span>
-              </p>
-              <SimulasiAnalysisChip label={metric.chip} tone={metric.chipTone} />
-            </div>
-          ))}
-        </div>
-
-        <div className="simulasi-analysis-card">
-          <div className="simulasi-analysis-card-heading">
-            <img src={iconAI} alt="" className="simulasi-analysis-icon" />
-            <p className="simulasi-analysis-card-label">Feedback AI</p>
-          </div>
-          {feedback?.saran?.length > 0 ? (
-            <div className="simulasi-analysis-feedback">
-              {feedback.saran.map((item, i) => (
-                <p key={i} className="simulasi-analysis-feedback-item">
-                  • {item}
-                </p>
-              ))}
-            </div>
-          ) : (
-            <p className="simulasi-analysis-feedback">
-              {feedback?.feedback ||
-                "Kamu sudah menyelesaikan sesi simulasi dengan baik! Pertahankan artikulasi dan kurangi kata pengisi di sesi berikutnya."}
-            </p>
-          )}
-        </div>
+        <AnalysisCards results={results} />
       </div>
 
       <div className="simulasi-results-cta">
-        {canGoLive && (
-          <>
-            {goLiveError && <p className="simulasi-error-banner">{goLiveError}</p>}
-            <button type="button" className="btn-simulasi-golive" onClick={handleGoLive} disabled={goingLive}>
-              {goingLive ? "Menyiapkan..." : "🔴 Jadikan Live"}
-            </button>
-          </>
-        )}
         <button
           type="button"
           className="btn-simulasi-lanjut"
@@ -1017,7 +983,7 @@ function SimulasiGainXpStep({ onClaim, xpEarned = 75 }) {
 }
 
 // ─── Main orchestrator ──────────────────────────────────────────────────────
-export default function SimulasiScreen({ onNavigateHome, onNavigateSosial, onNavigateProfile, userName, onGoLive }) {
+export default function SimulasiScreen({ onNavigateHome, onNavigateSosial, onNavigateProfile }) {
   // picker | creating | topic | upload | processing-materials | manual-notes
   // | prep | recording | processing | results
   const [step, setStep] = useState("picker");
@@ -1288,23 +1254,11 @@ export default function SimulasiScreen({ onNavigateHome, onNavigateSosial, onNav
   }
 
   if (step === "results" && results) {
-    const canGoLive = scenario?.kategori === "kelas" || scenario?.kategori === "lomba";
     return (
       <ResultsStep
         results={results}
         onDone={() => {
           setStep("gain-xp");
-        }}
-        canGoLive={canGoLive}
-        onGoLive={async () => {
-          const room = await goLive(sessionId);
-          onGoLive?.({
-            roomId: room.id,
-            hostId: room.host_id,
-            sessionId: room.session_id,
-            title: `Live: ${userName || "Latihan Presentasi"}`,
-            hostName: userName || "Kamu",
-          });
         }}
       />
     );

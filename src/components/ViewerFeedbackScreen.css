@@ -1,0 +1,254 @@
+.viewerfb-screen {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  background-color: var(--color-bg-app, #FAF8F3);
+  box-sizing: border-box;
+}
+
+.viewerfb-topbar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 20px 16px 12px;
+  flex-shrink: 0;
+}
+
+.viewerfb-back-btn {
+  background: none;
+  border: none;
+  padding: 4px;
+  cursor: pointer;
+  display: flex;
+}
+.viewerfb-back-icon {
+  width: 22px;
+  height: 22px;
+}
+
+.viewerfb-title {
+  font-family: var(--font-family-base, 'Space Grotesk', sans-serif);
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--color-text-primary, #243238);
+  margin: 0;
+}
+
+.viewerfb-scroll-body {
+  flex: 1;
+  overflow-y: auto;
+  padding: 4px 16px 32px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  box-sizing: border-box;
+}
+
+.viewerfb-hint {
+  font-family: var(--font-family-base, 'Space Grotesk', sans-serif);
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--color-text-caption, #8199A3);
+  text-align: center;
+  margin: 24px 0;
+}
+
+.viewerfb-error {
+  font-family: var(--font-family-base, 'Space Grotesk', sans-serif);
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--color-text-secondary, #DA5000);
+  background: rgba(218, 80, 0, 0.08);
+  border: 1px solid rgba(218, 80, 0, 0.24);
+  border-radius: 12px;
+  padding: 10px 14px;
+  margin: 0;
+}
+
+/* ── Summary card ─────────────────────────────────────────────────────── */
+.viewerfb-summary-card {
+  background: var(--color-surface, #FFFFFF);
+  border: 1px solid var(--color-border, rgba(20, 60, 63, 0.12));
+  border-radius: 16px;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  text-align: center;
+}
+
+.viewerfb-summary-score {
+  display: flex;
+  align-items: baseline;
+  gap: 3px;
+}
+.viewerfb-summary-num {
+  font-family: var(--font-family-base, 'Space Grotesk', sans-serif);
+  font-size: 34px;
+  font-weight: 700;
+  color: var(--color-text-primary, #243238);
+  letter-spacing: -1px;
+}
+.viewerfb-summary-max {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--color-text-caption, #8199A3);
+}
+
+.viewerfb-summary-count {
+  font-family: var(--font-family-base, 'Space Grotesk', sans-serif);
+  font-size: 12.5px;
+  font-weight: 500;
+  color: var(--color-text-caption, #8199A3);
+  margin: 0;
+}
+
+.viewerfb-summary-tags {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 6px;
+  margin-top: 4px;
+}
+
+.viewerfb-tag-chip {
+  font-family: var(--font-family-base, 'Space Grotesk', sans-serif);
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--color-primary-dark, #17674F);
+  background: rgba(36, 169, 129, 0.12);
+  border-radius: 20px;
+  padding: 4px 10px;
+}
+
+/* ── Empty state ──────────────────────────────────────────────────────── */
+.viewerfb-empty-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 6px;
+  padding: 32px 20px;
+  background: var(--color-surface, #FFFFFF);
+  border: 1px solid var(--color-border, rgba(20, 60, 63, 0.12));
+  border-radius: 16px;
+}
+.viewerfb-empty-icon {
+  font-size: 28px;
+  margin-bottom: 4px;
+}
+.viewerfb-empty-title {
+  font-family: var(--font-family-base, 'Space Grotesk', sans-serif);
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--color-text-primary, #243238);
+  margin: 0;
+}
+.viewerfb-empty-desc {
+  font-family: var(--font-family-base, 'Space Grotesk', sans-serif);
+  font-size: 12.5px;
+  font-weight: 500;
+  color: var(--color-text-caption, #8199A3);
+  margin: 0;
+  max-width: 280px;
+}
+
+/* ── Individual entries ───────────────────────────────────────────────── */
+.viewerfb-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.viewerfb-entry-card {
+  background: var(--color-surface, #FFFFFF);
+  border: 1px solid var(--color-border, rgba(20, 60, 63, 0.12));
+  border-radius: 14px;
+  padding: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.viewerfb-entry-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.viewerfb-entry-who {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+
+.viewerfb-avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: rgba(36, 169, 129, 0.14);
+  color: var(--color-primary-dark, #17674F);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-family-base, 'Space Grotesk', sans-serif);
+  font-size: 12px;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+
+.viewerfb-entry-who-text {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.viewerfb-entry-name {
+  font-family: var(--font-family-base, 'Space Grotesk', sans-serif);
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--color-text-primary, #243238);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.viewerfb-entry-time {
+  font-family: var(--font-family-base, 'Space Grotesk', sans-serif);
+  font-size: 10.5px;
+  font-weight: 500;
+  color: var(--color-text-caption, #8199A3);
+}
+
+.viewerfb-stars {
+  display: flex;
+  gap: 1px;
+  flex-shrink: 0;
+}
+.viewerfb-star {
+  font-size: 13px;
+  color: #E2E8F0;
+}
+.viewerfb-star.filled {
+  color: var(--color-xp, #E8A63D);
+}
+
+.viewerfb-entry-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.viewerfb-entry-comment {
+  font-family: var(--font-family-base, 'Space Grotesk', sans-serif);
+  font-size: 13px;
+  font-weight: 500;
+  font-style: italic;
+  color: var(--color-text-primary, #243238);
+  line-height: 1.5;
+  margin: 0;
+}

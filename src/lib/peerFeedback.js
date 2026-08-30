@@ -50,6 +50,33 @@ export async function fetchPeerFeedbackSummary(sessionId) {
   return summarize(data);
 }
 
+/** Individual ratings for one session, newest first — for the dedicated "Lihat Feedback dari Viewer" page. */
+export async function fetchPeerFeedbackEntries(sessionId) {
+  const { data, error } = await supabase
+    .from("peer_feedback")
+    .select("id, rater_id, stars, tags, comment, created_at")
+    .eq("session_id", sessionId)
+    .order("created_at", { ascending: false });
+  if (error) throw error;
+  if (!data || data.length === 0) return [];
+
+  const raterIds = [...new Set(data.map((r) => r.rater_id).filter(Boolean))];
+  let profileMap = new Map();
+  if (raterIds.length > 0) {
+    const { data: profiles } = await supabase.from("profiles").select("id, nama_panggilan, username").in("id", raterIds);
+    profileMap = new Map((profiles ?? []).map((p) => [p.id, p]));
+  }
+
+  return data.map((r) => ({
+    id: r.id,
+    stars: r.stars,
+    tags: r.tags ?? [],
+    comment: r.comment,
+    createdAt: r.created_at,
+    raterName: profileMap.get(r.rater_id)?.nama_panggilan || profileMap.get(r.rater_id)?.username || "Penonton",
+  }));
+}
+
 /** Aggregate rating across every session this user has ever presented — for the Progress dashboard. */
 export async function fetchMyPeerRatingSummary(userId) {
   const { data, error } = await supabase

@@ -559,6 +559,30 @@
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.02);
 }
 
+.profile-history-card--tappable {
+  cursor: pointer;
+  transition: transform 0.1s ease, box-shadow 0.1s ease;
+  -webkit-tap-highlight-color: transparent;
+}
+.profile-history-card--tappable:active {
+  transform: scale(0.98);
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.03);
+}
+.profile-history-card--tappable:focus-visible {
+  outline: 2px solid var(--color-primary, #24A981);
+  outline-offset: 2px;
+}
+
+.profile-live-pill {
+  font-family: var(--font-family-base, 'Space Grotesk', sans-serif);
+  font-size: 10px;
+  font-weight: 700;
+  color: #DC2626;
+  background: rgba(220, 38, 38, 0.1);
+  padding: 2px 8px;
+  border-radius: 100px;
+}
+
 .profile-history-left {
   display: flex;
   flex-direction: column;

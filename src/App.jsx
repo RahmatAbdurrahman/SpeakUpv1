@@ -11,6 +11,10 @@ import HomeScreen from "./components/HomeScreen";
 import SimulasiScreen from "./components/SimulasiScreen";
 import SosialScreen from "./components/SosialScreen";
 import LiveRoomScreen from "./components/LiveRoomScreen";
+import LivePresentationScreen from "./components/LivePresentationScreen";
+import LiveResultsScreen from "./components/LiveResultsScreen";
+import ViewerFeedbackScreen from "./components/ViewerFeedbackScreen";
+import SessionDetailScreen from "./components/SessionDetailScreen";
 import ModuleDetailScreen from "./components/ModuleDetailScreen";
 import LessonScreen from "./components/LessonScreen";
 import ProfileScreen from "./components/ProfileScreen";
@@ -25,6 +29,9 @@ function App() {
   const [selectedModule, setSelectedModule] = useState(null);
   const [selectedLesson, setSelectedLesson] = useState(null);
   const [selectedLiveRoom, setSelectedLiveRoom] = useState(null);
+  const [liveResults, setLiveResults] = useState(null); // { sessionId, results } once a Live Presentation ends
+  const [viewerFeedbackSessionId, setViewerFeedbackSessionId] = useState(null);
+  const [selectedHistorySession, setSelectedHistorySession] = useState(null); // { sessionId, kategori, date, isLive }
   const [userProfile, setUserProfile] = useState({
     name: "",
     email: "",
@@ -171,6 +178,21 @@ function App() {
     setCurrentScreen("sosial");
   };
 
+  const handleSessionEnded = ({ sessionId, results }) => {
+    setLiveResults({ sessionId, results });
+    setCurrentScreen("live-results");
+  };
+
+  const handleViewViewerFeedback = (sessionId) => {
+    setViewerFeedbackSessionId(sessionId);
+    setCurrentScreen("viewer-feedback");
+  };
+
+  const handleOpenSessionDetail = (session) => {
+    setSelectedHistorySession(session);
+    setCurrentScreen("session-detail");
+  };
+
   return (
     <UserProgressProvider>
       <PhoneFrame>
@@ -237,11 +259,9 @@ function App() {
 
         {currentScreen === "practice" && (
           <SimulasiScreen
-            userName={userProfile.name}
             onNavigateHome={() => setCurrentScreen("home")}
             onNavigateSosial={() => setCurrentScreen("sosial")}
             onNavigateProfile={() => setCurrentScreen("profile")}
-            onGoLive={handleJoinRoom}
           />
         )}
 
@@ -252,6 +272,14 @@ function App() {
             onNavigateSimulasi={() => setCurrentScreen("practice")}
             onNavigateProfile={() => setCurrentScreen("profile")}
             onJoinRoom={handleJoinRoom}
+            onStartLivePresentation={() => setCurrentScreen("live-presentation-setup")}
+          />
+        )}
+
+        {currentScreen === "live-presentation-setup" && (
+          <LivePresentationScreen
+            onBack={() => setCurrentScreen("sosial")}
+            onEnterLive={handleJoinRoom}
           />
         )}
 
@@ -261,6 +289,20 @@ function App() {
             onNavigatePractice={() => setCurrentScreen("practice")}
             onNavigateSosial={() => setCurrentScreen("sosial")}
             onOpenSettings={() => setCurrentScreen("settings")}
+            onOpenSessionDetail={handleOpenSessionDetail}
+          />
+        )}
+
+        {currentScreen === "session-detail" && selectedHistorySession && (
+          <SessionDetailScreen
+            sessionId={selectedHistorySession.sessionId}
+            kategori={selectedHistorySession.kategori}
+            date={selectedHistorySession.date}
+            isLive={selectedHistorySession.isLive}
+            onBack={() => {
+              setSelectedHistorySession(null);
+              setCurrentScreen("profile");
+            }}
           />
         )}
 
@@ -277,6 +319,29 @@ function App() {
           <LiveRoomScreen
             roomData={selectedLiveRoom}
             onLeaveRoom={handleLeaveLiveRoom}
+            onSessionEnded={handleSessionEnded}
+          />
+        )}
+
+        {currentScreen === "live-results" && liveResults && (
+          <LiveResultsScreen
+            results={liveResults.results}
+            sessionId={liveResults.sessionId}
+            onDone={() => {
+              setLiveResults(null);
+              setCurrentScreen("sosial");
+            }}
+            onViewViewerFeedback={handleViewViewerFeedback}
+          />
+        )}
+
+        {currentScreen === "viewer-feedback" && (
+          <ViewerFeedbackScreen
+            sessionId={viewerFeedbackSessionId}
+            onBack={() => {
+              setLiveResults(null);
+              setCurrentScreen("sosial");
+            }}
           />
         )}
 
