@@ -479,8 +479,10 @@ export default function SosialScreen({ onNavigateHome, onNavigateSimulasi, onNav
                     </div>
 
                     <div className="sosial-lb-score-pill">
-                      <span className="sosial-lb-score-val">{Math.round(row.avg_skor)}</span>
-                      <span className="sosial-lb-score-label">Skor</span>
+                      <span className="sosial-lb-score-val">
+                        {(row.xp ?? Math.round((row.sesi_count || 0) * 50 + (row.avg_skor || 0) * 2)).toLocaleString("id-ID")}
+                      </span>
+                      <span className="sosial-lb-score-label">XP</span>
                     </div>
                   </div>
                 );

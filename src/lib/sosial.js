@@ -13,7 +13,18 @@ import { supabase, invokeFunction } from "./supabaseClient";
 export async function fetchLeaderboard() {
   const { data, error } = await supabase.rpc("get_weekly_leaderboard");
   if (error) throw error;
-  return data ?? [];
+  return (data ?? [])
+    .map((row) => {
+      const xp =
+        typeof row.xp === "number"
+          ? row.xp
+          : Math.round((row.sesi_count || 0) * 50 + (row.avg_skor || 0) * 2);
+      return {
+        ...row,
+        xp,
+      };
+    })
+    .sort((a, b) => b.xp - a.xp);
 }
 
 export async function fetchLiveRooms() {
