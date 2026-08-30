@@ -709,14 +709,14 @@
   padding: 10px 16px;
   margin-top: 6px;
   background: #FFFFFF;
-  border: 1.5px solid rgba(36, 169, 129, 0.35);
+  border: 1.5px solid rgba(232, 117, 61, 0.35);
   border-radius: 100px;
   font-family: var(--font-family-base, 'Space Grotesk', sans-serif);
   font-size: 13px;
   font-weight: 700;
-  color: var(--color-secondary, #24A981);
+  color: var(--color-primary, #E8753D);
   cursor: pointer;
-  box-shadow: 0px 2px 0px 0px rgba(23, 103, 79, 0.12);
+  box-shadow: 0px 2px 0px 0px rgba(139, 72, 39, 0.12);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -725,13 +725,13 @@
 }
 
 .btn-profile-load-more:hover {
-  background-color: #E8F7F2;
-  border-color: #24A981;
+  background-color: #FFF5F0;
+  border-color: #E8753D;
 }
 
 .btn-profile-load-more:active {
   transform: translateY(1px);
-  box-shadow: 0px 1px 0px 0px rgba(23, 103, 79, 0.12);
+  box-shadow: 0px 1px 0px 0px rgba(139, 72, 39, 0.12);
 }
 
 /* ── Empty State Cards ────────────────────────────────────────────────────── */

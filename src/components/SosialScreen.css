@@ -112,15 +112,15 @@
 
 .btn-sosial-create-live {
   background-color: #FFFFFF;
-  color: var(--color-secondary, #24A981);
-  border: 1.5px solid var(--color-secondary, #24A981);
+  color: var(--color-primary, #E8753D);
+  border: 1.5px solid var(--color-primary, #E8753D);
   border-radius: 100px;
   padding: 5px 12px;
   font-family: var(--font-family-base, 'Space Grotesk', sans-serif);
   font-size: 12px;
   font-weight: 700;
   cursor: pointer;
-  box-shadow: 0px 2px 0px 0px #17674F;
+  box-shadow: 0px 2px 0px 0px #8B4827;
   display: inline-flex;
   align-items: center;
   gap: 4px;
@@ -129,34 +129,39 @@
 }
 
 .btn-sosial-create-live:hover {
-  background-color: #E8F7F2;
+  background-color: #FFF5F0;
 }
 
 .btn-sosial-create-live:active {
   transform: translateY(1px);
-  box-shadow: 0px 1px 0px 0px #17674F;
+  box-shadow: 0px 1px 0px 0px #8B4827;
 }
 
 .btn-sosial-create-live-cta {
   margin-top: 10px;
-  background-color: var(--color-secondary, #24A981);
+  background-color: var(--color-primary, #E8753D);
   color: #FFFFFF;
-  border: 1.5px solid #17674F;
-  border-radius: 100px;
-  padding: 10px 20px;
+  border: 1px solid #8B4827;
+  border-radius: 34px;
+  padding: 10px 22px;
   font-family: var(--font-family-base, 'Space Grotesk', sans-serif);
   font-size: 13px;
   font-weight: 700;
   cursor: pointer;
-  box-shadow: 0px 3px 0px 0px #17674F;
+  box-shadow: 0px 4px 0px 0px #8B4827;
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  transition: transform 0.1s ease, box-shadow 0.1s ease;
+  transition: transform 0.12s ease, box-shadow 0.12s ease, filter 0.15s ease;
 }
 
 .btn-sosial-create-live-cta:hover {
-  background-color: #1FAF86;
+  filter: brightness(1.05);
+}
+
+.btn-sosial-create-live-cta:active {
+  transform: translateY(2px);
+  box-shadow: 0px 2px 0px 0px #8B4827;
 }
 
 .btn-sosial-create-live-cta:active {
@@ -264,30 +269,30 @@
 
 .btn-sosial-match {
   width: 100%;
-  height: 48px;
-  background-color: #FFFFFF;
-  color: #17674F;
-  border: 1.5px solid #0E4434;
-  border-radius: 100px;
+  height: 46px;
+  background-color: var(--color-primary, #E8753D);
+  color: #FFFFFF;
+  border: 1px solid #8B4827;
+  border-radius: 34px;
   font-family: var(--font-family-base, 'Space Grotesk', sans-serif);
-  font-size: 15px;
+  font-size: 14px;
   font-weight: 700;
   cursor: pointer;
-  box-shadow: 0px 4px 0px 0px #0E4434;
+  box-shadow: 0px 4px 0px 0px #8B4827;
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 8px;
-  transition: transform 0.1s ease, box-shadow 0.1s ease;
+  transition: transform 0.12s ease, box-shadow 0.12s ease, filter 0.15s ease;
 }
 
 .btn-sosial-match:hover {
-  background-color: #F8FAF9;
+  filter: brightness(1.05);
 }
 
 .btn-sosial-match:active {
   transform: translateY(2px);
-  box-shadow: 0px 2px 0px 0px #0E4434;
+  box-shadow: 0px 2px 0px 0px #8B4827;
 }
 
 .btn-sosial-match--searching {
@@ -511,25 +516,25 @@
 .btn-sosial-join {
   width: 100%;
   height: 40px;
-  background-color: var(--color-secondary, #24A981);
+  background-color: var(--color-primary, #E8753D);
   color: #FFFFFF;
-  border: 1.5px solid #17674F;
-  border-radius: 100px;
+  border: 1px solid #8B4827;
+  border-radius: 34px;
   font-family: var(--font-family-base, 'Space Grotesk', sans-serif);
   font-size: 13px;
   font-weight: 700;
   cursor: pointer;
-  box-shadow: 0px 3px 0px 0px #17674F;
-  transition: transform 0.1s ease, box-shadow 0.1s ease;
+  box-shadow: 0px 3px 0px 0px #8B4827;
+  transition: transform 0.1s ease, box-shadow 0.1s ease, filter 0.15s ease;
 }
 
 .btn-sosial-join:hover {
-  background-color: #1FAF86;
+  filter: brightness(1.05);
 }
 
 .btn-sosial-join:active {
   transform: translateY(2px);
-  box-shadow: 0px 1px 0px 0px #17674F;
+  box-shadow: 0px 1px 0px 0px #8B4827;
 }
 
 /* ── Teman & Add Friend Bar ───────────────────────────────────────────────── */
@@ -567,18 +572,22 @@
 }
 
 .btn-sosial-add-friend {
-  background-color: var(--color-secondary, #24A981);
+  background-color: var(--color-primary, #E8753D);
   color: #FFFFFF;
-  border: 1px solid #17674F;
+  border: 1px solid #8B4827;
   border-radius: 100px;
   padding: 8px 16px;
   font-family: var(--font-family-base, 'Space Grotesk', sans-serif);
   font-size: 13px;
   font-weight: 700;
   cursor: pointer;
-  box-shadow: 0px 2px 0px 0px #17674F;
-  transition: transform 0.1s ease;
+  box-shadow: 0px 2px 0px 0px #8B4827;
+  transition: transform 0.1s ease, filter 0.15s ease;
   flex-shrink: 0;
+}
+
+.btn-sosial-add-friend:hover {
+  filter: brightness(1.05);
 }
 
 .btn-sosial-add-friend:disabled {
@@ -648,16 +657,21 @@
 }
 
 .btn-sosial-accept {
-  background: var(--color-secondary, #24A981);
+  background: var(--color-primary, #E8753D);
   color: #FFFFFF;
-  border: 1px solid #17674F;
+  border: 1px solid #8B4827;
   border-radius: 100px;
   padding: 6px 12px;
   font-family: var(--font-family-base, 'Space Grotesk', sans-serif);
   font-size: 12px;
   font-weight: 700;
   cursor: pointer;
-  box-shadow: 0px 2px 0px 0px #17674F;
+  box-shadow: 0px 2px 0px 0px #8B4827;
+  transition: transform 0.1s ease, filter 0.15s ease;
+}
+
+.btn-sosial-accept:hover {
+  filter: brightness(1.05);
 }
 
 .btn-sosial-decline {
