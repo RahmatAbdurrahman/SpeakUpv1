@@ -82,7 +82,11 @@ export default function ProfileScreen({ onNavigateHome, onNavigatePractice, onNa
   }, []);
 
   const initial = displayName.trim().charAt(0).toUpperCase() || "?";
-  const dnaScore = summary?.dnaScore != null ? Math.round(summary.dnaScore) : null;
+  const dnaScore = summary?.dnaScore != null 
+    ? Math.round(summary.dnaScore) 
+    : summary?.avgSkor != null 
+    ? Math.round(summary.avgSkor) 
+    : null;
   const maxTrend = Math.max(1, ...(summary?.dnaTrend ?? []).map((p) => p.agregat_skor));
 
   if (loading && !summary) {
