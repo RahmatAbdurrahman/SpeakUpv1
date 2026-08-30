@@ -211,7 +211,7 @@ function App() {
 
         {currentScreen === "questionnaire" && (
           <Questionnaires
-            onBackToOnboarding={handleQuestionnaireBackToAffirmation}
+            onBackToOnboarding={handleBackToOnboarding}
             onFinish={handleQuestionnaireFinish}
           />
         )}

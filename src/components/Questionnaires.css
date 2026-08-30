@@ -76,7 +76,6 @@
   transition: opacity 0.2s ease, transform 0.15s ease;
 }
 .btn-nav-back:hover { transform: translateX(-2px); }
-.btn-nav-back.is-first-step { opacity: 0; pointer-events: none; }
 .nav-back-icon { width: 24px; height: 24px; display: block; }
 .step-counter-text {
   font-family: var(--font-family-base, 'Space Grotesk', sans-serif);

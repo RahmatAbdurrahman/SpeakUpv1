@@ -407,7 +407,7 @@ export default function Questionnaires({
         <div className="topbar-nav-row" data-node-id="207:3159">
           <button
             type="button"
-            className={`btn-nav-back ${isFirstStep ? "is-first-step" : ""}`}
+            className="btn-nav-back"
             onClick={handleBack}
             aria-label="Kembali"
           >
