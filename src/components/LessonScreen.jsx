@@ -641,6 +641,17 @@ export default function LessonScreen({ lessonData, onBack, onFinish }) {
     });
   };
 
+  const goBack = () => {
+    setStep((prev) => {
+      if (prev === 5) return 4;
+      if (prev === 4) return 3;
+      if (prev === 3) return 2;
+      if (prev === 2) return 1;
+      handleRequestExit();
+      return prev;
+    });
+  };
+
   const handleRequestExit = () => {
     setShowExitModal(true);
   };
@@ -655,10 +666,10 @@ export default function LessonScreen({ lessonData, onBack, onFinish }) {
         />
       )}
       {step === 1 && <LessonPage1 onNext={goNext} onBack={handleRequestExit} />}
-      {step === 2 && <LessonPage2 onNext={goNext} onBack={handleRequestExit} />}
-      {step === 3 && <LessonPage3 onNext={goNext} onBack={handleRequestExit} />}
-      {step === 4 && <LessonPage4 onNext={goNext} onBack={handleRequestExit} />}
-      {step === 5 && <LessonPage5 onNext={goNext} onBack={handleRequestExit} />}
+      {step === 2 && <LessonPage2 onNext={goNext} onBack={goBack} />}
+      {step === 3 && <LessonPage3 onNext={goNext} onBack={goBack} />}
+      {step === 4 && <LessonPage4 onNext={goNext} onBack={goBack} />}
+      {step === 5 && <LessonPage5 onNext={goNext} onBack={goBack} />}
       {step === "completed" && <CompletedLesson onFinish={onFinish} />}
 
       {showExitModal && (

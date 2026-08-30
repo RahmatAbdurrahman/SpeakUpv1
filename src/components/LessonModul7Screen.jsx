@@ -1718,6 +1718,16 @@ export default function LessonModul7Screen({ onBack, onFinish }) {
     });
   };
 
+  const goBack = () => {
+    setStep((prev) => {
+      if (typeof prev === "number" && prev > 1) {
+        return prev - 1;
+      }
+      handleRequestExit();
+      return prev;
+    });
+  };
+
   if (!initialAffirmationDone) {
     return (
       <LessonAffirmation
@@ -1731,30 +1741,30 @@ export default function LessonModul7Screen({ onBack, onFinish }) {
   return (
     <div className="modul7-lesson-screen">
       {step === 1 && <LessonPage1 onNext={goNext} onBack={handleRequestExit} />}
-      {step === 2 && <LessonPage2 onNext={goNext} onBack={handleRequestExit} />}
-      {step === 3 && <LessonPage3 onNext={goNext} onBack={handleRequestExit} />}
-      {step === 4 && <LessonPage4 onNext={goNext} onBack={handleRequestExit} />}
-      {step === 5 && <LessonPage5 onNext={goNext} onBack={handleRequestExit} />}
-      {step === 6 && <LessonPage6 onNext={goNext} onBack={handleRequestExit} />}
-      {step === 7 && <PracticeIntro onNext={goNext} onBack={handleRequestExit} />}
-      {step === 8 && <PracticeTopic onNext={goNext} onBack={handleRequestExit} />}
-      {step === 9 && <PracticePrep onNext={goNext} onBack={handleRequestExit} />}
-      {step === 10 && <PracticeSpeak onNext={goNext} onBack={handleRequestExit} />}
-      {step === 11 && <PracticeQaIntro onNext={goNext} onBack={handleRequestExit} />}
+      {step === 2 && <LessonPage2 onNext={goNext} onBack={goBack} />}
+      {step === 3 && <LessonPage3 onNext={goNext} onBack={goBack} />}
+      {step === 4 && <LessonPage4 onNext={goNext} onBack={goBack} />}
+      {step === 5 && <LessonPage5 onNext={goNext} onBack={goBack} />}
+      {step === 6 && <LessonPage6 onNext={goNext} onBack={goBack} />}
+      {step === 7 && <PracticeIntro onNext={goNext} onBack={goBack} />}
+      {step === 8 && <PracticeTopic onNext={goNext} onBack={goBack} />}
+      {step === 9 && <PracticePrep onNext={goNext} onBack={goBack} />}
+      {step === 10 && <PracticeSpeak onNext={goNext} onBack={goBack} />}
+      {step === 11 && <PracticeQaIntro onNext={goNext} onBack={goBack} />}
       {step === 12 && (
-        <PracticeQuestionCue step={12} questionIndex={0} onNext={goNext} onBack={handleRequestExit} />
+        <PracticeQuestionCue step={12} questionIndex={0} onNext={goNext} onBack={goBack} />
       )}
       {step === 13 && (
-        <PracticeAnswer step={13} questionIndex={0} onNext={goNext} onBack={handleRequestExit} />
+        <PracticeAnswer step={13} questionIndex={0} onNext={goNext} onBack={goBack} />
       )}
-      {step === 14 && <PracticeInterlude onNext={goNext} onBack={handleRequestExit} />}
+      {step === 14 && <PracticeInterlude onNext={goNext} onBack={goBack} />}
       {step === 15 && (
-        <PracticeQuestionCue step={15} questionIndex={1} onNext={goNext} onBack={handleRequestExit} />
+        <PracticeQuestionCue step={15} questionIndex={1} onNext={goNext} onBack={goBack} />
       )}
       {step === 16 && (
-        <PracticeAnswer step={16} questionIndex={1} onNext={goNext} onBack={handleRequestExit} />
+        <PracticeAnswer step={16} questionIndex={1} onNext={goNext} onBack={goBack} />
       )}
-      {step === 17 && <PracticeSuccess onNext={goNext} onBack={handleRequestExit} />}
+      {step === 17 && <PracticeSuccess onNext={goNext} onBack={goBack} />}
       {step === "analyzing" && <AnalyzingScreen />}
       {step === "analysis-error" && (
         <AnalysisErrorScreen
