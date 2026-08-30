@@ -928,9 +928,10 @@
 }
 
 .sosial-live-empty-img {
-  width: 130px;
+  width: auto;
+  max-width: 100%;
   height: auto;
-  max-height: 110px;
+  max-height: 100px;
   object-fit: contain;
   margin-bottom: 8px;
   display: block;
