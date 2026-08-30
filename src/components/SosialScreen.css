@@ -100,7 +100,68 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
+  gap: 10px;
   margin-bottom: 12px;
+}
+
+.sosial-section-title-wrap {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.btn-sosial-create-live {
+  background-color: #FFFFFF;
+  color: var(--color-primary, #24A981);
+  border: 1.5px solid var(--color-primary, #24A981);
+  border-radius: 100px;
+  padding: 5px 12px;
+  font-family: var(--font-family-base, 'Space Grotesk', sans-serif);
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  box-shadow: 0px 2px 0px 0px #17674F;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  transition: transform 0.1s ease, box-shadow 0.1s ease;
+  flex-shrink: 0;
+}
+
+.btn-sosial-create-live:hover {
+  background-color: #E8F7F2;
+}
+
+.btn-sosial-create-live:active {
+  transform: translateY(1px);
+  box-shadow: 0px 1px 0px 0px #17674F;
+}
+
+.btn-sosial-create-live-cta {
+  margin-top: 10px;
+  background-color: var(--color-primary, #24A981);
+  color: #FFFFFF;
+  border: 1.5px solid #17674F;
+  border-radius: 100px;
+  padding: 10px 20px;
+  font-family: var(--font-family-base, 'Space Grotesk', sans-serif);
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  box-shadow: 0px 3px 0px 0px #17674F;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  transition: transform 0.1s ease, box-shadow 0.1s ease;
+}
+
+.btn-sosial-create-live-cta:hover {
+  background-color: #1FAF86;
+}
+
+.btn-sosial-create-live-cta:active {
+  transform: translateY(2px);
+  box-shadow: 0px 1px 0px 0px #17674F;
 }
 
 .sosial-section-title {
@@ -142,15 +203,14 @@
 /* ── Match Partner Card ───────────────────────────────────────────────────── */
 .sosial-match-card {
   position: relative;
-  background: linear-gradient(145deg, #24A981 0%, #17674F 100%);
+  background-color: var(--color-primary, #24A981);
   border-radius: 20px;
   padding: 20px;
   display: flex;
   flex-direction: column;
   gap: 14px;
-  box-shadow: 0 8px 24px rgba(23, 103, 79, 0.22);
+  box-shadow: 0 4px 16px rgba(23, 103, 79, 0.18);
   box-sizing: border-box;
-  overflow: hidden;
 }
 
 .sosial-match-badge {

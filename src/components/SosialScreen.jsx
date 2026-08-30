@@ -8,6 +8,7 @@ import { supabase } from "../lib/supabaseClient";
 import {
   fetchLeaderboard,
   fetchLiveRooms,
+  createLivePresentationRoom,
   joinMatchQueue,
   cancelMatchQueue,
   subscribeToMatchQueue,
@@ -48,6 +49,7 @@ export default function SosialScreen({ onNavigateHome, onNavigateSimulasi, onNav
   const [friendUsername, setFriendUsername] = useState("");
   const [friendActionMessage, setFriendActionMessage] = useState("");
   const [sendingRequest, setSendingRequest] = useState(false);
+  const [creatingLive, setCreatingLive] = useState(false);
   const { xp } = useUserProgress();
   const unsubscribeRef = useRef(null);
 
@@ -178,6 +180,22 @@ export default function SosialScreen({ onNavigateHome, onNavigateSimulasi, onNav
     }
   };
 
+  const handleCreateLive = async () => {
+    if (creatingLive) return;
+    setCreatingLive(true);
+    setErrorMessage("");
+    try {
+      const roomData = await createLivePresentationRoom("kelas");
+      if (onJoinRoom) {
+        onJoinRoom(roomData);
+      }
+    } catch (err) {
+      setErrorMessage(friendlySosialError(err));
+    } finally {
+      setCreatingLive(false);
+    }
+  };
+
   if (loading && leaderboard.length === 0 && friends.length === 0 && liveRooms.length === 0) {
     return (
       <SosialSkeleton
@@ -244,10 +262,20 @@ export default function SosialScreen({ onNavigateHome, onNavigateSimulasi, onNav
         {/* ── Live Sekarang Section ──────────────────────────────── */}
         <section className="sosial-section">
           <div className="sosial-section-header">
-            <h2 className="sosial-section-title">Live Sekarang</h2>
-            {liveRooms.length > 0 && (
-              <span className="sosial-section-badge">{liveRooms.length} Aktif</span>
-            )}
+            <div className="sosial-section-title-wrap">
+              <h2 className="sosial-section-title">Live Sekarang</h2>
+              {liveRooms.length > 0 && (
+                <span className="sosial-section-badge">{liveRooms.length} Aktif</span>
+              )}
+            </div>
+            <button
+              type="button"
+              className="btn-sosial-create-live"
+              onClick={handleCreateLive}
+              disabled={creatingLive}
+            >
+              {creatingLive ? "Menyiapkan..." : "➕ Mulai Live"}
+            </button>
           </div>
 
           {loading && <p className="sosial-hint-text">Memuat sesi live...</p>}
@@ -255,7 +283,15 @@ export default function SosialScreen({ onNavigateHome, onNavigateSimulasi, onNav
             <div className="sosial-empty-card">
               <span className="sosial-empty-icon">🎙️</span>
               <p className="sosial-empty-title">Belum ada sesi live saat ini</p>
-              <p className="sosial-empty-desc">Mulai latihan di tab Simulasi untuk membuat sesi latihan baru!</p>
+              <p className="sosial-empty-desc">Mulai sesi presentasi live agar pengguna lain dapat bergabung dan menonton!</p>
+              <button
+                type="button"
+                className="btn-sosial-create-live-cta"
+                onClick={handleCreateLive}
+                disabled={creatingLive}
+              >
+                {creatingLive ? "Menyiapkan..." : "🎙️ Buat Sesi Presentasi Live"}
+              </button>
             </div>
           )}
 

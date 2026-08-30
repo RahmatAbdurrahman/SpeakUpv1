@@ -91,6 +91,59 @@ export async function goLive(sessionId) {
 }
 
 /**
+ * Creates a brand new live presentation room from the Sosial screen,
+ * making it immediately joinable by everyone in "Live Sekarang".
+ */
+export async function createLivePresentationRoom(kategori = "kelas") {
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) throw new Error("Sesi pengguna tidak ditemukan");
+
+  // 1. Create a simulation record
+  const { data: sim, error: simErr } = await supabase
+    .from("simulations")
+    .insert({ user_id: user.id, kategori, status: "in_progress" })
+    .select()
+    .single();
+  if (simErr) throw simErr;
+
+  // 2. Create simulation_sessions record
+  const { data: session, error: sessErr } = await supabase
+    .from("simulation_sessions")
+    .insert({ simulation_id: sim.id, session_status: "in_progress" })
+    .select()
+    .single();
+  if (sessErr) throw sessErr;
+
+  // 3. Create live_rooms record
+  const { data: room, error: roomErr } = await supabase
+    .from("live_rooms")
+    .insert({ session_id: session.id, host_id: user.id, status: "live" })
+    .select()
+    .single();
+  if (roomErr) throw roomErr;
+
+  // Get user display name
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select("nama_panggilan, username")
+    .eq("id", user.id)
+    .maybeSingle();
+
+  const hostName = profile?.nama_panggilan || profile?.username || "Kamu";
+
+  return {
+    roomId: room.id,
+    hostId: user.id,
+    sessionId: session.id,
+    title: `Live Presentasi: ${hostName}`,
+    hostName,
+    isHost: true,
+  };
+}
+
+/**
  * Flips a room back out of "Live Sekarang" once its host leaves. Without
  * this, a room inserted by goLive() stays status='live' forever (nothing
  * else ever wrote to it) and keeps showing in fetchLiveRooms() long after
