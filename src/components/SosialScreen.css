@@ -204,7 +204,7 @@
 .sosial-match-card {
   position: relative;
   background-color: var(--color-primary, #24A981);
-  border-radius: 20px;
+  border-radius: 14px;
   padding: 20px;
   display: flex;
   flex-direction: column;
@@ -381,7 +381,7 @@
 .sosial-live-card {
   background: #FFFFFF;
   border: 1px solid rgba(20, 60, 63, 0.08);
-  border-radius: 16px;
+  border-radius: 14px;
   padding: 16px;
   box-shadow: 0 4px 14px rgba(0, 0, 0, 0.03);
   display: flex;
@@ -775,7 +775,7 @@
 .sosial-leaderboard-container {
   background: #FFFFFF;
   border: 1px solid rgba(20, 60, 63, 0.08);
-  border-radius: 18px;
+  border-radius: 14px;
   padding: 8px;
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.03);
   display: flex;
@@ -913,7 +913,7 @@
 .sosial-empty-card {
   background: #FFFFFF;
   border: 1px dashed rgba(20, 60, 63, 0.15);
-  border-radius: 16px;
+  border-radius: 14px;
   padding: 24px 20px;
   text-align: center;
   display: flex;
@@ -925,16 +925,6 @@
 .sosial-empty-icon {
   font-size: 28px;
   margin-bottom: 4px;
-}
-
-.sosial-live-empty-img {
-  width: auto;
-  max-width: 100%;
-  height: auto;
-  max-height: 100px;
-  object-fit: contain;
-  margin-bottom: 8px;
-  display: block;
 }
 
 .sosial-empty-title {
