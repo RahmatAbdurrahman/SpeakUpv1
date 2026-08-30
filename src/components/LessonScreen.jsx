@@ -4,7 +4,7 @@ import LessonModul7Screen from "./LessonModul7Screen";
 import LessonExitModal from "./LessonExitModal";
 import { useAssetPreloader, useGainXpPreloader, getPreloadedVideoSrc } from "../lib/assetPreloader";
 import { useUserProgress } from "../context/UserProgressContext";
-import { playXpTickSound, playXpCompleteSound, playGainXpIntroSound } from "../lib/soundEffects";
+import { playXpTickSound, playXpCompleteSound, playGainXpIntroSound, playBreathingCompleteSound } from "../lib/soundEffects";
 import "./LessonScreen.css";
 
 // ─── Assets ──────────────────────────────────────────────────────────────────
@@ -356,6 +356,12 @@ function LessonPage4({ onNext, onBack }) {
       videoRef.current.play().catch(() => {});
     }
   }, [cycle, isCompleted]);
+
+  useEffect(() => {
+    if (isCompleted) {
+      playBreathingCompleteSound();
+    }
+  }, [isCompleted]);
 
   return (
     <div className="lesson-page lesson-page-4" data-node-id="279:407" data-name="Lesson-TarikNapas">

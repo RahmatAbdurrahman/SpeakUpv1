@@ -293,6 +293,68 @@ export function playGainXpIntroSound() {
 }
 
 /**
+ * Play a deeply satisfying, calming zen singing bowl & crystal chime when breathing exercise completes
+ */
+export function playBreathingCompleteSound() {
+  try {
+    const ctx = getAudioContext();
+    if (!ctx) return;
+
+    const now = ctx.currentTime;
+
+    // 1. Zen Singing Bowl Harmonic Resonance (F Major / Solfeggio soothing grounding chord)
+    const bowlFrequencies = [174.61, 261.63, 349.23, 440.00, 523.25, 698.46];
+
+    bowlFrequencies.forEach((freq, idx) => {
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      const filter = ctx.createBiquadFilter();
+
+      filter.type = "lowpass";
+      filter.frequency.setValueAtTime(1200 + idx * 250, now);
+
+      osc.type = idx % 2 === 0 ? "sine" : "triangle";
+      osc.frequency.setValueAtTime(freq * 1.008, now);
+      osc.frequency.exponentialRampToValueAtTime(freq, now + 0.04);
+
+      const peakGain = 0.14 / (1 + idx * 0.4);
+      gain.gain.setValueAtTime(0.0001, now);
+      gain.gain.linearRampToValueAtTime(peakGain, now + 0.015);
+      gain.gain.exponentialRampToValueAtTime(0.00001, now + 2.4);
+
+      osc.connect(filter);
+      filter.connect(gain);
+      gain.connect(ctx.destination);
+
+      osc.start(now);
+      osc.stop(now + 2.45);
+    });
+
+    // 2. Gentle Crystal Sparkles that bloom softly
+    const crystalNotes = [880.00, 1046.50, 1318.51, 1567.98];
+    crystalNotes.forEach((freq, i) => {
+      const noteTime = now + 0.2 + i * 0.08;
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+
+      osc.type = "sine";
+      osc.frequency.setValueAtTime(freq * 1.01, noteTime);
+      osc.frequency.exponentialRampToValueAtTime(freq, noteTime + 0.01);
+
+      gain.gain.setValueAtTime(0.0001, noteTime);
+      gain.gain.linearRampToValueAtTime(0.06, noteTime + 0.008);
+      gain.gain.exponentialRampToValueAtTime(0.00001, noteTime + 1.2);
+
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+
+      osc.start(noteTime);
+      osc.stop(noteTime + 1.25);
+    });
+  } catch {}
+}
+
+/**
  * Global click listener for real action/CTA buttons & card buttons
  * (Includes CTA buttons and card buttons with shadows; excludes bottom nav, icon-only buttons, back buttons, settings, close buttons)
  */
