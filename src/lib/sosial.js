@@ -111,7 +111,7 @@ export async function createLivePresentationRoom(kategori = "kelas") {
   // 2. Create simulation_sessions record
   const { data: session, error: sessErr } = await supabase
     .from("simulation_sessions")
-    .insert({ simulation_id: sim.id, session_status: "in_progress" })
+    .insert({ simulation_id: sim.id, session_status: "completed" })
     .select()
     .single();
   if (sessErr) throw sessErr;
