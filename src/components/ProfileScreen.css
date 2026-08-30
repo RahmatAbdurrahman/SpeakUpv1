@@ -162,7 +162,7 @@
   font-family: var(--font-family-base, 'Space Grotesk', sans-serif);
   font-size: 12px;
   font-weight: 700;
-  color: var(--color-primary, #24A981);
+  color: var(--color-secondary, #24A981);
   background: rgba(36, 169, 129, 0.1);
   padding: 2px 8px;
   border-radius: 100px;
@@ -600,7 +600,7 @@
   box-shadow: 0 1px 4px rgba(0, 0, 0, 0.03);
 }
 .profile-history-card--tappable:focus-visible {
-  outline: 2px solid var(--color-primary, #24A981);
+  outline: 2px solid var(--color-secondary, #24A981);
   outline-offset: 2px;
 }
 
@@ -714,7 +714,7 @@
   font-family: var(--font-family-base, 'Space Grotesk', sans-serif);
   font-size: 13px;
   font-weight: 700;
-  color: var(--color-primary, #24A981);
+  color: var(--color-secondary, #24A981);
   cursor: pointer;
   box-shadow: 0px 2px 0px 0px rgba(23, 103, 79, 0.12);
   display: flex;

@@ -43,9 +43,15 @@
    SpeakUp Design System Tokens (from design.md)
    ========================================================================== */
 :root {
-  /* Color Tokens */
-  --color-primary: #24A981;
-  --color-secondary: #E8753D;
+  /* Color Tokens - Orange is Primary (#E8753D), Green is Secondary (#24A981) */
+  --color-primary: #E8753D;
+  --color-primary-dark: #8B4827;
+  --color-secondary: #24A981;
+  --color-secondary-dark: #17674F;
+  --color-orange: #E8753D;
+  --color-orange-dark: #8B4827;
+  --color-green: #24A981;
+  --color-green-dark: #17674F;
   --color-text-primary: #243238;
   --color-text-secondary: #DA5000;
   --color-text-caption: #8199A3;

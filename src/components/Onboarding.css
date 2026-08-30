@@ -109,7 +109,7 @@
 
 /* Primary Button: MULAI SEKARANG */
 .btn-start {
-  background-color: var(--color-secondary, #E8753D);
+  background-color: var(--color-primary, #E8753D);
   color: #FFFFFF;
   border: 1px solid #8B4827;
   box-shadow: 0px 4px 0px 0px #8B4827;

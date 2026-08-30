@@ -648,13 +648,13 @@
 /* Card Selected Outline & Active State */
 .practice-rapid-card.selected,
 .practice-drill-card.selected {
-  border-color: var(--color-secondary, #E8753D);
+  border-color: var(--color-primary, #E8753D);
   box-shadow: 0 0 0 1.5px #E8753D, 0 3px 0 0 #B85524;
 }
 
 .practice-rapid-card.selected .practice-card-title,
 .practice-drill-card.selected .practice-card-title {
-  color: var(--color-secondary, #E8753D);
+  color: var(--color-primary, #E8753D);
 }
 
 /* ═══════════════════════════════════════════════════════════════════════════
@@ -668,7 +668,7 @@
   width: 52px;
   height: 52px;
   border-radius: 50%;
-  background: var(--color-secondary, #E8753D);
+  background: var(--color-primary, #E8753D);
   border: none;
   box-shadow: 0px 4px 14px rgba(232, 117, 61, 0.28), 0px 2px 6px rgba(0, 0, 0, 0.06);
   color: #FFFFFF;

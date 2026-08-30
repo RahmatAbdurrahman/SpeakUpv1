@@ -115,7 +115,7 @@
   font-weight: 700;
 }
 .login-input:focus {
-  border-color: var(--color-secondary, #E8753D);
+  border-color: var(--color-primary, #E8753D);
   box-shadow: 0 0 0 2px rgba(232, 117, 61, 0.15);
 }
 .login-input-wrapper .login-input {
@@ -180,7 +180,7 @@
 .btn-login-submit {
   width: 100%;
   height: 46px;
-  background-color: var(--color-secondary, #E8753D);
+  background-color: var(--color-primary, #E8753D);
   color: #FFFFFF;
   border: 1px solid #8B4827;
   border-radius: var(--buttons, 100px);
