@@ -4,7 +4,7 @@ import LessonExitModal from "./LessonExitModal";
 import LessonAffirmation from "./LessonAffirmation";
 import { useAssetPreloader, useGainXpPreloader, getPreloadedVideoSrc } from "../lib/assetPreloader";
 import { useUserProgress } from "../context/UserProgressContext";
-import { playXpTickSound, playXpCompleteSound, playGainXpIntroSound } from "../lib/soundEffects";
+import { playXpTickSound, playXpCompleteSound, playGainXpIntroSound, playChallengePassedSound } from "../lib/soundEffects";
 import { supabase } from "../lib/supabaseClient";
 import {
   createSimulation,
@@ -1327,6 +1327,10 @@ function PracticeInterlude({ onNext, onBack }) {
 
 // ─── Page 17: Keren! — practice cleared ─────────────────────────────────────
 function PracticeSuccess({ onNext, onBack }) {
+  useEffect(() => {
+    playChallengePassedSound();
+  }, []);
+
   return (
     <div className="modul7-lesson-page" data-name="Practice-Keren">
       <LessonTopBar currentStep={17} totalSteps={TOTAL_LESSON_STEPS} onBack={onBack} />

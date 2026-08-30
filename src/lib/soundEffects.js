@@ -418,6 +418,90 @@ export function playBreathingStartSound() {
 }
 
 /**
+ * Play an energetic, triumphant celebration fanfare & confetti pop
+ * when user passes a difficult challenge (e.g. Modul 7 "Kamu berhasil melewati pertanyaan sulit!")
+ */
+export function playChallengePassedSound() {
+  try {
+    const ctx = getAudioContext();
+    if (!ctx) return;
+
+    const now = ctx.currentTime;
+
+    // 1. Crisp Confetti Pop (soft air impact pop)
+    const popOsc = ctx.createOscillator();
+    const popGain = ctx.createGain();
+    popOsc.type = "sine";
+    popOsc.frequency.setValueAtTime(320, now);
+    popOsc.frequency.exponentialRampToValueAtTime(60, now + 0.035);
+
+    popGain.gain.setValueAtTime(0.001, now);
+    popGain.gain.linearRampToValueAtTime(0.18, now + 0.003);
+    popGain.gain.exponentialRampToValueAtTime(0.0001, now + 0.05);
+
+    popOsc.connect(popGain);
+    popGain.connect(ctx.destination);
+    popOsc.start(now);
+    popOsc.stop(now + 0.055);
+
+    // 2. Triumphant Ascending Fanfare Motive (C4 -> G4 -> C5 -> E5 -> G5 -> C6)
+    const fanfareNotes = [
+      { freq: 261.63, time: 0.02, dur: 0.09 },
+      { freq: 392.00, time: 0.08, dur: 0.09 },
+      { freq: 523.25, time: 0.14, dur: 0.11 },
+      { freq: 659.25, time: 0.20, dur: 0.13 },
+      { freq: 783.99, time: 0.26, dur: 0.16 },
+      { freq: 1046.50, time: 0.33, dur: 0.65 }, // High C6 sustained triumphant note
+    ];
+
+    fanfareNotes.forEach(({ freq, time, dur }) => {
+      const noteTime = now + time;
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      const filter = ctx.createBiquadFilter();
+
+      filter.type = "lowpass";
+      filter.frequency.setValueAtTime(2400, noteTime);
+
+      osc.type = "triangle"; // Warm brass/synthesizer timbre
+      osc.frequency.setValueAtTime(freq, noteTime);
+
+      gain.gain.setValueAtTime(0.0001, noteTime);
+      gain.gain.linearRampToValueAtTime(0.13, noteTime + 0.012);
+      gain.gain.exponentialRampToValueAtTime(0.00001, noteTime + dur);
+
+      osc.connect(filter);
+      filter.connect(gain);
+      gain.connect(ctx.destination);
+
+      osc.start(noteTime);
+      osc.stop(noteTime + dur + 0.05);
+    });
+
+    // 3. Sparkling Celebration Shimmer & Glissando Overtones
+    const sparkles = [1318.51, 1567.98, 2093.00];
+    sparkles.forEach((freq, idx) => {
+      const sparkleTime = now + 0.36 + idx * 0.06;
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+
+      osc.type = "sine";
+      osc.frequency.setValueAtTime(freq, sparkleTime);
+
+      gain.gain.setValueAtTime(0.0001, sparkleTime);
+      gain.gain.linearRampToValueAtTime(0.07, sparkleTime + 0.01);
+      gain.gain.exponentialRampToValueAtTime(0.00001, sparkleTime + 0.45);
+
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+
+      osc.start(sparkleTime);
+      osc.stop(sparkleTime + 0.48);
+    });
+  } catch {}
+}
+
+/**
  * Global click listener for real action/CTA buttons & card buttons
  * (Includes CTA buttons and card buttons with shadows; excludes bottom nav, icon-only buttons, back buttons, settings, close buttons)
  */
