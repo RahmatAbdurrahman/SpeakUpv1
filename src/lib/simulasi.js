@@ -132,14 +132,22 @@ function isModeratorOrInterviewerCliche(text) {
   return cliches.some((c) => lower.includes(c));
 }
 
+export const SPONTANEOUS_THEMES = [
+  "Teknologi & Gadget (misal: pengaruh AI dalam kehidupan harian, screen time smartphone, belanja online vs toko fisik, bioskop vs streaming)",
+  "Kebiasaan & Produktivitas (misal: bangun pagi vs begadang, musik saat fokus belajar/kerja, manajemen waktu, olahraga harian, me-time)",
+  "Dilema Pilihan Sehari-hari (misal: hemat uang vs self-reward, rencana hidup matang vs spontan, kerja WFH vs WFO, buku fisik vs e-book)",
+  "Hubungan Sosial & Pertemanan (misal: sahabat dekat sedikit vs teman banyak, cara menjaga persahabatan, kerja tim vs mandiri)",
+  "Pengalaman & Kenangan (misal: kenangan masa sekolah, tempat favorit untuk menenangkan pikiran, nasihat hidup terbaik, liburan impian)",
+  "Hobi, Seni & Hiburan (misal: hewan peliharaan, hobi yang tidak menghasilkan uang, musik pengubah suasana hati, kegiatan akhir pekan)",
+  "Pengembangan Diri & Mindset (misal: definisi sukses sederhana, cara mengembalikan mood/semangat, belajar bahasa baru, mengatasi rasa gugup)",
+];
+
 export const SPONTANEOUS_TOPICS_FALLBACK = [
   "Apakah belajar atau bekerja sambil mendengarkan musik benar-benar membuatmu lebih fokus?",
   "Lebih baik bangun pagi atau begadang saat menyelesaikan pekerjaan penting?",
   "Pentingkah kita membatasi waktu bermain media sosial setiap hari?",
   "Uang vs Passion: Mana yang sebaiknya diprioritaskan di awal karir?",
-  "Makanan buatan rumah vs pesan makanan online: Mana yang lebih kamu sukai dan kenapa?",
   "Apakah kecerdasan buatan (AI) akan menggantikan pekerjaan manusia atau justru membantu kita?",
-  "Kopi atau teh di pagi hari: Mana minuman yang lebih efektif menyemangati harimu?",
   "Apakah kerja dari rumah (WFH) lebih produktif daripada bekerja langsung di kantor (WFO)?",
   "Buku fisik vs E-book: Mana yang menurutmu memberikan pengalaman membaca lebih menyenangkan?",
   "Pentingkah memiliki hobi yang murni untuk kesenangan tanpa harus menghasilkan uang?",
@@ -148,7 +156,6 @@ export const SPONTANEOUS_TOPICS_FALLBACK = [
   "Apakah nilai akademik di sekolah atau kampus menentukan kesuksesan seseorang di masa depan?",
   "Mengapa tidur cukup dan istirahat berkualitas sering kali lebih penting daripada memaksakan lembur?",
   "Apakah smartphone membuat kita semakin dekat atau justru menjauhkan kita dari orang-orang sekitar?",
-  "Pentingkah sarapan pagi sebelum memulai aktivitas harian?",
   "Transportasi umum vs kendaraan pribadi: Bagaimana pengalaman dan sudut pandangmu sehari-hari?",
   "Memiliki sedikit teman dekat yang setia vs memiliki banyak teman tapi sekadar kenal: Mana pilihanmu?",
   "Olahraga di pagi hari vs malam hari: Mana yang paling cocok untuk gaya hidupmu?",
@@ -164,15 +171,12 @@ export const SPONTANEOUS_TOPICS_FALLBACK = [
   "Apakah memiliki rencana hidup yang detail lebih baik daripada menjalani hidup secara fleksibel?",
   "Satu nasihat terbaik dari orang tua, guru, atau sahabat yang selalu kamu ingat sampai hari ini.",
   "Mengapa memiliki waktu luang sendirian (me time) penting untuk kesehatan mental?",
-  "Menurutmu, apakah memasak sendiri adalah keterampilan wajib yang harus dimiliki semua orang?",
-  "Ceritakan satu hal sederhana yang selalu bisa membuatmu tersenyum hari ini.",
-  "Belanja di pasar tradisional vs supermarket modern: Mana yang lebih kamu sukai?",
+  "Ceritakan satu hal sederhana di sekitarmu yang selalu bisa membuatmu tersenyum hari ini.",
   "Apakah hewan peliharaan seperti kucing atau anjing bisa membantu mengurangi stres?",
   "Pentingkah kita belajar bahasa asing selain bahasa Indonesia dan bahasa Inggris?",
-  "Mengapa meluangkan waktu bersama keluarga di akhir pekan terasa sangat berharga?",
+  "Mengapa meluangkan waktu bersama keluarga atau orang terdekat di akhir pekan sangat berharga?",
   "Bagaimana pengaruh lingkungan pertemanan terhadap kebiasaan dan gaya hidup kita?",
   "Apakah kita harus selalu mengikuti tren terbaru di media sosial atau tetap menjadi diri sendiri?",
-  "Ceritakan satu makanan favorit masa kecil yang hingga kini masih menjadi kesukaanmu.",
 ];
 
 export function getRandomSpontaneousTopic(excludeTopic = "") {
@@ -183,18 +187,20 @@ export function getRandomSpontaneousTopic(excludeTopic = "") {
 }
 
 /**
- * Generates a spontaneous speaking topic using Gemini AI.
- * Ensures the topic is an easy, common, everyday relatable topic (not interview/moderator questions).
+ * Generates a spontaneous speaking topic using Gemini AI across diverse daily life themes.
+ * Ensures the topic is an easy, relatable, everyday topic across different categories.
  */
 export async function generateSpontaneousTopicAI({ sessionId, simulationId, excludeTopic = "" } = {}) {
+  const randomTheme = SPONTANEOUS_THEMES[Math.floor(Math.random() * SPONTANEOUS_THEMES.length)];
   const customPrompt =
-    "Kamu adalah AI untuk latihan berbicara spontan (impromptu speaking / table topics). " +
-    "Tugasmu adalah membuat 1 topik atau pertanyaan bicara spontan dalam Bahasa Indonesia. " +
+    "Kamu adalah AI pelatih public speaking untuk latihan berbicara spontan (impromptu speaking / table topics). " +
+    `Buatkan 1 pertanyaan atau topik bicara spontan yang menarik dalam Bahasa Indonesia seputar tema: ${randomTheme}. ` +
     "SYARAT MUTLAK: " +
-    "1. Topik HARUS hal yang sangat umum, mudah, santai, dan diketahui oleh semua orang sehari-hari (contoh: kebiasaan harian, makanan, musik, kopi vs teh, bangun pagi vs malam, hobi ringan, dll). " +
-    "2. DILARANG membuat pertanyaan wawancara kerja atau basa-basi moderator (misal: 'mengapa memilih topik ini', 'apa latar belakang', 'ceritakan diri anda', dll). " +
-    "3. DILARANG membuat topik yang rumit, teoritis, atau akademis. " +
-    "4. HANYA keluarkan 1 kalimat topik/pertanyaan singkat tanpa pengantar, tanpa nomor, tanpa tanda kutip.";
+    "1. Topik HARUS berupa topik/pertanyaan umum, santai, dan mudah dijawab siapa saja berdasarkan sudut pandang dan pengalaman sehari-hari. " +
+    "2. JANGAN fokus hanya pada makanan/minuman (variasikan ke topik teknologi, kebiasaan, pertemanan, liburan, produktivitas, atau dilema sehari-hari). " +
+    "3. DILARANG membuat pertanyaan wawancara kerja atau basa-basi moderator (misal: 'mengapa memilih topik ini', 'apa latar belakang', dll). " +
+    "4. DILARANG membuat topik yang rumit, teoritis, atau akademis. " +
+    "5. HANYA keluarkan 1 kalimat pertanyaan topik tanpa pengantar, tanpa nomor, tanpa tanda kutip.";
 
   // 1. Direct Gemini API if VITE_GEMINI_API_KEY is defined
   const clientKey = import.meta.env.VITE_GEMINI_API_KEY;
@@ -207,7 +213,7 @@ export async function generateSpontaneousTopicAI({ sessionId, simulationId, excl
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             contents: [{ parts: [{ text: customPrompt }] }],
-            generationConfig: { temperature: 0.95, maxOutputTokens: 100 },
+            generationConfig: { temperature: 0.98, maxOutputTokens: 100 },
           }),
         }
       );
@@ -215,7 +221,7 @@ export async function generateSpontaneousTopicAI({ sessionId, simulationId, excl
         const data = await res.json();
         const rawText = data?.candidates?.[0]?.content?.parts?.[0]?.text;
         const cleaned = cleanTopicText(rawText);
-        if (cleaned && !isModeratorOrInterviewerCliche(cleaned)) {
+        if (cleaned && !isModeratorOrInterviewerCliche(cleaned) && cleaned !== excludeTopic) {
           return cleaned;
         }
       }
@@ -238,7 +244,7 @@ export async function generateSpontaneousTopicAI({ sessionId, simulationId, excl
       const questions = await fetchGeneratedQuestions(sessionId, "spontan");
       if (Array.isArray(questions) && questions.length > 0) {
         const candidate = cleanTopicText(questions[0]);
-        if (candidate && !isModeratorOrInterviewerCliche(candidate)) {
+        if (candidate && !isModeratorOrInterviewerCliche(candidate) && candidate !== excludeTopic) {
           return candidate;
         }
       }
