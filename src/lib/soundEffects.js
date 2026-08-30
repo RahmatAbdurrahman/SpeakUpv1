@@ -1,5 +1,9 @@
-// Web Audio API procedural sound synthesizer (unrecognizable by OS media player)
+import buttonClickMp3 from "../assets/sound_effects/buttonclick.mp3";
+
+// Web Audio API procedural + AudioBuffer player (100% unrecognized by OS media players / lockscreens)
 let audioCtx = null;
+let buttonAudioBuffer = null;
+let isPreloading = false;
 
 function getAudioContext() {
   if (typeof window === "undefined") return null;
@@ -16,23 +20,61 @@ function getAudioContext() {
 }
 
 /**
- * Play a gentle, crisp UI button tap sound
+ * Preload and decode the MP3 into memory buffer
+ */
+export async function preloadSoundBuffer() {
+  if (buttonAudioBuffer || isPreloading) return;
+  isPreloading = true;
+
+  try {
+    const ctx = getAudioContext();
+    if (!ctx) return;
+
+    const response = await fetch(buttonClickMp3);
+    const arrayBuffer = await response.arrayBuffer();
+    buttonAudioBuffer = await ctx.decodeAudioData(arrayBuffer);
+  } catch (err) {
+    console.warn("Failed to decode buttonclick.mp3, falling back to synth:", err);
+  } finally {
+    isPreloading = false;
+  }
+}
+
+/**
+ * Play the button click sound via Web Audio API BufferSource
  */
 export function playTapSound() {
   try {
     const ctx = getAudioContext();
     if (!ctx) return;
 
+    // If MP3 buffer is loaded, play it from memory
+    if (buttonAudioBuffer) {
+      const source = ctx.createBufferSource();
+      const gainNode = ctx.createGain();
+
+      source.buffer = buttonAudioBuffer;
+      gainNode.gain.setValueAtTime(0.8, ctx.currentTime);
+
+      source.connect(gainNode);
+      gainNode.connect(ctx.destination);
+
+      source.start(0);
+      return;
+    }
+
+    // Try preloading if not loaded yet
+    preloadSoundBuffer();
+
+    // Fallback procedural sound if buffer not ready on first tap
     const now = ctx.currentTime;
     const osc = ctx.createOscillator();
     const gain = ctx.createGain();
 
     osc.type = "sine";
-    // Quick, subtle pitch drop for a natural tactile feel
-    osc.frequency.setValueAtTime(360, now);
-    osc.frequency.exponentialRampToValueAtTime(110, now + 0.04);
+    osc.frequency.setValueAtTime(380, now);
+    osc.frequency.exponentialRampToValueAtTime(120, now + 0.04);
 
-    // Smooth envelope to avoid clicks/pops at edges
     gain.gain.setValueAtTime(0.001, now);
     gain.gain.linearRampToValueAtTime(0.12, now + 0.005);
     gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.04);
@@ -43,40 +85,8 @@ export function playTapSound() {
     osc.start(now);
     osc.stop(now + 0.045);
   } catch {
-    // Fail silently if audio is restricted by browser policy
+    // Fail silently if browser blocks audio
   }
-}
-
-/**
- * Play an uplifting chime for achievements/success
- */
-export function playSuccessSound() {
-  try {
-    const ctx = getAudioContext();
-    if (!ctx) return;
-
-    const notes = [523.25, 659.25, 783.99]; // C5, E5, G5
-    const noteDuration = 0.07;
-
-    notes.forEach((freq, i) => {
-      const now = ctx.currentTime + i * noteDuration;
-      const osc = ctx.createOscillator();
-      const gain = ctx.createGain();
-
-      osc.type = "triangle";
-      osc.frequency.setValueAtTime(freq, now);
-
-      gain.gain.setValueAtTime(0.001, now);
-      gain.gain.linearRampToValueAtTime(0.1, now + 0.01);
-      gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.22);
-
-      osc.connect(gain);
-      gain.connect(ctx.destination);
-
-      osc.start(now);
-      osc.stop(now + 0.23);
-    });
-  } catch {}
 }
 
 /**
@@ -85,9 +95,15 @@ export function playSuccessSound() {
 export function initGlobalSoundEffects() {
   if (typeof window === "undefined") return;
 
-  const handleClick = (e) => {
-    // Resume context on user gesture
-    getAudioContext();
+  // Preload sound buffer on initial load
+  preloadSoundBuffer();
+
+  const handlePointerDown = (e) => {
+    // Ensure AudioContext is running on user interaction
+    const ctx = getAudioContext();
+    if (ctx && !buttonAudioBuffer) {
+      preloadSoundBuffer();
+    }
 
     const target = e.target;
     if (!target) return;
@@ -105,5 +121,5 @@ export function initGlobalSoundEffects() {
     }
   };
 
-  window.addEventListener("pointerdown", handleClick, { passive: true });
+  window.addEventListener("pointerdown", handlePointerDown, { passive: true });
 }
