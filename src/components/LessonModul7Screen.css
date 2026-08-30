@@ -1587,60 +1587,6 @@
   margin: 0 auto;
 }
 
-.gain-xp-cloud-curtain {
-  position: absolute;
-  top: -12%;
-  bottom: -12%;
-  width: 60%;
-  z-index: 10;
-  pointer-events: none;
-  background-color: var(--color-bg-app, #FAF8F3);
-}
-
-.gain-xp-cloud-left {
-  left: 0;
-  border-radius: 0 50% 50% 0 / 0 45% 45% 0;
-  box-shadow: 24px 0 40px rgba(250, 248, 243, 0.98);
-  animation: cloudPartLeft 1.15s cubic-bezier(0.22, 1, 0.36, 1) forwards;
-}
-
-.gain-xp-cloud-right {
-  right: 0;
-  border-radius: 50% 0 0 50% / 45% 0 0 45%;
-  box-shadow: -24px 0 40px rgba(250, 248, 243, 0.98);
-  animation: cloudPartRight 1.15s cubic-bezier(0.22, 1, 0.36, 1) forwards;
-}
-
-@keyframes cloudPartLeft {
-  0% {
-    transform: translateX(0) scale(1);
-    opacity: 1;
-  }
-  30% {
-    transform: translateX(-20%) scale(1.05);
-    opacity: 1;
-  }
-  100% {
-    transform: translateX(-130%) scale(0.85);
-    opacity: 0;
-  }
-}
-
-@keyframes cloudPartRight {
-  0% {
-    transform: translateX(0) scale(1);
-    opacity: 1;
-  }
-  30% {
-    transform: translateX(20%) scale(1.05);
-    opacity: 1;
-  }
-  100% {
-    transform: translateX(130%) scale(0.85);
-    opacity: 0;
-  }
-}
-
 .lesson-completed-video {
   width: 100%;
   height: 100%;

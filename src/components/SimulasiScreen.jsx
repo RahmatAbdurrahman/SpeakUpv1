@@ -967,8 +967,6 @@ function SimulasiGainXpStep({ onClaim, xpEarned = 75 }) {
     <div className="lesson-completed-screen">
       <div className="lesson-completed-content">
         <div className="lesson-completed-video-wrap">
-          <div className="gain-xp-cloud-curtain gain-xp-cloud-left" aria-hidden="true" />
-          <div className="gain-xp-cloud-curtain gain-xp-cloud-right" aria-hidden="true" />
           <video
             ref={videoRef}
             src={videoSrc}
