@@ -217,7 +217,7 @@
   flex-shrink: 0;
   width: 52px;
   height: 52px;
-  border-radius: 12px;
+  border-radius: 6px;
   overflow: hidden;
   display: flex;
   align-items: center;
@@ -228,6 +228,7 @@
 .simulasi-scenario-img {
   width: 100%;
   height: 100%;
+  border-radius: 6px;
   object-fit: cover;
   display: block;
 }
