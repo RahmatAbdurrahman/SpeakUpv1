@@ -102,7 +102,7 @@ function TopicStep({ topics, loading, error, onBack, onStart, onShuffle, shuffli
         {loading && <p className="simulasi-hint-text">Menyiapkan topik...</p>}
         {error && <p className="simulasi-error-banner">{error}</p>}
         {!loading && topics.length > 0 && (
-          <div className="simulasi-topic-card">
+          <div className="simulasi-topic-content">
             <p className="simulasi-topic-label">Topik Kamu Hari Ini</p>
             {shuffling ? (
               <div className="simulasi-topic-lottie-wrap">
