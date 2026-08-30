@@ -4,6 +4,7 @@ import iconNavHome from "../assets/pages_assets/bottom-nav-icons/Home.svg";
 import iconNavMic from "../assets/pages_assets/bottom-nav-icons/Mic.svg";
 import iconNavUser from "../assets/pages_assets/bottom-nav-icons/User.svg";
 import iconGroup from "../assets/pages_assets/practice/icon_group.svg";
+import imgLive from "../assets/pages_assets/sosial/Image-Live.png";
 import { supabase } from "../lib/supabaseClient";
 import {
   fetchLeaderboard,
@@ -281,7 +282,7 @@ export default function SosialScreen({ onNavigateHome, onNavigateSimulasi, onNav
           {loading && <p className="sosial-hint-text">Memuat sesi live...</p>}
           {!loading && liveRooms.length === 0 && (
             <div className="sosial-empty-card">
-              <span className="sosial-empty-icon">🎙️</span>
+              <img src={imgLive} alt="Live" className="sosial-live-empty-img" />
               <p className="sosial-empty-title">Belum ada sesi live saat ini</p>
               <p className="sosial-empty-desc">Mulai sesi presentasi live agar pengguna lain dapat bergabung dan menonton!</p>
               <button

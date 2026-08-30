@@ -927,6 +927,15 @@
   margin-bottom: 4px;
 }
 
+.sosial-live-empty-img {
+  width: 130px;
+  height: auto;
+  max-height: 110px;
+  object-fit: contain;
+  margin-bottom: 8px;
+  display: block;
+}
+
 .sosial-empty-title {
   font-family: var(--font-family-base, 'Space Grotesk', sans-serif);
   font-size: 14px;
