@@ -245,10 +245,25 @@ export async function postLiveQuestion(roomId, text) {
   const {
     data: { user },
   } = await supabase.auth.getUser();
-  const { error } = await supabase
+  const { data, error } = await supabase
     .from("live_questions")
-    .insert({ room_id: roomId, pertanyaan: text, asker_id: user?.id ?? null });
+    .insert({ room_id: roomId, pertanyaan: text, asker_id: user?.id ?? null })
+    .select()
+    .single();
   if (error) throw error;
+  return data;
+}
+
+export function subscribeToLiveQuestions(roomId, onChange) {
+  const channel = supabase
+    .channel(`live_questions_${roomId}`)
+    .on(
+      "postgres_changes",
+      { event: "*", schema: "public", table: "live_questions", filter: `room_id=eq.${roomId}` },
+      () => onChange()
+    )
+    .subscribe();
+  return () => supabase.removeChannel(channel);
 }
 
 // ─── Friends (request/accept) ───────────────────────────────────────────────

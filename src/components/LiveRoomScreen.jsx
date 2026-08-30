@@ -1,6 +1,13 @@
 import React, { useState, useEffect, useRef } from "react";
 import "./LiveRoomScreen.css";
-import { fetchLiveQuestions, postLiveQuestion, requestLiveToken, endLiveRoom, friendlySosialError } from "../lib/sosial";
+import {
+  fetchLiveQuestions,
+  postLiveQuestion,
+  subscribeToLiveQuestions,
+  requestLiveToken,
+  endLiveRoom,
+  friendlySosialError,
+} from "../lib/sosial";
 import { fetchGeneratedQuestions } from "../lib/simulasi";
 import { supabase } from "../lib/supabaseClient";
 import {
@@ -74,11 +81,6 @@ export default function LiveRoomScreen({ roomData, onLeaveRoom }) {
   // Viewers get asked to rate the presenter on their way out; broadcasters
   // (rating themselves would be meaningless) leave straight away.
   const handleLeaveClick = () => {
-    // Flip the room out of "Live Sekarang" when the HOST leaves — otherwise
-    // it was never touched again after goLive() and stays status='live'
-    // forever, so it keeps showing up for other users indefinitely. Viewers
-    // leaving must never do this: other viewers (and the host) may still be
-    // in the room. Fire-and-forget so leaving feels instant either way.
     if (isBroadcaster && roomData?.roomId) {
       endLiveRoom(roomData.roomId).catch(() => {});
     }
@@ -86,6 +88,30 @@ export default function LiveRoomScreen({ roomData, onLeaveRoom }) {
       onLeaveRoom?.();
     } else {
       setShowRatingModal(true);
+    }
+  };
+
+  const triggerToast = (msg) => {
+    setShowToast(msg);
+    setTimeout(() => {
+      setShowToast((curr) => (curr === msg ? null : curr));
+    }, 2500);
+  };
+
+  const handleSendReaction = (emoji, broadcast = true) => {
+    const id = Date.now() + Math.random();
+    const xOffset = Math.floor(Math.random() * 80) - 40;
+    setReactions((prev) => [...prev, { id, emoji, xOffset }]);
+    setTimeout(() => {
+      setReactions((prev) => prev.filter((r) => r.id !== id));
+    }, 1800);
+
+    if (broadcast && roomRef.current?.localParticipant) {
+      try {
+        const payload = JSON.stringify({ type: "reaction", emoji });
+        const encoder = new TextEncoder();
+        roomRef.current.localParticipant.publishData(encoder.encode(payload), { reliable: false });
+      } catch {}
     }
   };
 
@@ -139,6 +165,27 @@ export default function LiveRoomScreen({ roomData, onLeaveRoom }) {
           if (publication.track) detachTrack(publication.track);
         });
 
+        // Instant P2P chat and reactions via LiveKit Data Channel
+        room.on(RoomEvent.DataReceived, (payload) => {
+          try {
+            const str = new TextDecoder().decode(payload);
+            const data = JSON.parse(str);
+            if (data.type === "question" && data.question) {
+              setQuestions((prev) => {
+                if (prev.some((q) => q.id === data.question.id || (q.text === data.question.text && q.authorName === data.question.authorName))) {
+                  return prev;
+                }
+                return [data.question, ...prev];
+              });
+              triggerToast(`💬 ${data.question.authorName}: ${data.question.text}`);
+            } else if (data.type === "reaction") {
+              handleSendReaction(data.emoji, false);
+            }
+          } catch (err) {
+            console.warn("LiveKit data received parse error:", err);
+          }
+        });
+
         setConnecting(false);
       } catch (err) {
         if (active) {
@@ -158,48 +205,56 @@ export default function LiveRoomScreen({ roomData, onLeaveRoom }) {
   useEffect(() => {
     // Reset scroll on mount so parent doesn't hold previous scroll offset
     const screenContent = document.querySelector(".iphone-screen-content");
-    if (screenContent) {
-      screenContent.scrollTop = 0;
-    }
-
-    // Auto hide "You are muted" snackbar after 3.5 seconds
-    mutedTimerRef.current = setTimeout(() => {
-      setShowMutedSnackbar(false);
-    }, 3500);
+    if (screenContent) screenContent.scrollTop = 0;
 
     const timer = setInterval(() => {
       setSecondsElapsed((prev) => prev + 1);
     }, 1000);
+
+    mutedTimerRef.current = setTimeout(() => {
+      setShowMutedSnackbar(false);
+    }, 4000);
+
     return () => {
       clearInterval(timer);
       if (mutedTimerRef.current) clearTimeout(mutedTimerRef.current);
     };
   }, []);
 
+  // ── Fetch and Subscribe to Realtime Questions / Chat ─────────────────
   useEffect(() => {
     if (!roomData?.roomId) return;
     let active = true;
-    fetchLiveQuestions(roomData.roomId)
-      .then((data) => {
+
+    const reloadQuestions = async () => {
+      try {
+        const data = await fetchLiveQuestions(roomData.roomId);
         if (active) setQuestions(data);
-      })
-      .catch((err) => {
+      } catch (err) {
         if (active) setQaError(friendlySosialError(err));
-      });
+      }
+    };
+
+    reloadQuestions();
+
+    // Supabase Realtime subscription
+    const unsubscribe = subscribeToLiveQuestions(roomData.roomId, () => {
+      reloadQuestions();
+    });
+
+    // Reliable 2.5s polling fallback so no message is ever missed
+    const pollInterval = setInterval(() => {
+      reloadQuestions();
+    }, 2500);
+
     return () => {
       active = false;
+      unsubscribe?.();
+      clearInterval(pollInterval);
     };
   }, [roomData?.roomId]);
 
-  // No real questions yet — surface one AI-generated icebreaker so the Q&A
-  // never looks empty while waiting on an actual viewer. Only for
-  // Presentasi-category rooms (the only category that can ever go live —
-  // see SimulasiScreen's Go Live gate), so kategori is fixed to "kelas".
-  // generate-live-questions mencari baris simulation_sessions lewat id-nya,
-  // jadi yang dikirim WAJIB sessionId — bukan roomId (live_rooms.id). Sempat
-  // salah kirim roomId dan selalu balik 404 "Sesi tidak ditemukan", tapi
-  // errornya ditelan .catch() di bawah sehingga icebreaker-nya diam-diam
-  // tidak pernah muncul.
+  // No real questions yet — surface one AI-generated icebreaker
   useEffect(() => {
     if (!roomData?.sessionId || questions.length > 0 || aiQuestion) return;
     let active = true;
@@ -208,7 +263,7 @@ export default function LiveRoomScreen({ roomData, onLeaveRoom }) {
         if (active && qs?.[0]) setAiQuestion(qs[0]);
       })
       .catch(() => {
-        // Best-effort only — an empty Q&A list is a fine fallback.
+        // Best-effort only
       });
     return () => {
       active = false;
@@ -221,22 +276,6 @@ export default function LiveRoomScreen({ roomData, onLeaveRoom }) {
     return `${m.toString().padStart(2, "0")}:${s.toString().padStart(2, "0")}`;
   };
 
-  const triggerToast = (msg) => {
-    setShowToast(msg);
-    setTimeout(() => {
-      setShowToast((curr) => (curr === msg ? null : curr));
-    }, 2500);
-  };
-
-  const handleSendReaction = (emoji) => {
-    const id = Date.now() + Math.random();
-    const xOffset = Math.floor(Math.random() * 80) - 40;
-    setReactions((prev) => [...prev, { id, emoji, xOffset }]);
-    setTimeout(() => {
-      setReactions((prev) => prev.filter((r) => r.id !== id));
-    }, 1800);
-  };
-
   const handleSubmitQuestion = async (e) => {
     e.preventDefault();
     const text = newQuestionText.trim();
@@ -244,10 +283,23 @@ export default function LiveRoomScreen({ roomData, onLeaveRoom }) {
 
     setNewQuestionText("");
     try {
-      await postLiveQuestion(roomData.roomId, text);
+      const inserted = await postLiveQuestion(roomData.roomId, text);
       const fresh = await fetchLiveQuestions(roomData.roomId);
       setQuestions(fresh);
       triggerToast("Pertanyaan terkirim!");
+
+      // Broadcast immediately to all participants via LiveKit Data Channel
+      if (roomRef.current?.localParticipant) {
+        const userProfile = fresh.find((q) => q.id === inserted?.id) || {
+          id: inserted?.id || Date.now(),
+          text,
+          createdAt: new Date().toISOString(),
+          authorName: "Kamu",
+        };
+        const payload = JSON.stringify({ type: "question", question: userProfile });
+        const encoder = new TextEncoder();
+        roomRef.current.localParticipant.publishData(encoder.encode(payload), { reliable: true });
+      }
     } catch (err) {
       setQaError(friendlySosialError(err));
     }
