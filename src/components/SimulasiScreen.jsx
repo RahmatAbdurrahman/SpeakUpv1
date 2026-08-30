@@ -23,6 +23,7 @@ import { playXpTickSound, playXpCompleteSound, playGainXpIntroSound } from "../l
 import { DotLottieReact } from "@lottiefiles/dotlottie-react";
 import animaBotLottie from "../assets/lotties/AnimaBot.lottie";
 import SessionLoadingScreen from "./SessionLoadingScreen";
+import TranscriptCard from "./TranscriptCard";
 import { supabase } from "../lib/supabaseClient";
 import {
   SCENARIOS,
@@ -828,6 +829,16 @@ export function AnalysisCards({ results }) {
           </p>
         )}
       </div>
+
+      <TranscriptCard
+        rawTranscript={
+          results?.transcript ||
+          results?.metrics?.transcript ||
+          results?.feedback?.transcript ||
+          results?.feedback?.transkrip
+        }
+        title="Transkrip Suara"
+      />
     </>
   );
 }

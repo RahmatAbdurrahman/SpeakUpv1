@@ -1,0 +1,263 @@
+/* ==========================================================================
+   Transcript & Highlighter Card Component Styles
+   ========================================================================== */
+
+.transcript-card {
+  background-color: var(--color-surface, #FFFFFF);
+  border: 1px solid var(--color-border, rgba(20, 60, 63, 0.12));
+  border-radius: var(--radius-md, 16px);
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  box-sizing: border-box;
+  box-shadow: 0px 2px 6px rgba(20, 60, 63, 0.04);
+  width: 100%;
+}
+
+.transcript-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.transcript-card-heading {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.transcript-card-icon {
+  width: 18px;
+  height: 18px;
+  object-fit: contain;
+  flex-shrink: 0;
+}
+
+.transcript-card-title {
+  font-family: var(--font-family-base, 'Space Grotesk', sans-serif);
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--color-text-primary, #243238);
+  margin: 0;
+  letter-spacing: -0.3px;
+}
+
+.btn-transcript-copy {
+  background: rgba(20, 60, 63, 0.04);
+  border: 1px solid rgba(20, 60, 63, 0.1);
+  border-radius: 20px;
+  padding: 4px 10px;
+  font-family: var(--font-family-base, 'Space Grotesk', sans-serif);
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--color-text-caption, #8199A3);
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  transition: all 0.15s ease;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.btn-transcript-copy:hover {
+  background: rgba(20, 60, 63, 0.08);
+  color: var(--color-text-primary, #243238);
+}
+
+.btn-transcript-copy.copied {
+  background: rgba(36, 169, 129, 0.12);
+  color: #17674F;
+  border-color: rgba(36, 169, 129, 0.3);
+}
+
+/* ── Summary & Legend Pills ────────────────────────────────────────────────── */
+.transcript-legend-row {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.transcript-legend-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 3px 8px;
+  border-radius: 8px;
+  font-family: var(--font-family-base, 'Space Grotesk', sans-serif);
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.transcript-legend-chip--filler {
+  background: #FFF8D6;
+  color: #8C6B00;
+  border: 1px solid rgba(229, 168, 0, 0.3);
+}
+
+.transcript-legend-chip--correction {
+  background: #FFEFE6;
+  color: #B85524;
+  border: 1px solid rgba(232, 117, 61, 0.3);
+}
+
+.transcript-legend-chip--strong {
+  background: #E8F7F2;
+  color: #17674F;
+  border: 1px solid rgba(36, 169, 129, 0.3);
+}
+
+.transcript-legend-chip--meta {
+  background: rgba(20, 60, 63, 0.04);
+  color: var(--color-text-caption, #8199A3);
+}
+
+.transcript-legend-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.transcript-legend-chip--filler .transcript-legend-dot {
+  background-color: #E5A800;
+}
+
+.transcript-legend-chip--correction .transcript-legend-dot {
+  background-color: #E8753D;
+}
+
+.transcript-legend-chip--strong .transcript-legend-dot {
+  background-color: #24A981;
+}
+
+/* ── Transcript Text Container ────────────────────────────────────────────── */
+.transcript-content-box {
+  background: #FAF8F3;
+  border: 1px solid rgba(20, 60, 63, 0.08);
+  border-radius: 12px;
+  padding: 14px 16px;
+  font-family: var(--font-family-base, 'Space Grotesk', sans-serif);
+  font-size: 13.5px;
+  line-height: 1.7;
+  color: var(--color-text-primary, #243238);
+  max-height: 220px;
+  overflow-y: auto;
+  user-select: text;
+}
+
+/* ── Highlighter (Stabilo) Styles ─────────────────────────────────────────── */
+.transcript-mark {
+  border-radius: 3px;
+  padding: 1px 3px;
+  cursor: pointer;
+  transition: filter 0.12s ease, transform 0.1s ease;
+  position: relative;
+  display: inline;
+  font-weight: 600;
+}
+
+.transcript-mark:hover {
+  filter: brightness(0.95);
+}
+
+.transcript-mark:active {
+  transform: scale(0.98);
+}
+
+/* Yellow / Amber Stabilo for Filler Words */
+.transcript-mark--filler {
+  background: linear-gradient(120deg, rgba(255, 225, 77, 0.65) 0%, rgba(255, 214, 10, 0.75) 100%);
+  color: #6E5300;
+  border-bottom: 2px solid #D69E00;
+}
+
+/* Orange / Peach Stabilo for Corrections / Repetitions */
+.transcript-mark--correction {
+  background: linear-gradient(120deg, rgba(255, 179, 138, 0.65) 0%, rgba(255, 149, 97, 0.75) 100%);
+  color: #8B3A10;
+  border-bottom: 2px solid #E8753D;
+}
+
+/* Mint Green Stabilo for Strong Structure */
+.transcript-mark--strong {
+  background: linear-gradient(120deg, rgba(167, 243, 208, 0.6) 0%, rgba(110, 231, 183, 0.7) 100%);
+  color: #065F46;
+  border-bottom: 2px solid #24A981;
+}
+
+/* ── Interactive Suggestion Box (when a token is tapped) ─────────────────── */
+.transcript-suggestion-drawer {
+  background: #FFFFFF;
+  border: 1px solid rgba(20, 60, 63, 0.12);
+  border-radius: 10px;
+  padding: 10px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  animation: fadeIn 0.15s ease-out;
+  position: relative;
+}
+
+.transcript-suggestion-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.transcript-suggestion-badge {
+  font-family: var(--font-family-base, 'Space Grotesk', sans-serif);
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+}
+
+.transcript-suggestion-badge--filler {
+  color: #B88600;
+}
+
+.transcript-suggestion-badge--correction {
+  color: #E8753D;
+}
+
+.transcript-suggestion-badge--strong {
+  color: #24A981;
+}
+
+.transcript-suggestion-close {
+  background: none;
+  border: none;
+  font-size: 14px;
+  color: #8199A3;
+  cursor: pointer;
+  padding: 0;
+  line-height: 1;
+}
+
+.transcript-suggestion-reason {
+  font-family: var(--font-family-base, 'Space Grotesk', sans-serif);
+  font-size: 12.5px;
+  font-weight: 700;
+  color: var(--color-text-primary, #243238);
+  margin: 0;
+}
+
+.transcript-suggestion-tip {
+  font-family: var(--font-family-base, 'Space Grotesk', sans-serif);
+  font-size: 12px;
+  color: var(--color-text-caption, #8199A3);
+  margin: 0;
+  line-height: 1.4;
+}
+
+.transcript-empty-text {
+  font-family: var(--font-family-base, 'Space Grotesk', sans-serif);
+  font-size: 12.5px;
+  font-weight: 500;
+  color: var(--color-text-caption, #8199A3);
+  font-style: italic;
+  margin: 0;
+}

@@ -38,6 +38,7 @@ import iconQuote from "../assets/pages_assets/ai_analysis/Icons/Quote-Icon.svg";
 import iconMouth from "../assets/pages_assets/ai_analysis/Icons/Mouth-Icon.svg";
 import iconFlash from "../assets/pages_assets/ai_analysis/Icons/Flash-Icon.svg";
 import iconAI from "../assets/pages_assets/ai_analysis/Icons/AI.svg";
+import TranscriptCard from "./TranscriptCard";
 
 const MODUL7_ASSETS = [
   imgBlankTotal,
@@ -157,6 +158,8 @@ const PRACTICE_ANALYSIS = {
   ],
   feedback:
     "Kamu sudah menjawab pertanyaan dengan relevan dan menyampaikan argumen yang cukup kuat. Fokus berikutnya: Kurangi kata pengisi saat berpindah dari satu alasan ke alasan berikutnya.",
+  transcript:
+    "Umm, menurut saya, terkait pertanyaan ini, pertama kita harus memahami akar masalahnya terlebih dahulu. Ehh, saya rasa ada beberapa faktor penting yang perlu diperhatikan. Jadi, kesimpulannya dengan pendekatan terstruktur, kita bisa menyelesaikan kendala ini dengan baik.",
 };
 
 // Maps the real { metrics, feedback } rows from analyze-session +
@@ -164,7 +167,7 @@ const PRACTICE_ANALYSIS = {
 // already renders. Same fields SimulasiScreen's ResultsStep reads: filler
 // word count / pace from simulation_metrics, sub_scores from
 // simulation_feedback (fluency, intonasi, kesesuaian_materi, skor).
-function mapSessionResultToAnalysis({ metrics, feedback } = {}) {
+function mapSessionResultToAnalysis({ metrics, feedback } = {}, fallbackTranscript = "") {
   const sub = feedback?.sub_scores || {};
   const skor = feedback?.skor ?? null;
   const kesesuaian = sub.kesesuaian_materi ?? null;
@@ -174,11 +177,18 @@ function mapSessionResultToAnalysis({ metrics, feedback } = {}) {
   const paceWpm = metrics?.pace_wpm != null ? Math.round(metrics.pace_wpm) : null;
   const good = (v) => v != null && v >= 70;
 
+  const transcript =
+    feedback?.transcript ||
+    metrics?.transcript ||
+    feedback?.transkrip ||
+    fallbackTranscript ||
+    PRACTICE_ANALYSIS.transcript;
+
   return {
     scores: [
       {
         id: "argumen",
-        icon: iconSpeed,
+        icon: iconArgument,
         label: "Argumen",
         value: skor ?? "–",
         unit: skor != null ? "/ 100" : "",
@@ -188,7 +198,7 @@ function mapSessionResultToAnalysis({ metrics, feedback } = {}) {
       },
       {
         id: "relevansi",
-        icon: iconSpeed,
+        icon: iconRelevance,
         label: "Relevansi",
         value: kesesuaian ?? "–",
         unit: kesesuaian != null ? "/ 100" : "",
@@ -239,6 +249,7 @@ function mapSessionResultToAnalysis({ metrics, feedback } = {}) {
     feedback:
       [feedback?.motivasi, ...(feedback?.saran || []).slice(0, 2)].filter(Boolean).join(" ") ||
       "Kerja bagus! Terus berlatih supaya makin percaya diri.",
+    transcript,
   };
 }
 
@@ -1478,6 +1489,8 @@ function PracticeAnalysis({ result = PRACTICE_ANALYSIS, onFinish }) {
           </div>
           <p className="modul7-analysis-feedback">{result.feedback}</p>
         </div>
+
+        <TranscriptCard rawTranscript={result.transcript} title="Transkrip Latihan" />
 
         <div className="modul7-analysis-cta-wrap">
           <button
