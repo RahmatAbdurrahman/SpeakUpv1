@@ -39,13 +39,17 @@
   background: rgba(255, 157, 0, 0.19);
   border-radius: 34px;
   padding: 4px 12px;
+  display: flex;
+  align-items: center;
   flex-shrink: 0;
 }
 .simulasi-xp-text {
   font-family: var(--font-family-base, 'Space Grotesk', sans-serif);
-  font-size: 12px;
+  font-size: 13px;
   font-weight: 700;
-  color: var(--color-xp, #E8A63D);
+  color: #955C00;
+  letter-spacing: -0.4437px;
+  white-space: nowrap;
 }
 
 .simulasi-scroll-body {

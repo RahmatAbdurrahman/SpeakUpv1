@@ -242,7 +242,10 @@ export function ProfileSkeleton({
     <div className="skeleton-page profile-skeleton">
       <div className="skeleton-topbar">
         <Skeleton width="110px" height="26px" borderRadius="12px" />
-        <Skeleton width="36px" height="36px" borderRadius="50%" />
+        <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+          <Skeleton width="72px" height="26px" borderRadius="34px" />
+          <Skeleton width="36px" height="36px" borderRadius="50%" />
+        </div>
       </div>
 
       <div className="skeleton-scroll-body">

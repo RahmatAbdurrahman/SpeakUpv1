@@ -39,6 +39,30 @@
   margin: 0;
 }
 
+.profile-topbar-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.profile-xp-badge {
+  background: rgba(255, 157, 0, 0.19);
+  border-radius: 34px;
+  padding: 4px 12px;
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+.profile-xp-text {
+  font-family: var(--font-family-base, 'Space Grotesk', sans-serif);
+  font-size: 13px;
+  font-weight: 700;
+  color: #955C00;
+  letter-spacing: -0.4437px;
+  white-space: nowrap;
+}
+
 .btn-profile-settings {
   width: 38px;
   height: 38px;
