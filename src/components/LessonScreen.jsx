@@ -4,6 +4,7 @@ import LessonModul7Screen from "./LessonModul7Screen";
 import LessonExitModal from "./LessonExitModal";
 import { useAssetPreloader, useGainXpPreloader, getPreloadedVideoSrc } from "../lib/assetPreloader";
 import { useUserProgress } from "../context/UserProgressContext";
+import { playXpTickSound, playXpCompleteSound } from "../lib/soundEffects";
 import "./LessonScreen.css";
 
 // ─── Assets ──────────────────────────────────────────────────────────────────
@@ -516,7 +517,8 @@ function CompletedLesson({ onFinish, xpEarned = 25 }) {
     setIsCounting(true);
 
     let startTime = null;
-    const duration = 1300; // 1.3s count-up duration
+    let lastTickVal = -1;
+    const duration = 1400; // 1.4s count-up duration
 
     const step = (timestamp) => {
       if (!startTime) startTime = timestamp;
@@ -524,6 +526,11 @@ function CompletedLesson({ onFinish, xpEarned = 25 }) {
       // Ease out cubic
       const easeProgress = 1 - Math.pow(1 - progress, 3);
       const currentVal = Math.floor(easeProgress * xpEarned);
+      
+      if (currentVal !== lastTickVal && currentVal > 0) {
+        lastTickVal = currentVal;
+        playXpTickSound(progress);
+      }
       setDisplayedXP(currentVal);
 
       if (progress < 1) {
@@ -531,6 +538,7 @@ function CompletedLesson({ onFinish, xpEarned = 25 }) {
       } else {
         setDisplayedXP(xpEarned);
         setIsCounting(false); // Stop sparkles when counting ends
+        playXpCompleteSound();
 
         // Show Klaim XP button exactly 1 second after XP finishes counting
         setTimeout(() => {

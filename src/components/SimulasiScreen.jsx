@@ -15,6 +15,7 @@ import iconFlash from "../assets/pages_assets/ai_analysis/Icons/Flash-Icon.svg";
 import iconAI from "../assets/pages_assets/ai_analysis/Icons/AI.svg";
 import videoGainXP from "../assets/pages_assets/gain_xp/Video-Gain-XP.webm";
 import { useGainXpPreloader, getPreloadedVideoSrc } from "../lib/assetPreloader";
+import { playXpTickSound, playXpCompleteSound } from "../lib/soundEffects";
 import { DotLottieReact } from "@lottiefiles/dotlottie-react";
 import animaBotLottie from "../assets/lotties/AnimaBot.lottie";
 import SessionLoadingScreen from "./SessionLoadingScreen";
@@ -924,25 +925,38 @@ function SimulasiGainXpStep({ onClaim, xpEarned = 75 }) {
 
   const handleVideoEnded = () => {
     setIsCounting(true);
-    let current = 0;
-    const target = xpEarned;
-    const duration = 2000;
-    const stepTime = 20;
-    const increment = target / (duration / stepTime);
 
-    const timer = setInterval(() => {
-      current += increment;
-      if (current >= target) {
-        setDisplayedXP(target);
-        clearInterval(timer);
+    let startTime = null;
+    let lastTickVal = -1;
+    const duration = 1500; // 1.5s count-up duration
+
+    const step = (timestamp) => {
+      if (!startTime) startTime = timestamp;
+      const progress = Math.min((timestamp - startTime) / duration, 1);
+      // Ease out cubic
+      const easeProgress = 1 - Math.pow(1 - progress, 3);
+      const currentVal = Math.floor(easeProgress * xpEarned);
+
+      if (currentVal !== lastTickVal && currentVal > 0) {
+        lastTickVal = currentVal;
+        playXpTickSound(progress);
+      }
+      setDisplayedXP(currentVal);
+
+      if (progress < 1) {
+        requestAnimationFrame(step);
+      } else {
+        setDisplayedXP(xpEarned);
         setIsCounting(false);
+        playXpCompleteSound();
+
         setTimeout(() => {
           setShowButton(true);
         }, 1000);
-      } else {
-        setDisplayedXP(Math.floor(current));
       }
-    }, stepTime);
+    };
+
+    requestAnimationFrame(step);
   };
 
   return (

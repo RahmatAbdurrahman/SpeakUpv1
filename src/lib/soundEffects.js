@@ -90,6 +90,67 @@ export function playTapSound() {
 }
 
 /**
+ * Play a crisp, pleasant rising tick sound when XP is counting up
+ * @param {number} progress - 0.0 to 1.0 representing count-up progression
+ */
+export function playXpTickSound(progress = 0) {
+  try {
+    const ctx = getAudioContext();
+    if (!ctx) return;
+
+    const now = ctx.currentTime;
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+
+    osc.type = "sine";
+    // Pitch gently ascends as XP counts up (from 420Hz up to 860Hz)
+    const baseFreq = 420 + Math.max(0, Math.min(1, progress)) * 440;
+    osc.frequency.setValueAtTime(baseFreq, now);
+    osc.frequency.exponentialRampToValueAtTime(baseFreq * 1.05, now + 0.025);
+
+    gain.gain.setValueAtTime(0.001, now);
+    gain.gain.linearRampToValueAtTime(0.09, now + 0.003);
+    gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.03);
+
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+
+    osc.start(now);
+    osc.stop(now + 0.035);
+  } catch {}
+}
+
+/**
+ * Play celebration chord when XP count finishes
+ */
+export function playXpCompleteSound() {
+  try {
+    const ctx = getAudioContext();
+    if (!ctx) return;
+
+    const chord = [523.25, 659.25, 783.99, 1046.5]; // C5, E5, G5, C6
+    chord.forEach((freq, i) => {
+      const now = ctx.currentTime + i * 0.06;
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+
+      osc.type = "triangle";
+      osc.frequency.setValueAtTime(freq, now);
+
+      gain.gain.setValueAtTime(0.001, now);
+      gain.gain.linearRampToValueAtTime(0.12, now + 0.01);
+      gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.35);
+
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+
+      osc.start(now);
+      osc.stop(now + 0.36);
+    });
+  } catch {}
+}
+
+/**
  * Global click listener for real action/CTA buttons & card buttons
  * (Includes CTA buttons and card buttons with shadows; excludes bottom nav, icon-only buttons, back buttons, settings, close buttons)
  */
