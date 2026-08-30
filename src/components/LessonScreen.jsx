@@ -4,7 +4,7 @@ import LessonModul7Screen from "./LessonModul7Screen";
 import LessonExitModal from "./LessonExitModal";
 import { useAssetPreloader, useGainXpPreloader, getPreloadedVideoSrc } from "../lib/assetPreloader";
 import { useUserProgress } from "../context/UserProgressContext";
-import { playXpTickSound, playXpCompleteSound } from "../lib/soundEffects";
+import { playXpTickSound, playXpCompleteSound, playGainXpIntroSound } from "../lib/soundEffects";
 import "./LessonScreen.css";
 
 // ─── Assets ──────────────────────────────────────────────────────────────────
@@ -510,6 +510,10 @@ function CompletedLesson({ onFinish, xpEarned = 25 }) {
   const [showButton, setShowButton] = useState(false);
   const videoRef = useRef(null);
   const videoSrc = getPreloadedVideoSrc(videoGainXP);
+
+  useEffect(() => {
+    playGainXpIntroSound();
+  }, []);
 
   // Trigger XP appearance and counting animation after video finishes playing
   const handleVideoEnded = () => {

@@ -216,6 +216,83 @@ export function playXpCompleteSound() {
 }
 
 /**
+ * Play an inspiring, magical fanfare & coin shimmer sound when the Gain XP video starts
+ */
+export function playGainXpIntroSound() {
+  try {
+    const ctx = getAudioContext();
+    if (!ctx) return;
+
+    const now = ctx.currentTime;
+
+    // 1. Warm uplifting harmonic pad chord (C major add9: C4, E4, G4, D5)
+    const padNotes = [261.63, 329.63, 392.00, 587.33];
+    padNotes.forEach((freq, idx) => {
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      const filter = ctx.createBiquadFilter();
+
+      filter.type = "lowpass";
+      filter.frequency.setValueAtTime(900 + idx * 300, now);
+
+      osc.type = "triangle";
+      osc.frequency.setValueAtTime(freq, now);
+
+      gain.gain.setValueAtTime(0.001, now);
+      gain.gain.linearRampToValueAtTime(0.07, now + 0.12);
+      gain.gain.exponentialRampToValueAtTime(0.0001, now + 1.2);
+
+      osc.connect(filter);
+      filter.connect(gain);
+      gain.connect(ctx.destination);
+
+      osc.start(now);
+      osc.stop(now + 1.25);
+    });
+
+    // 2. Sparkling celestial glissando (rising star glitter)
+    const sparkles = [523.25, 659.25, 783.99, 1046.50, 1174.66, 1318.51, 1567.98, 2093.00];
+    sparkles.forEach((freq, idx) => {
+      const noteTime = now + 0.06 + idx * 0.055;
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+
+      osc.type = "sine";
+      osc.frequency.setValueAtTime(freq * 1.02, noteTime);
+      osc.frequency.exponentialRampToValueAtTime(freq, noteTime + 0.01);
+
+      gain.gain.setValueAtTime(0.001, noteTime);
+      gain.gain.linearRampToValueAtTime(0.09, noteTime + 0.008);
+      gain.gain.exponentialRampToValueAtTime(0.0001, noteTime + 0.45);
+
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+
+      osc.start(noteTime);
+      osc.stop(noteTime + 0.46);
+    });
+
+    // 3. Golden Star Coin Ping (bright crystal bell impact)
+    const coinTime = now + 0.46;
+    const coinOsc = ctx.createOscillator();
+    const coinGain = ctx.createGain();
+    coinOsc.type = "sine";
+    coinOsc.frequency.setValueAtTime(2349.32, coinTime); // D7 high crystal bell
+    coinOsc.frequency.exponentialRampToValueAtTime(1174.66, coinTime + 0.04);
+
+    coinGain.gain.setValueAtTime(0.001, coinTime);
+    coinGain.gain.linearRampToValueAtTime(0.12, coinTime + 0.005);
+    coinGain.gain.exponentialRampToValueAtTime(0.0001, coinTime + 0.6);
+
+    coinOsc.connect(coinGain);
+    coinGain.connect(ctx.destination);
+
+    coinOsc.start(coinTime);
+    coinOsc.stop(coinTime + 0.62);
+  } catch {}
+}
+
+/**
  * Global click listener for real action/CTA buttons & card buttons
  * (Includes CTA buttons and card buttons with shadows; excludes bottom nav, icon-only buttons, back buttons, settings, close buttons)
  */

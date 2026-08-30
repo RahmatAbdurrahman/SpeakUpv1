@@ -15,7 +15,7 @@ import iconFlash from "../assets/pages_assets/ai_analysis/Icons/Flash-Icon.svg";
 import iconAI from "../assets/pages_assets/ai_analysis/Icons/AI.svg";
 import videoGainXP from "../assets/pages_assets/gain_xp/Video-Gain-XP.webm";
 import { useGainXpPreloader, getPreloadedVideoSrc } from "../lib/assetPreloader";
-import { playXpTickSound, playXpCompleteSound } from "../lib/soundEffects";
+import { playXpTickSound, playXpCompleteSound, playGainXpIntroSound } from "../lib/soundEffects";
 import { DotLottieReact } from "@lottiefiles/dotlottie-react";
 import animaBotLottie from "../assets/lotties/AnimaBot.lottie";
 import SessionLoadingScreen from "./SessionLoadingScreen";
@@ -922,6 +922,10 @@ function SimulasiGainXpStep({ onClaim, xpEarned = 75 }) {
   const [showButton, setShowButton] = useState(false);
   const videoRef = useRef(null);
   const videoSrc = getPreloadedVideoSrc(videoGainXP);
+
+  useEffect(() => {
+    playGainXpIntroSound();
+  }, []);
 
   const handleVideoEnded = () => {
     setIsCounting(true);

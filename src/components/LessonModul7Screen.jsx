@@ -4,7 +4,7 @@ import LessonExitModal from "./LessonExitModal";
 import LessonAffirmation from "./LessonAffirmation";
 import { useAssetPreloader, useGainXpPreloader, getPreloadedVideoSrc } from "../lib/assetPreloader";
 import { useUserProgress } from "../context/UserProgressContext";
-import { playXpTickSound, playXpCompleteSound } from "../lib/soundEffects";
+import { playXpTickSound, playXpCompleteSound, playGainXpIntroSound } from "../lib/soundEffects";
 import { supabase } from "../lib/supabaseClient";
 import {
   createSimulation,
@@ -1499,6 +1499,10 @@ function CompletedLesson({ onFinish, xpEarned = 95 }) {
   const [showButton, setShowButton] = useState(false);
   const videoRef = useRef(null);
   const videoSrc = getPreloadedVideoSrc(videoGainXP);
+
+  useEffect(() => {
+    playGainXpIntroSound();
+  }, []);
 
   const handleVideoEnded = () => {
     setIsCounting(true);
