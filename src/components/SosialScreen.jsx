@@ -193,7 +193,14 @@ export default function SosialScreen({ onNavigateHome, onNavigateSimulasi, onNav
   };
 
   if (loading && leaderboard.length === 0 && friends.length === 0 && liveRooms.length === 0) {
-    return <SosialSkeleton />;
+    return (
+      <SosialSkeleton
+        onNavigateHome={onNavigateHome}
+        onNavigatePractice={onNavigateSimulasi}
+        onNavigateSosial={() => {}}
+        onNavigateProfile={onNavigateProfile}
+      />
+    );
   }
 
   return (

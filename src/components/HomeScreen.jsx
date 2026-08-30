@@ -74,7 +74,14 @@ export default function HomeScreen({ userName, onSelectModule, onNavigatePractic
   const streakDays = globalStreakDays?.length > 0 ? globalStreakDays : EMPTY_STREAK_DAYS;
 
   if (!isInitialized) {
-    return <HomeSkeleton />;
+    return (
+      <HomeSkeleton
+        onNavigateHome={() => {}}
+        onNavigatePractice={onNavigatePractice}
+        onNavigateSosial={onNavigateSosial}
+        onNavigateProfile={onNavigateProfile}
+      />
+    );
   }
 
   const handleModuleClick = (mod) => {

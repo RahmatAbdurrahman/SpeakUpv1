@@ -75,7 +75,14 @@ export default function ProfileScreen({ onNavigateHome, onNavigatePractice, onNa
   const maxTrend = Math.max(1, ...(summary?.dnaTrend ?? []).map((p) => p.agregat_skor));
 
   if (loading && !summary) {
-    return <ProfileSkeleton />;
+    return (
+      <ProfileSkeleton
+        onNavigateHome={onNavigateHome}
+        onNavigatePractice={onNavigatePractice}
+        onNavigateSosial={onNavigateSosial}
+        onNavigateProfile={() => {}}
+      />
+    );
   }
 
   return (

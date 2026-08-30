@@ -1,6 +1,77 @@
 import React from "react";
 import "./SkeletonLoader.css";
 
+// Bottom navigation icons
+import iconNavHome from "../assets/pages_assets/bottom-nav-icons/Home.svg";
+import iconNavMic from "../assets/pages_assets/bottom-nav-icons/Mic.svg";
+import iconNavUser from "../assets/pages_assets/bottom-nav-icons/User.svg";
+import iconNavGroup from "../assets/pages_assets/practice/icon_group.svg";
+
+/**
+ * Interactive Bottom Navigation component shown during skeleton loading
+ * to allow immediate tab switching without getting stuck.
+ */
+export function SkeletonBottomNav({
+  activeTab = "home",
+  onNavigateHome,
+  onNavigatePractice,
+  onNavigateSosial,
+  onNavigateProfile,
+}) {
+  return (
+    <div className="home-bottom-nav">
+      <button
+        type="button"
+        className={`home-nav-item ${activeTab === "home" ? "home-nav-item--active" : ""}`}
+        onClick={onNavigateHome}
+        aria-label="Home"
+      >
+        <img
+          src={iconNavHome}
+          alt="Home"
+          className={`home-nav-icon ${activeTab === "home" ? "home-nav-icon--active" : ""}`}
+        />
+      </button>
+      <button
+        type="button"
+        className={`home-nav-item ${activeTab === "practice" ? "home-nav-item--active" : ""}`}
+        onClick={onNavigatePractice}
+        aria-label="Simulasi"
+      >
+        <img
+          src={iconNavMic}
+          alt="Simulasi"
+          className={`home-nav-icon ${activeTab === "practice" ? "home-nav-icon--active" : ""}`}
+        />
+      </button>
+      <button
+        type="button"
+        className={`home-nav-item ${activeTab === "sosial" ? "home-nav-item--active" : ""}`}
+        onClick={onNavigateSosial}
+        aria-label="Sosial"
+      >
+        <img
+          src={iconNavGroup}
+          alt="Sosial"
+          className={`home-nav-icon ${activeTab === "sosial" ? "home-nav-icon--active" : ""}`}
+        />
+      </button>
+      <button
+        type="button"
+        className={`home-nav-item ${activeTab === "profile" ? "home-nav-item--active" : ""}`}
+        onClick={onNavigateProfile}
+        aria-label="Profile"
+      >
+        <img
+          src={iconNavUser}
+          alt="Profile"
+          className={`home-nav-icon ${activeTab === "profile" ? "home-nav-icon--active" : ""}`}
+        />
+      </button>
+    </div>
+  );
+}
+
 /**
  * Base atomic Skeleton block with shimmer wave animation.
  */
@@ -21,7 +92,12 @@ export function Skeleton({ width, height, borderRadius, style, className = "" })
 /**
  * Full page Shimmer Skeleton for Home Screen.
  */
-export function HomeSkeleton() {
+export function HomeSkeleton({
+  onNavigateHome,
+  onNavigatePractice,
+  onNavigateSosial,
+  onNavigateProfile,
+}) {
   return (
     <div className="skeleton-page home-skeleton">
       {/* Topbar */}
@@ -71,6 +147,15 @@ export function HomeSkeleton() {
           </div>
         </div>
       </div>
+
+      {/* Interactive Bottom Nav */}
+      <SkeletonBottomNav
+        activeTab="home"
+        onNavigateHome={onNavigateHome}
+        onNavigatePractice={onNavigatePractice}
+        onNavigateSosial={onNavigateSosial}
+        onNavigateProfile={onNavigateProfile}
+      />
     </div>
   );
 }
@@ -78,7 +163,12 @@ export function HomeSkeleton() {
 /**
  * Full page Shimmer Skeleton for Sosial Screen.
  */
-export function SosialSkeleton() {
+export function SosialSkeleton({
+  onNavigateHome,
+  onNavigatePractice,
+  onNavigateSosial,
+  onNavigateProfile,
+}) {
   return (
     <div className="skeleton-page sosial-skeleton">
       <div className="skeleton-topbar">
@@ -126,6 +216,15 @@ export function SosialSkeleton() {
           </div>
         </div>
       </div>
+
+      {/* Interactive Bottom Nav */}
+      <SkeletonBottomNav
+        activeTab="sosial"
+        onNavigateHome={onNavigateHome}
+        onNavigatePractice={onNavigatePractice}
+        onNavigateSosial={onNavigateSosial}
+        onNavigateProfile={onNavigateProfile}
+      />
     </div>
   );
 }
@@ -133,7 +232,12 @@ export function SosialSkeleton() {
 /**
  * Full page Shimmer Skeleton for Profile / Progress Screen.
  */
-export function ProfileSkeleton() {
+export function ProfileSkeleton({
+  onNavigateHome,
+  onNavigatePractice,
+  onNavigateSosial,
+  onNavigateProfile,
+}) {
   return (
     <div className="skeleton-page profile-skeleton">
       <div className="skeleton-topbar">
@@ -187,6 +291,15 @@ export function ProfileSkeleton() {
           </div>
         </div>
       </div>
+
+      {/* Interactive Bottom Nav */}
+      <SkeletonBottomNav
+        activeTab="profile"
+        onNavigateHome={onNavigateHome}
+        onNavigatePractice={onNavigatePractice}
+        onNavigateSosial={onNavigateSosial}
+        onNavigateProfile={onNavigateProfile}
+      />
     </div>
   );
 }
@@ -194,7 +307,12 @@ export function ProfileSkeleton() {
 /**
  * Full page Shimmer Skeleton for Simulasi Screen Picker.
  */
-export function SimulasiSkeleton() {
+export function SimulasiSkeleton({
+  onNavigateHome,
+  onNavigatePractice,
+  onNavigateSosial,
+  onNavigateProfile,
+}) {
   return (
     <div className="skeleton-page simulasi-skeleton">
       <div className="skeleton-topbar">
@@ -217,6 +335,15 @@ export function SimulasiSkeleton() {
           ))}
         </div>
       </div>
+
+      {/* Interactive Bottom Nav */}
+      <SkeletonBottomNav
+        activeTab="practice"
+        onNavigateHome={onNavigateHome}
+        onNavigatePractice={onNavigatePractice}
+        onNavigateSosial={onNavigateSosial}
+        onNavigateProfile={onNavigateProfile}
+      />
     </div>
   );
 }

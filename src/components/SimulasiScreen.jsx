@@ -1305,7 +1305,14 @@ export default function SimulasiScreen({ onNavigateHome, onNavigateSosial, onNav
   }
 
   if (!isInitialized && step === "picker") {
-    return <SimulasiSkeleton />;
+    return (
+      <SimulasiSkeleton
+        onNavigateHome={onNavigateHome}
+        onNavigatePractice={() => {}}
+        onNavigateSosial={onNavigateSosial}
+        onNavigateProfile={onNavigateProfile}
+      />
+    );
   }
 
   return (
