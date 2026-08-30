@@ -374,83 +374,83 @@
   color: rgba(255, 255, 255, 0.75);
 }
 
-/* ── 4 Pillars Sub-Scores 2x2 Grid ────────────────────────────────────────── */
-.profile-metrics-grid {
+/* ── 4 Pillars Sub-Scores 2x2 Grid (AI Analysis Style) ────────────────────── */
+.profile-analysis-grid {
   display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 10px;
-}
-
-.profile-metric-card {
-  background: #FFFFFF;
-  border: 1px solid rgba(20, 60, 63, 0.08);
-  border-radius: 16px;
-  padding: 14px;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.02);
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 11px;
+  width: 100%;
   box-sizing: border-box;
 }
 
-.profile-metric-header {
+.profile-analysis-card {
   display: flex;
-  align-items: center;
-  justify-content: space-between;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 16px;
+  background-color: var(--color-surface, #FFFFFF);
+  border: 1px solid #F0F3F3;
+  border-radius: 16px;
+  box-shadow: 0px 1px 2px 0px rgba(20, 60, 63, 0.04);
+  box-sizing: border-box;
+  text-align: left;
 }
 
-.profile-metric-title-group {
-  display: flex;
-  align-items: center;
-  gap: 6px;
+.profile-analysis-icon {
+  width: 24px;
+  height: 24px;
+  display: block;
 }
 
-.profile-metric-icon {
+.profile-analysis-card-label {
+  font-family: var(--font-family-base, 'Space Grotesk', sans-serif);
   font-size: 14px;
+  font-weight: 700;
+  color: var(--color-text-primary, #243238);
+  margin: 0;
 }
 
-.profile-metric-title {
+.profile-analysis-metric {
+  font-family: var(--font-family-base, 'Space Grotesk', sans-serif);
+  font-size: 26px;
+  font-weight: 700;
+  color: #277A5B;
+  letter-spacing: -0.6px;
+  line-height: 1;
+  margin: 0;
+  white-space: nowrap;
+}
+
+.profile-analysis-metric--warn {
+  color: #996515;
+}
+
+.profile-analysis-metric-unit {
+  font-size: 12px;
+  font-weight: 500;
+  color: #9AA5A9;
+  margin-left: 5px;
+}
+
+.profile-analysis-chip {
+  display: inline-flex;
+  align-items: center;
+  padding: 6px 12px;
+  border-radius: 9px;
   font-family: var(--font-family-base, 'Space Grotesk', sans-serif);
   font-size: 12px;
   font-weight: 700;
-  color: var(--color-text-primary, #243238);
 }
 
-.profile-metric-score {
-  font-family: var(--font-family-base, 'Space Grotesk', sans-serif);
-  font-size: 15px;
-  font-weight: 700;
-  color: var(--color-primary, #24A981);
+.profile-analysis-chip--good {
+  background-color: #DBF1EC;
+  color: #009F7A;
 }
 
-.profile-metric-bar-bg {
-  width: 100%;
-  height: 6px;
-  background-color: #ECEFF1;
-  border-radius: 100px;
-  overflow: hidden;
-}
-
-.profile-metric-bar-fill {
-  height: 100%;
-  border-radius: 100px;
-  transition: width 0.6s ease;
-}
-
-.profile-bar--fluency {
-  background: linear-gradient(90deg, #52C41A, #24A981);
-}
-
-.profile-bar--eye {
-  background: linear-gradient(90deg, #1890FF, #2F54EB);
-}
-
-.profile-bar--intonasi {
-  background: linear-gradient(90deg, #FA8C16, #E8753D);
-}
-
-.profile-bar--materi {
-  background: linear-gradient(90deg, #722ED1, #9254DE);
+.profile-analysis-chip--warn {
+  background-color: #F6EFE9;
+  color: #996515;
 }
 
 /* ── Peer Feedback Card ───────────────────────────────────────────────────── */

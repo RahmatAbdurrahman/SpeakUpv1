@@ -4,6 +4,10 @@ import iconNavHome from "../assets/pages_assets/bottom-nav-icons/Home.svg";
 import iconNavMic from "../assets/pages_assets/bottom-nav-icons/Mic.svg";
 import iconNavUser from "../assets/pages_assets/bottom-nav-icons/User.svg";
 import iconGroup from "../assets/pages_assets/practice/icon_group.svg";
+import iconFlash from "../assets/pages_assets/ai_analysis/Icons/Flash-Icon.svg";
+import iconMouth from "../assets/pages_assets/ai_analysis/Icons/Mouth-Icon.svg";
+import iconSpeed from "../assets/pages_assets/ai_analysis/Icons/Speed-Icon.svg";
+import iconArgument from "../assets/pages_assets/ai_analysis/Icons/Argument-Icon.svg";
 import { supabase } from "../lib/supabaseClient";
 import { fetchProfile } from "../lib/profile";
 import { fetchProgressSummary } from "../lib/progress";
@@ -209,83 +213,107 @@ export default function ProfileScreen({ onNavigateHome, onNavigatePractice, onNa
                   <p className="profile-empty-desc">Selesaikan minimal satu simulasi untuk melihat rincian 4 pilar kemampuan.</p>
                 </div>
               ) : (
-                <div className="profile-metrics-grid">
+                <div className="profile-analysis-grid">
                   {/* Fluency */}
-                  <div className="profile-metric-card">
-                    <div className="profile-metric-header">
-                      <div className="profile-metric-title-group">
-                        <span className="profile-metric-icon">⚡</span>
-                        <span className="profile-metric-title">Kelancaran</span>
-                      </div>
-                      <span className="profile-metric-score">
-                        {summary.avgSubScores.fluency != null ? Math.round(summary.avgSubScores.fluency) : "—"}
-                      </span>
-                    </div>
-                    <div className="profile-metric-bar-bg">
-                      <div
-                        className="profile-metric-bar-fill profile-bar--fluency"
-                        style={{ width: `${Math.min(100, summary.avgSubScores.fluency || 0)}%` }}
-                      />
-                    </div>
+                  <div className="profile-analysis-card">
+                    <img src={iconFlash} alt="" className="profile-analysis-icon" />
+                    <p className="profile-analysis-card-label">Kelancaran</p>
+                    <p
+                      className={`profile-analysis-metric${
+                        (summary.avgSubScores.fluency || 0) < 60 ? " profile-analysis-metric--warn" : ""
+                      }`}
+                    >
+                      {summary.avgSubScores.fluency != null ? Math.round(summary.avgSubScores.fluency) : "—"}
+                      <span className="profile-analysis-metric-unit">/ 100</span>
+                    </p>
+                    <span
+                      className={`profile-analysis-chip profile-analysis-chip--${
+                        (summary.avgSubScores.fluency || 0) >= 60 ? "good" : "warn"
+                      }`}
+                    >
+                      {(summary.avgSubScores.fluency || 0) >= 75
+                        ? "Lancar"
+                        : (summary.avgSubScores.fluency || 0) >= 60
+                        ? "Stabil"
+                        : "Perlu Latihan"}
+                    </span>
                   </div>
 
                   {/* Eye Contact */}
-                  <div className="profile-metric-card">
-                    <div className="profile-metric-header">
-                      <div className="profile-metric-title-group">
-                        <span className="profile-metric-icon">👁️</span>
-                        <span className="profile-metric-title">Kontak Mata</span>
-                      </div>
-                      <span className="profile-metric-score">
-                        {summary.avgSubScores.eye_contact != null ? Math.round(summary.avgSubScores.eye_contact) : "—"}
-                      </span>
-                    </div>
-                    <div className="profile-metric-bar-bg">
-                      <div
-                        className="profile-metric-bar-fill profile-bar--eye"
-                        style={{ width: `${Math.min(100, summary.avgSubScores.eye_contact || 0)}%` }}
-                      />
-                    </div>
+                  <div className="profile-analysis-card">
+                    <img src={iconMouth} alt="" className="profile-analysis-icon" />
+                    <p className="profile-analysis-card-label">Kontak Mata</p>
+                    <p
+                      className={`profile-analysis-metric${
+                        (summary.avgSubScores.eye_contact || 0) < 60 ? " profile-analysis-metric--warn" : ""
+                      }`}
+                    >
+                      {summary.avgSubScores.eye_contact != null ? Math.round(summary.avgSubScores.eye_contact) : "—"}
+                      <span className="profile-analysis-metric-unit">/ 100</span>
+                    </p>
+                    <span
+                      className={`profile-analysis-chip profile-analysis-chip--${
+                        (summary.avgSubScores.eye_contact || 0) >= 60 ? "good" : "warn"
+                      }`}
+                    >
+                      {(summary.avgSubScores.eye_contact || 0) >= 75
+                        ? "Fokus"
+                        : (summary.avgSubScores.eye_contact || 0) >= 60
+                        ? "Stabil"
+                        : "Perlu Latihan"}
+                    </span>
                   </div>
 
                   {/* Intonasi */}
-                  <div className="profile-metric-card">
-                    <div className="profile-metric-header">
-                      <div className="profile-metric-title-group">
-                        <span className="profile-metric-icon">🎙️</span>
-                        <span className="profile-metric-title">Intonasi</span>
-                      </div>
-                      <span className="profile-metric-score">
-                        {summary.avgSubScores.intonasi != null ? Math.round(summary.avgSubScores.intonasi) : "—"}
-                      </span>
-                    </div>
-                    <div className="profile-metric-bar-bg">
-                      <div
-                        className="profile-metric-bar-fill profile-bar--intonasi"
-                        style={{ width: `${Math.min(100, summary.avgSubScores.intonasi || 0)}%` }}
-                      />
-                    </div>
+                  <div className="profile-analysis-card">
+                    <img src={iconSpeed} alt="" className="profile-analysis-icon" />
+                    <p className="profile-analysis-card-label">Intonasi</p>
+                    <p
+                      className={`profile-analysis-metric${
+                        (summary.avgSubScores.intonasi || 0) < 60 ? " profile-analysis-metric--warn" : ""
+                      }`}
+                    >
+                      {summary.avgSubScores.intonasi != null ? Math.round(summary.avgSubScores.intonasi) : "—"}
+                      <span className="profile-analysis-metric-unit">/ 100</span>
+                    </p>
+                    <span
+                      className={`profile-analysis-chip profile-analysis-chip--${
+                        (summary.avgSubScores.intonasi || 0) >= 60 ? "good" : "warn"
+                      }`}
+                    >
+                      {(summary.avgSubScores.intonasi || 0) >= 75
+                        ? "Dinamis"
+                        : (summary.avgSubScores.intonasi || 0) >= 60
+                        ? "Stabil"
+                        : "Perlu Latihan"}
+                    </span>
                   </div>
 
                   {/* Struktur Materi */}
-                  <div className="profile-metric-card">
-                    <div className="profile-metric-header">
-                      <div className="profile-metric-title-group">
-                        <span className="profile-metric-icon">📑</span>
-                        <span className="profile-metric-title">Struktur Materi</span>
-                      </div>
-                      <span className="profile-metric-score">
-                        {summary.avgSubScores.kesesuaian_materi != null
-                          ? Math.round(summary.avgSubScores.kesesuaian_materi)
-                          : "—"}
-                      </span>
-                    </div>
-                    <div className="profile-metric-bar-bg">
-                      <div
-                        className="profile-metric-bar-fill profile-bar--materi"
-                        style={{ width: `${Math.min(100, summary.avgSubScores.kesesuaian_materi || 0)}%` }}
-                      />
-                    </div>
+                  <div className="profile-analysis-card">
+                    <img src={iconArgument} alt="" className="profile-analysis-icon" />
+                    <p className="profile-analysis-card-label">Struktur Materi</p>
+                    <p
+                      className={`profile-analysis-metric${
+                        (summary.avgSubScores.kesesuaian_materi || 0) < 60 ? " profile-analysis-metric--warn" : ""
+                      }`}
+                    >
+                      {summary.avgSubScores.kesesuaian_materi != null
+                        ? Math.round(summary.avgSubScores.kesesuaian_materi)
+                        : "—"}
+                      <span className="profile-analysis-metric-unit">/ 100</span>
+                    </p>
+                    <span
+                      className={`profile-analysis-chip profile-analysis-chip--${
+                        (summary.avgSubScores.kesesuaian_materi || 0) >= 60 ? "good" : "warn"
+                      }`}
+                    >
+                      {(summary.avgSubScores.kesesuaian_materi || 0) >= 75
+                        ? "Terstruktur"
+                        : (summary.avgSubScores.kesesuaian_materi || 0) >= 60
+                        ? "Cukup Jelas"
+                        : "Perlu Latihan"}
+                    </span>
                   </div>
                 </div>
               )}
