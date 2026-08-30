@@ -109,17 +109,25 @@ export function initGlobalSoundEffects() {
     const target = e.target;
     if (!target) return;
 
-    // Target buttons and card buttons (cards with shadows that act as buttons)
+    // Target real action buttons and cards with 3D button shadows
     const clickable = target.closest(
-      "button, .btn, .btn-primary, .btn-secondary, .home-module-item, .home-todays-lesson-card, .simulasi-scenario-card, .radio-card, .tag-chip, .lesson-p1-card, .lesson-p2-card, [data-name*='CardButton'], [data-name*='Card-Button'], .module-lesson-card, .modul7-technique-card, .modul7-quiz-option, .modul7-card-choice, .sosial-room-card, .sosial-live-card, .peer-rating-option"
+      "button, .btn, .btn-primary, .btn-secondary, .simulasi-scenario-card, .lesson-p1-card, .radio-card, .tag-chip, [data-name*='CardButton'], [data-name*='Card-Button']"
     );
     if (!clickable) return;
 
     // 1. Explicit opt-out
     if (clickable.getAttribute("data-no-sound") === "true") return;
 
-    // 2. Disabled buttons/cards
-    if (clickable.hasAttribute("disabled") || clickable.getAttribute("aria-disabled") === "true" || clickable.classList.contains("home-module-item--disabled")) return;
+    // 2. Disabled or inactive buttons/cards
+    if (
+      clickable.hasAttribute("disabled") ||
+      clickable.getAttribute("aria-disabled") === "true" ||
+      clickable.classList.contains("btn-lesson-status--inactive") ||
+      clickable.classList.contains("btn-open-next-module--inactive") ||
+      clickable.closest("[disabled], [aria-disabled='true'], .btn-lesson-status--inactive")
+    ) {
+      return;
+    }
 
     // 3. Exclude bottom navigation & toggle tabs completely
     if (clickable.closest(".bottom-nav, .home-bottom-nav, .nav-bar, nav, .skeleton-bottom-nav, .tab-buttons-container, .practice-mode-toggle, .sosial-tab-btn, .tab-btn")) {
@@ -149,7 +157,7 @@ export function initGlobalSoundEffects() {
       if (!text && !hasImage) return;
     }
 
-    // 6. Play the sound for CTA buttons & card buttons
+    // 6. Play the sound for actual CTA buttons & 3D shadow card buttons
     playTapSound();
   };
 
