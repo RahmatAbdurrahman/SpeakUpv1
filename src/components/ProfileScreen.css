@@ -630,6 +630,36 @@
   text-transform: uppercase;
 }
 
+.btn-profile-load-more {
+  width: 100%;
+  padding: 10px 16px;
+  margin-top: 6px;
+  background: #FFFFFF;
+  border: 1.5px solid rgba(36, 169, 129, 0.35);
+  border-radius: 100px;
+  font-family: var(--font-family-base, 'Space Grotesk', sans-serif);
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--color-primary, #24A981);
+  cursor: pointer;
+  box-shadow: 0px 2px 0px 0px rgba(23, 103, 79, 0.12);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  transition: all 0.15s ease;
+}
+
+.btn-profile-load-more:hover {
+  background-color: #E8F7F2;
+  border-color: #24A981;
+}
+
+.btn-profile-load-more:active {
+  transform: translateY(1px);
+  box-shadow: 0px 1px 0px 0px rgba(23, 103, 79, 0.12);
+}
+
 /* ── Empty State Cards ────────────────────────────────────────────────────── */
 .profile-empty-card {
   background: #FFFFFF;

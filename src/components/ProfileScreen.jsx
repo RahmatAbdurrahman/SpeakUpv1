@@ -41,6 +41,7 @@ export default function ProfileScreen({ onNavigateHome, onNavigatePractice, onNa
   const [displayName, setDisplayName] = useState("");
   const [summary, setSummary] = useState(progressSummary);
   const [peerRating, setPeerRating] = useState(null);
+  const [showAllSessions, setShowAllSessions] = useState(false);
 
   useEffect(() => {
     if (progressSummary) {
@@ -359,7 +360,9 @@ export default function ProfileScreen({ onNavigateHome, onNavigatePractice, onNa
               <div className="profile-section-header">
                 <h2 className="profile-section-title">Riwayat Sesi Latihan</h2>
                 {summary.recentSessions.length > 0 && (
-                  <span className="profile-section-badge">{summary.recentSessions.length} Terakhir</span>
+                  <span className="profile-section-badge">
+                    {showAllSessions ? `${summary.recentSessions.length} Sesi` : `5 dari ${summary.recentSessions.length}`}
+                  </span>
                 )}
               </div>
 
@@ -372,41 +375,55 @@ export default function ProfileScreen({ onNavigateHome, onNavigatePractice, onNa
               )}
 
               {summary.recentSessions.length > 0 && (
-                <div className="profile-history-list">
-                  {summary.recentSessions.map((s) => {
-                    const score = s.skor != null ? Math.round(s.skor) : null;
-                    const catClass = KATEGORI_CLASS[s.kategori] || "profile-cat--presentasi";
-                    const isHighScore = score != null && score >= 80;
-                    const isMidScore = score != null && score >= 60 && score < 80;
+                <>
+                  <div className="profile-history-list">
+                    {(showAllSessions ? summary.recentSessions : summary.recentSessions.slice(0, 5)).map((s) => {
+                      const score = s.skor != null ? Math.round(s.skor) : null;
+                      const catClass = KATEGORI_CLASS[s.kategori] || "profile-cat--presentasi";
+                      const isHighScore = score != null && score >= 80;
+                      const isMidScore = score != null && score >= 60 && score < 80;
 
-                    return (
-                      <div key={s.id} className="profile-history-card">
-                        <div className="profile-history-left">
-                          <div className="profile-history-tags">
-                            <span className={`profile-cat-pill ${catClass}`}>
-                              {KATEGORI_LABEL[s.kategori] || "Latihan"}
-                            </span>
-                            <span className="profile-history-date">{formatDate(s.date)}</span>
+                      return (
+                        <div key={s.id} className="profile-history-card">
+                          <div className="profile-history-left">
+                            <div className="profile-history-tags">
+                              <span className={`profile-cat-pill ${catClass}`}>
+                                {KATEGORI_LABEL[s.kategori] || "Latihan"}
+                              </span>
+                              <span className="profile-history-date">{formatDate(s.date)}</span>
+                            </div>
+                            <span className="profile-history-desc">Sesi Latihan Simulasi</span>
                           </div>
-                          <span className="profile-history-desc">Sesi Latihan Simulasi</span>
-                        </div>
 
-                        <div
-                          className={`profile-history-score-pill ${
-                            isHighScore
-                              ? "profile-score--high"
-                              : isMidScore
-                              ? "profile-score--mid"
-                              : "profile-score--low"
-                          }`}
-                        >
-                          <span className="profile-score-num">{score != null ? score : "—"}</span>
-                          <span className="profile-score-label">Skor</span>
+                          <div
+                            className={`profile-history-score-pill ${
+                              isHighScore
+                                ? "profile-score--high"
+                                : isMidScore
+                                ? "profile-score--mid"
+                                : "profile-score--low"
+                            }`}
+                          >
+                            <span className="profile-score-num">{score != null ? score : "—"}</span>
+                            <span className="profile-score-label">Skor</span>
+                          </div>
                         </div>
-                      </div>
-                    );
-                  })}
-                </div>
+                      );
+                    })}
+                  </div>
+
+                  {summary.recentSessions.length > 5 && (
+                    <button
+                      type="button"
+                      className="btn-profile-load-more"
+                      onClick={() => setShowAllSessions((prev) => !prev)}
+                    >
+                      {showAllSessions
+                        ? "Tampilkan Lebih Sedikit"
+                        : `Lihat ${summary.recentSessions.length - 5} Sesi Lainnya`}
+                    </button>
+                  )}
+                </>
               )}
             </section>
           </>
