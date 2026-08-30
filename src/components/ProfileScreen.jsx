@@ -108,9 +108,6 @@ export default function ProfileScreen({ onNavigateHome, onNavigatePractice, onNa
       <div className="profile-topbar">
         <h1 className="profile-topbar-title">Progress</h1>
         <div className="profile-topbar-actions">
-          <div className="profile-xp-badge">
-            <span className="profile-xp-text">{xp.toLocaleString("id-ID")} XP</span>
-          </div>
           <button
             type="button"
             className="btn-profile-settings"
