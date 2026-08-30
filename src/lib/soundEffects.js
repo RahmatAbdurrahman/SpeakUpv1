@@ -90,8 +90,8 @@ export function playTapSound() {
 }
 
 /**
- * Global click listener strictly for real action/CTA buttons
- * (Excludes bottom nav, icon-only buttons, back buttons, settings, close buttons, cards, etc.)
+ * Global click listener for real action/CTA buttons & card buttons
+ * (Includes CTA buttons and card buttons with shadows; excludes bottom nav, icon-only buttons, back buttons, settings, close buttons)
  */
 export function initGlobalSoundEffects() {
   if (typeof window === "undefined") return;
@@ -109,41 +109,47 @@ export function initGlobalSoundEffects() {
     const target = e.target;
     if (!target) return;
 
-    // Only target actual <button> elements or elements explicitly marked with .btn-primary / .btn-secondary
-    const btn = target.closest("button, .btn-primary, .btn-secondary");
-    if (!btn) return;
+    // Target buttons and card buttons (cards with shadows that act as buttons)
+    const clickable = target.closest(
+      "button, .btn, .btn-primary, .btn-secondary, .home-module-item, .home-todays-lesson-card, .simulasi-scenario-card, .radio-card, .tag-chip, .lesson-p1-card, .lesson-p2-card, [data-name*='CardButton'], [data-name*='Card-Button'], .module-lesson-card, .modul7-technique-card, .modul7-quiz-option, .modul7-card-choice, .sosial-room-card, .sosial-live-card, .peer-rating-option"
+    );
+    if (!clickable) return;
 
     // 1. Explicit opt-out
-    if (btn.getAttribute("data-no-sound") === "true") return;
+    if (clickable.getAttribute("data-no-sound") === "true") return;
 
-    // 2. Disabled buttons
-    if (btn.hasAttribute("disabled") || btn.getAttribute("aria-disabled") === "true") return;
+    // 2. Disabled buttons/cards
+    if (clickable.hasAttribute("disabled") || clickable.getAttribute("aria-disabled") === "true" || clickable.classList.contains("home-module-item--disabled")) return;
 
-    // 3. Exclude bottom navigation & toggle bars completely
-    if (btn.closest(".bottom-nav, .home-bottom-nav, .nav-bar, nav, .skeleton-bottom-nav, .tab-buttons-container, .practice-mode-toggle, .sosial-tab-btn, .tab-btn")) {
+    // 3. Exclude bottom navigation & toggle tabs completely
+    if (clickable.closest(".bottom-nav, .home-bottom-nav, .nav-bar, nav, .skeleton-bottom-nav, .tab-buttons-container, .practice-mode-toggle, .sosial-tab-btn, .tab-btn")) {
       return;
     }
 
     // 4. Exclude icon-only buttons / navigation / back / settings / close buttons
-    const className = (typeof btn.className === "string" ? btn.className : "");
+    const className = (typeof clickable.className === "string" ? clickable.className : "");
     const isIconOrNav =
       className.includes("back") ||
       className.includes("close") ||
       className.includes("settings") ||
-      className.includes("icon") ||
+      className.includes("icon-btn") ||
+      className.includes("btn-icon") ||
       className.includes("round-back") ||
       className.includes("reaction") ||
       className.includes("teams-control") ||
       className.includes("chat-send") ||
-      btn.closest(".lesson-back-btn, .btn-profile-settings, .btn-modul7-round-back, .btn-round-back, .modal-close-btn");
+      clickable.closest(".lesson-back-btn, .btn-profile-settings, .btn-modul7-round-back, .btn-round-back, .modal-close-btn");
 
     if (isIconOrNav) return;
 
-    // 5. Exclude if there is no readable text inside the button (e.g. only contains SVG/image)
-    const text = (btn.innerText || "").trim();
-    if (!text) return;
+    // 5. If it's a plain <button>, ensure it's not an empty icon button
+    if (clickable.tagName === "BUTTON") {
+      const text = (clickable.innerText || "").trim();
+      const hasImage = clickable.querySelector("img");
+      if (!text && !hasImage) return;
+    }
 
-    // 6. Play the sound for actual action/CTA buttons
+    // 6. Play the sound for CTA buttons & card buttons
     playTapSound();
   };
 
