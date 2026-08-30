@@ -1361,7 +1361,7 @@ export default function SimulasiScreen({ onNavigateHome, onNavigateSosial, onNav
             className="simulasi-start-btn"
             onClick={() => handlePick(selectedScenario)}
           >
-            Mulai
+            <span className="simulasi-start-btn-text">Mulai</span>
           </button>
         </div>
       )}
