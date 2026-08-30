@@ -217,6 +217,7 @@ export function playXpCompleteSound() {
 
 /**
  * Play an inspiring, magical fanfare & coin shimmer sound when the Gain XP video starts
+ * (Starts very softly with a gentle warm cloud swell, then blossoms into starry sparkles and crystal coin ping)
  */
 export function playGainXpIntroSound() {
   try {
@@ -225,70 +226,77 @@ export function playGainXpIntroSound() {
 
     const now = ctx.currentTime;
 
-    // 1. Warm uplifting harmonic pad chord (C major add9: C4, E4, G4, D5)
-    const padNotes = [261.63, 329.63, 392.00, 587.33];
+    // 1. Soft, dreamy cloud parting swell (Gentle C major 9: C4, E4, G4, B4, D5)
+    // Starts whisper-quiet, then slowly opens up like sunlight breaking through clouds
+    const padNotes = [261.63, 329.63, 392.00, 493.88, 587.33];
     padNotes.forEach((freq, idx) => {
       const osc = ctx.createOscillator();
       const gain = ctx.createGain();
       const filter = ctx.createBiquadFilter();
 
+      // Low-pass filter sweeps from warm whisper (350Hz) to open daylight (1400Hz)
       filter.type = "lowpass";
-      filter.frequency.setValueAtTime(900 + idx * 300, now);
+      filter.frequency.setValueAtTime(350 + idx * 80, now);
+      filter.frequency.exponentialRampToValueAtTime(1400 + idx * 200, now + 0.55);
 
-      osc.type = "triangle";
+      osc.type = "sine";
       osc.frequency.setValueAtTime(freq, now);
 
-      gain.gain.setValueAtTime(0.001, now);
-      gain.gain.linearRampToValueAtTime(0.07, now + 0.12);
-      gain.gain.exponentialRampToValueAtTime(0.0001, now + 1.2);
+      // Very soft, gradual attack fade-in
+      gain.gain.setValueAtTime(0.0001, now);
+      gain.gain.linearRampToValueAtTime(0.045, now + 0.35);
+      gain.gain.exponentialRampToValueAtTime(0.00001, now + 1.4);
 
       osc.connect(filter);
       filter.connect(gain);
       gain.connect(ctx.destination);
 
       osc.start(now);
-      osc.stop(now + 1.25);
+      osc.stop(now + 1.45);
     });
 
-    // 2. Sparkling celestial glissando (rising star glitter)
+    // 2. Delicate celestial harp sparkles (Progressive crescendo from soft to luminous)
     const sparkles = [523.25, 659.25, 783.99, 1046.50, 1174.66, 1318.51, 1567.98, 2093.00];
     sparkles.forEach((freq, idx) => {
-      const noteTime = now + 0.06 + idx * 0.055;
+      // Notes begin after the initial soft cloud swell
+      const noteTime = now + 0.18 + idx * 0.052;
       const osc = ctx.createOscillator();
       const gain = ctx.createGain();
 
       osc.type = "sine";
-      osc.frequency.setValueAtTime(freq * 1.02, noteTime);
+      osc.frequency.setValueAtTime(freq * 1.015, noteTime);
       osc.frequency.exponentialRampToValueAtTime(freq, noteTime + 0.01);
 
-      gain.gain.setValueAtTime(0.001, noteTime);
-      gain.gain.linearRampToValueAtTime(0.09, noteTime + 0.008);
-      gain.gain.exponentialRampToValueAtTime(0.0001, noteTime + 0.45);
+      // Volume increases dynamically as sparkles ascend
+      const noteGain = 0.025 + (idx / (sparkles.length - 1)) * 0.06;
+      gain.gain.setValueAtTime(0.0001, noteTime);
+      gain.gain.linearRampToValueAtTime(noteGain, noteTime + 0.01);
+      gain.gain.exponentialRampToValueAtTime(0.00001, noteTime + 0.5);
 
       osc.connect(gain);
       gain.connect(ctx.destination);
 
       osc.start(noteTime);
-      osc.stop(noteTime + 0.46);
+      osc.stop(noteTime + 0.52);
     });
 
-    // 3. Golden Star Coin Ping (bright crystal bell impact)
-    const coinTime = now + 0.46;
+    // 3. Golden Star Coin Ping (Crisp, gentle crystal chime at peak reveal: 0.58s)
+    const coinTime = now + 0.56;
     const coinOsc = ctx.createOscillator();
     const coinGain = ctx.createGain();
     coinOsc.type = "sine";
-    coinOsc.frequency.setValueAtTime(2349.32, coinTime); // D7 high crystal bell
-    coinOsc.frequency.exponentialRampToValueAtTime(1174.66, coinTime + 0.04);
+    coinOsc.frequency.setValueAtTime(2349.32, coinTime); // D7 crystal bell
+    coinOsc.frequency.exponentialRampToValueAtTime(1174.66, coinTime + 0.035);
 
-    coinGain.gain.setValueAtTime(0.001, coinTime);
-    coinGain.gain.linearRampToValueAtTime(0.12, coinTime + 0.005);
-    coinGain.gain.exponentialRampToValueAtTime(0.0001, coinTime + 0.6);
+    coinGain.gain.setValueAtTime(0.0001, coinTime);
+    coinGain.gain.linearRampToValueAtTime(0.095, coinTime + 0.006);
+    coinGain.gain.exponentialRampToValueAtTime(0.00001, coinTime + 0.7);
 
     coinOsc.connect(coinGain);
     coinGain.connect(ctx.destination);
 
     coinOsc.start(coinTime);
-    coinOsc.stop(coinTime + 0.62);
+    coinOsc.stop(coinTime + 0.72);
   } catch {}
 }
 
