@@ -695,10 +695,10 @@ export default function LessonScreen({ lessonData, onBack, onFinish }) {
         />
       )}
       {step === 1 && <LessonPage1 onNext={goNext} onBack={handleRequestExit} />}
-      {step === 2 && <LessonPage2 onNext={goNext} onBack={goBack} />}
-      {step === 3 && <LessonPage3 onNext={goNext} onBack={goBack} />}
-      {step === 4 && <LessonPage4 onNext={goNext} onBack={goBack} />}
-      {step === 5 && <LessonPage5 onNext={goNext} onBack={goBack} />}
+      {step === 2 && <LessonPage2 onNext={goNext} onBack={handleRequestExit} />}
+      {step === 3 && <LessonPage3 onNext={goNext} onBack={handleRequestExit} />}
+      {step === 4 && <LessonPage4 onNext={goNext} onBack={handleRequestExit} />}
+      {step === 5 && <LessonPage5 onNext={goNext} onBack={handleRequestExit} />}
       {step === "completed" && <CompletedLesson onFinish={onFinish} />}
 
       {showExitModal && (
