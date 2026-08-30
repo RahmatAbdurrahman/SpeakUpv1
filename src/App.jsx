@@ -207,7 +207,7 @@ function App() {
           <LoginScreen
             onComplete={handleLoginComplete}
             onBack={handleBackToOnboarding}
-            onNavigateRegister={handleBackToOnboarding}
+            onNavigateRegister={() => setCurrentScreen("questionnaire")}
           />
         )}
 
