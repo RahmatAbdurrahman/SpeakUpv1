@@ -218,11 +218,13 @@
   width: 52px;
   height: 52px;
   border-radius: 6px;
+  border: 0.8px solid rgba(36, 50, 56, 0.16);
   overflow: hidden;
   display: flex;
   align-items: center;
   justify-content: center;
   background-color: #FAF8F3;
+  box-sizing: border-box;
 }
 
 .simulasi-scenario-img {
