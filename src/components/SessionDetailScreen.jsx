@@ -7,6 +7,7 @@ import { AnalysisCards } from "./SimulasiScreen";
 import { fetchSessionResults, friendlySimulasiError } from "../lib/simulasi";
 import { fetchPeerFeedbackSummary, fetchPeerFeedbackEntries } from "../lib/peerFeedback";
 import { exportAnalysisToPDF } from "../lib/pdfExport";
+import iconDownload from "../assets/icons/Download.svg";
 import { DotLottieReact } from "@lottiefiles/dotlottie-react";
 import animaBotLottie from "../assets/lotties/AnimaBot.lottie";
 
@@ -143,7 +144,12 @@ export default function SessionDetailScreen({ sessionId, kategori, date, isLive,
               disabled={exportingPdf}
               style={{ marginTop: "12px", marginBottom: "8px" }}
             >
-              {exportingPdf ? "⏳ Menyiapkan PDF..." : "📥 Unduh Laporan PDF"}
+              <img
+                src={iconDownload}
+                alt=""
+                style={{ width: "18px", height: "18px", display: "inline-block" }}
+              />
+              <span>{exportingPdf ? "Menyiapkan PDF..." : "Unduh Laporan PDF"}</span>
             </button>
           </>
         )}

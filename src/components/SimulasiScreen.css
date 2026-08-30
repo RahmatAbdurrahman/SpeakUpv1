@@ -672,9 +672,8 @@
   margin-top: 18px;
   box-sizing: border-box;
   display: flex;
-  flex-direction: column;
   align-items: center;
-  gap: 10px;
+  gap: 12px;
 }
 
 .btn-simulasi-lanjut {
@@ -696,6 +695,11 @@
   transition: transform 0.12s ease, box-shadow 0.12s ease, filter 0.15s ease;
   -webkit-tap-highlight-color: transparent;
   margin: 0 auto;
+}
+.btn-simulasi-lanjut--flex {
+  flex: 1;
+  max-width: none;
+  margin: 0;
 }
 .btn-simulasi-lanjut:hover {
   filter: brightness(1.05);

@@ -38,6 +38,7 @@ import iconQuote from "../assets/pages_assets/ai_analysis/Icons/Quote-Icon.svg";
 import iconMouth from "../assets/pages_assets/ai_analysis/Icons/Mouth-Icon.svg";
 import iconFlash from "../assets/pages_assets/ai_analysis/Icons/Flash-Icon.svg";
 import iconAI from "../assets/pages_assets/ai_analysis/Icons/AI.svg";
+import iconDownload from "../assets/icons/Download.svg";
 import TranscriptCard from "./TranscriptCard";
 import { exportAnalysisToPDF } from "../lib/pdfExport";
 
@@ -1514,15 +1515,17 @@ function PracticeAnalysis({ result = PRACTICE_ANALYSIS, onFinish }) {
         <div className="modul7-analysis-cta-wrap">
           <button
             type="button"
-            className="btn-export-pdf"
+            className="btn-analysis-download"
             onClick={handleExportPDF}
             disabled={exportingPdf}
+            aria-label="Unduh Laporan PDF"
+            title="Unduh Laporan PDF"
           >
-            {exportingPdf ? "⏳ Menyiapkan PDF..." : "📥 Unduh Laporan PDF"}
+            <img src={iconDownload} alt="" className="btn-analysis-download-icon" />
           </button>
           <button
             type="button"
-            className="btn-modul7-next"
+            className="btn-modul7-next btn-modul7-next--flex"
             onClick={onFinish}
             disabled={!isXpReady}
             style={!isXpReady ? { opacity: 0.75, cursor: "not-allowed" } : undefined}
