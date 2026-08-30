@@ -406,7 +406,7 @@ function RecordingGateModal({ variant, secondsElapsed, onResume, onRestart, onAb
             Ulangi dari Awal
           </button>
           <button type="button" className="btn-simulasi-gate-ghost" onClick={onAbandon}>
-            Langsung ke Sesi Berikutnya
+            Keluar Sesi
           </button>
         </div>
       </div>
