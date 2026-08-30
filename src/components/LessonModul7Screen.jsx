@@ -1555,7 +1555,7 @@ function CompletedLesson({ onFinish, xpEarned = 95 }) {
             muted
             playsInline
             onEnded={handleVideoEnded}
-            className="lesson-completed-video lesson-completed-video--parallax"
+            className="lesson-completed-video"
             aria-label="Animasi Perolehan XP"
           />
         </div>

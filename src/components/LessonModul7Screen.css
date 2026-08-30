@@ -1593,23 +1593,3 @@
   object-fit: contain;
   display: block;
 }
-
-.lesson-completed-video--parallax {
-  animation: gainXpVideoParallax 1.4s cubic-bezier(0.22, 1, 0.36, 1) forwards;
-  will-change: transform, filter;
-}
-
-@keyframes gainXpVideoParallax {
-  0% {
-    transform: scale(1.24) translateY(18px);
-    filter: brightness(1.2) contrast(1.05);
-  }
-  45% {
-    transform: scale(1.08) translateY(6px);
-    filter: brightness(1.06) contrast(1.02);
-  }
-  100% {
-    transform: scale(1) translateY(0);
-    filter: brightness(1) contrast(1);
-  }
-}
