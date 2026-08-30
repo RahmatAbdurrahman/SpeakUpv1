@@ -35,6 +35,64 @@ function formatDate(iso) {
   return new Date(iso).toLocaleDateString("id-ID", { day: "numeric", month: "short", year: "numeric" });
 }
 
+function SpeakingDnaGauge({ score }) {
+  // Arc geometry: Radius = 78, Center = (100, 95), Arc from (22, 95) to (178, 95)
+  // Arc length = PI * 78 ~= 245.04
+  const arcLength = 245.04;
+  const clampedScore = score != null ? Math.min(100, Math.max(0, score)) : 0;
+  const dashOffset = arcLength * (1 - clampedScore / 100);
+
+  return (
+    <div className="profile-dna-gauge-container">
+      <svg
+        className="profile-dna-gauge-svg"
+        viewBox="0 0 200 115"
+        width="200"
+        height="115"
+        aria-hidden="true"
+      >
+        <defs>
+          <linearGradient id="dnaGaugeGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+            <stop offset="0%" stopColor="#24A981" />
+            <stop offset="100%" stopColor="#10B981" />
+          </linearGradient>
+        </defs>
+
+        {/* Background Track Arc */}
+        <path
+          d="M 22 95 A 78 78 0 0 1 178 95"
+          fill="none"
+          stroke="#E2E8F0"
+          strokeWidth="16"
+          strokeLinecap="round"
+        />
+
+        {/* Active Progress Arc */}
+        {score != null && (
+          <path
+            d="M 22 95 A 78 78 0 0 1 178 95"
+            fill="none"
+            stroke="url(#dnaGaugeGrad)"
+            strokeWidth="16"
+            strokeLinecap="round"
+            strokeDasharray={arcLength}
+            strokeDashoffset={dashOffset}
+            className="profile-dna-gauge-progress"
+          />
+        )}
+      </svg>
+
+      {/* Center Number & /100 inside the arc */}
+      <div className="profile-dna-gauge-center">
+        <div className="profile-dna-score-row">
+          <span className="profile-dna-score-num">{score != null ? score : "--"}</span>
+          <span className="profile-dna-score-max">/100</span>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export default function ProfileScreen({ onNavigateHome, onNavigatePractice, onNavigateSosial, onOpenSettings, onOpenSessionDetail }) {
   const { progressSummary, xp } = useUserProgress();
   const [loading, setLoading] = useState(!progressSummary);
@@ -141,8 +199,8 @@ export default function ProfileScreen({ onNavigateHome, onNavigatePractice, onNa
               </div>
             </div>
 
-            {/* ── Speaking DNA Card ────────────────────────────────── */}
-            <div className="profile-dna-card">
+            {/* ── Speaking DNA (Container-less Arc Gauge) ──────────── */}
+            <div className="profile-dna-section">
               <div className="profile-dna-badge">
                 <span className="profile-dna-badge-dot" />
                 <span>Speaking DNA</span>
@@ -150,10 +208,8 @@ export default function ProfileScreen({ onNavigateHome, onNavigatePractice, onNa
 
               {dnaScore != null ? (
                 <>
-                  <div className="profile-dna-score-wrap">
-                    <span className="profile-dna-score">{dnaScore}</span>
-                    <span className="profile-dna-max">/100</span>
-                  </div>
+                  <SpeakingDnaGauge score={dnaScore} />
+
                   <span className="profile-dna-status-pill">
                     {dnaScore >= 80 ? "✨ Pembicara Percaya Diri" : dnaScore >= 60 ? "🔥 Performa Solid" : "🌱 Sedang Berkembang"}
                   </span>
