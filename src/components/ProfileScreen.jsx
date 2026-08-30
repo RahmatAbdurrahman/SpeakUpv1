@@ -162,6 +162,9 @@ export default function ProfileScreen({ onNavigateHome, onNavigatePractice, onNa
                   <span className="profile-dna-status-pill">
                     {dnaScore >= 80 ? "✨ Pembicara Percaya Diri" : dnaScore >= 60 ? "🔥 Performa Solid" : "🌱 Sedang Berkembang"}
                   </span>
+                  <p className="profile-dna-desc">
+                    Indeks profil kemampuan public speaking kamu berdasarkan rata-rata 4 pilar utama.
+                  </p>
                 </>
               ) : (
                 <div className="profile-dna-empty-box">

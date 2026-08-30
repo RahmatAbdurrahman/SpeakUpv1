@@ -313,6 +313,15 @@
   border-radius: 100px;
 }
 
+.profile-dna-desc {
+  font-family: var(--font-family-base, 'Space Grotesk', sans-serif);
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.85);
+  margin: 2px 0 0 0;
+  max-width: 260px;
+  line-height: 1.4;
+}
+
 .profile-dna-empty-box {
   display: flex;
   flex-direction: column;
