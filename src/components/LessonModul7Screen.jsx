@@ -516,6 +516,37 @@ function LessonPage1({ onNext, onBack }) {
   );
 }
 
+// ─── Typing Animation for Quotes (Fast typing effect) ───────────────────────
+function TypingQuote({ text, speed = 16, dataNodeId }) {
+  const [displayedText, setDisplayedText] = useState("");
+  const [isDone, setIsDone] = useState(false);
+
+  useEffect(() => {
+    let index = 0;
+    setDisplayedText("");
+    setIsDone(false);
+
+    const interval = setInterval(() => {
+      if (index < text.length) {
+        setDisplayedText(text.slice(0, index + 1));
+        index++;
+      } else {
+        clearInterval(interval);
+        setIsDone(true);
+      }
+    }, speed);
+
+    return () => clearInterval(interval);
+  }, [text, speed]);
+
+  return (
+    <p className="modul7-page2-quote text-quotes" data-node-id={dataNodeId}>
+      {displayedText}
+      {!isDone && <span className="modul7-typing-cursor">|</span>}
+    </p>
+  );
+}
+
 // ─── Page 2: Quotes / Mindset (Figma node 329:1710) ──────────────────────────
 function LessonPage2({ onNext, onBack }) {
   return (
@@ -524,9 +555,10 @@ function LessonPage2({ onNext, onBack }) {
 
       {/* Center Quotes Area */}
       <div className="modul7-page2-content" data-node-id="329:1719">
-        <p className="modul7-page2-quote text-quotes" data-node-id="329:1720">
-          ”Menghadapi pertanyaan sulit bukan berarti kita harus jadi kamus berjalan. Tantangan sebenarnya adalah bagaimana kita tetap tenang saat otak dipaksa berpikir cepat di hadapan orang lain.”
-        </p>
+        <TypingQuote
+          text="”Menghadapi pertanyaan sulit bukan berarti kita harus jadi kamus berjalan. Tantangan sebenarnya adalah bagaimana kita tetap tenang saat otak dipaksa berpikir cepat di hadapan orang lain.”"
+          dataNodeId="329:1720"
+        />
       </div>
 
       {/* Bottom Mascot Illustration */}
@@ -766,9 +798,10 @@ function LessonPage5({ onNext, onBack }) {
 
       {/* Center Quotes Area */}
       <div className="modul7-page2-content" data-node-id="334:1825">
-        <p className="modul7-page2-quote text-quotes" data-node-id="334:1826">
-          ”Saat pertanyaan sulit datang, pikiranmu akan mencoba membunyikan alarm palsu. Uji faktanya atau beri jarak pada paniknya. Ingat: kamu adalah pengendali panggungmu, bukan tawanan dari pikiranmu sendiri.”
-        </p>
+        <TypingQuote
+          text="”Saat pertanyaan sulit datang, pikiranmu akan mencoba membunyikan alarm palsu. Uji faktanya atau beri jarak pada paniknya. Ingat: kamu adalah pengendali panggungmu, bukan tawanan dari pikiranmu sendiri.”"
+          dataNodeId="334:1826"
+        />
       </div>
 
       {/* Bottom Mascot Illustration */}

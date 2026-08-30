@@ -257,6 +257,19 @@
   margin: 0 auto;
 }
 
+.modul7-typing-cursor {
+  display: inline-block;
+  margin-left: 2px;
+  color: var(--color-primary, #24A981);
+  font-weight: 700;
+  animation: typing-blink 0.7s infinite;
+}
+
+@keyframes typing-blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0; }
+}
+
 /* Mascot Illustration at bottom */
 .modul7-page2-mascot-wrapper {
   position: absolute;
