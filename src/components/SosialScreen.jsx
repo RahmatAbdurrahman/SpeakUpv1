@@ -20,6 +20,7 @@ import {
 } from "../lib/sosial";
 import { fetchXp } from "../lib/progress";
 import { useUserProgress } from "../context/UserProgressContext";
+import { SosialSkeleton } from "./SkeletonLoader";
 
 const KATEGORI_LABEL = {
   spontan: "Spontaneous",
@@ -190,6 +191,10 @@ export default function SosialScreen({ onNavigateHome, onNavigateSimulasi, onNav
       }
     }
   };
+
+  if (loading && leaderboard.length === 0 && friends.length === 0 && liveRooms.length === 0) {
+    return <SosialSkeleton />;
+  }
 
   return (
     <div className="sosial-screen" data-name="Sosial">

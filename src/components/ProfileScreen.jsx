@@ -9,6 +9,7 @@ import { fetchProfile } from "../lib/profile";
 import { fetchProgressSummary } from "../lib/progress";
 import { fetchMyPeerRatingSummary } from "../lib/peerFeedback";
 import { useUserProgress } from "../context/UserProgressContext";
+import { ProfileSkeleton } from "./SkeletonLoader";
 
 const KATEGORI_LABEL = {
   spontan: "Spontaneous",
@@ -72,6 +73,10 @@ export default function ProfileScreen({ onNavigateHome, onNavigatePractice, onNa
   const initial = displayName.trim().charAt(0).toUpperCase() || "?";
   const dnaScore = summary?.dnaScore != null ? Math.round(summary.dnaScore) : null;
   const maxTrend = Math.max(1, ...(summary?.dnaTrend ?? []).map((p) => p.agregat_skor));
+
+  if (loading && !summary) {
+    return <ProfileSkeleton />;
+  }
 
   return (
     <div className="profile-screen" data-name="Profile">

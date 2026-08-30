@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import "./HomeScreen.css";
 import { useUserProgress } from "../context/UserProgressContext";
+import { HomeSkeleton } from "./SkeletonLoader";
 
 // ─── Assets ──────────────────────────────────────────────────────────────────
 import todaysLessonImg from "../assets/pages_assets/modul_details/modul_7/Image-Lesson6.png";
@@ -69,8 +70,12 @@ const MODULE_COLORS = [
 export default function HomeScreen({ userName, onSelectModule, onNavigatePractice, onNavigateSosial, onNavigateProfile }) {
   const displayName = userName?.trim() || "Nadine Euvania";
   const [activeTab, setActiveTab] = useState("home");
-  const { xp, streakCount, streakDays: globalStreakDays } = useUserProgress();
+  const { xp, streakCount, streakDays: globalStreakDays, isInitialized } = useUserProgress();
   const streakDays = globalStreakDays?.length > 0 ? globalStreakDays : EMPTY_STREAK_DAYS;
+
+  if (!isInitialized) {
+    return <HomeSkeleton />;
+  }
 
   const handleModuleClick = (mod) => {
     const isAvailable = Boolean(mod?.active || (mod?.tag && mod.tag.toLowerCase().includes("testing")));

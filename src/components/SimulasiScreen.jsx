@@ -37,8 +37,8 @@ import {
   fetchSessionResults,
   friendlySimulasiError,
 } from "../lib/simulasi";
-import { fetchXp } from "../lib/progress";
 import { useUserProgress } from "../context/UserProgressContext";
+import { SimulasiSkeleton } from "./SkeletonLoader";
 import { goLive } from "../lib/sosial";
 
 // ─── Simple category icons (placeholder — real Figma illustrations weren't
@@ -1013,7 +1013,7 @@ export default function SimulasiScreen({ onNavigateHome, onNavigateSosial, onNav
   const [questions, setQuestions] = useState([]);
   const [questionsLoading, setQuestionsLoading] = useState(false);
   const [results, setResults] = useState(null);
-  const { xp, addXp, refreshProgress } = useUserProgress();
+  const { xp, addXp, refreshProgress, isInitialized } = useUserProgress();
 
   const resetToPicker = () => {
     setScenario(null);
@@ -1302,6 +1302,10 @@ export default function SimulasiScreen({ onNavigateHome, onNavigateSosial, onNav
         }}
       />
     );
+  }
+
+  if (!isInitialized && step === "picker") {
+    return <SimulasiSkeleton />;
   }
 
   return (
