@@ -6,6 +6,8 @@ import arrowLeftIcon from "../assets/pages_assets/questionnaires/arrow_left.svg"
 import { AnalysisCards } from "./SimulasiScreen";
 import { fetchSessionResults, friendlySimulasiError } from "../lib/simulasi";
 import { fetchPeerFeedbackSummary, fetchPeerFeedbackEntries } from "../lib/peerFeedback";
+import { DotLottieReact } from "@lottiefiles/dotlottie-react";
+import animaBotLottie from "../assets/lotties/AnimaBot.lottie";
 
 const KATEGORI_LABEL = { spontan: "Spontaneous", kelas: "Presentasi", lomba: "Presentasi", interview: "Interview" };
 
@@ -90,7 +92,14 @@ export default function SessionDetailScreen({ sessionId, kategori, date, isLive,
 
         {!loading && !hasFeedback && !errorMessage && (
           <div className="viewerfb-empty-card">
-            <span className="viewerfb-empty-icon">🤖</span>
+            <div className="viewerfb-empty-lottie-wrap">
+              <DotLottieReact
+                src={animaBotLottie}
+                loop
+                autoplay
+                className="viewerfb-empty-lottie"
+              />
+            </div>
             <p className="viewerfb-empty-title">Belum ada feedback AI untuk sesi ini</p>
             <p className="viewerfb-empty-desc">
               Sesi ini kemungkinan direkam sebelum analisis AI-nya sempat diproses.
