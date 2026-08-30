@@ -325,6 +325,7 @@ function LessonPage3({ onNext, onBack }) {
 function LessonPage4({ onNext, onBack }) {
   const [cycle, setCycle] = useState(1);
   const [isCompleted, setIsCompleted] = useState(false);
+  const [countdown, setCountdown] = useState(3);
   const videoRef = useRef(null);
 
   // Each time the video ends, increment cycle until 4, then dissolve video and show "Selesai"
@@ -343,6 +344,7 @@ function LessonPage4({ onNext, onBack }) {
   // Jump immediately to 4th loop at second 22.5
   const handleSkip = () => {
     if (!isCompleted) {
+      setCountdown(0);
       setCycle(4);
       if (videoRef.current) {
         videoRef.current.currentTime = 22.5;
@@ -351,17 +353,21 @@ function LessonPage4({ onNext, onBack }) {
     }
   };
 
+  // 3-second countdown on initial mount
   useEffect(() => {
-    // Gentle delay after entering page before starting audio and video
-    const timer = setTimeout(() => {
+    if (countdown > 0) {
+      const timer = setTimeout(() => {
+        setCountdown((c) => c - 1);
+      }, 1000);
+      return () => clearTimeout(timer);
+    } else if (countdown === 0 && !isCompleted) {
+      // Countdown finished: play tranquil 432Hz Gong and start breathing video
       playBreathingStartSound();
-      if (videoRef.current && !isCompleted) {
+      if (videoRef.current) {
         videoRef.current.play().catch(() => {});
       }
-    }, 650);
-
-    return () => clearTimeout(timer);
-  }, []);
+    }
+  }, [countdown, isCompleted]);
 
   useEffect(() => {
     if (cycle > 1 && videoRef.current && !isCompleted) {
@@ -438,6 +444,15 @@ function LessonPage4({ onNext, onBack }) {
               aria-label="Animasi Ritme Napas"
             />
           </div>
+
+          {/* 3-2-1 Countdown Overlay in center before starting */}
+          {countdown > 0 && !isCompleted && (
+            <div className="lesson-p4-countdown-overlay" aria-label={`Mulai dalam ${countdown}`}>
+              <div key={countdown} className="lesson-p4-countdown-badge">
+                <span className="lesson-p4-countdown-number">{countdown}</span>
+              </div>
+            </div>
+          )}
 
           {/* Selesai text in center when finished */}
           {isCompleted && (
