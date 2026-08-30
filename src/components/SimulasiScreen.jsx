@@ -105,9 +105,14 @@ function TopicStep({ topics, loading, error, onBack, onStart, onShuffle, shuffli
           <div className="simulasi-topic-card">
             <p className="simulasi-topic-label">Topik Kamu Hari Ini</p>
             {shuffling ? (
-              <p className="simulasi-topic-text" style={{ opacity: 0.7, fontStyle: "italic", fontSize: "16px" }}>
-                ✨ AI sedang membuat topik baru...
-              </p>
+              <div className="simulasi-topic-lottie-wrap">
+                <DotLottieReact
+                  src={animaBotLottie}
+                  loop
+                  autoplay
+                  className="simulasi-topic-lottie"
+                />
+              </div>
             ) : (
               topics.map((t, i) => (
                 <p key={i} className="simulasi-topic-text">
