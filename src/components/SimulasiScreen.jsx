@@ -864,18 +864,18 @@ export function ResultsStep({ results, onDone }) {
         </div>
 
         <AnalysisCards results={results} />
-      </div>
-
-      <div className="simulasi-results-cta">
-        <button
-          type="button"
-          className="btn-simulasi-lanjut"
-          onClick={onDone}
-          disabled={!isXpReady}
-          style={!isXpReady ? { opacity: 0.75, cursor: "not-allowed" } : undefined}
-        >
-          {!isXpReady ? "Menyiapkan XP..." : "Lanjut"}
-        </button>
+        
+        <div className="simulasi-results-cta">
+          <button
+            type="button"
+            className="btn-simulasi-lanjut"
+            onClick={onDone}
+            disabled={!isXpReady}
+            style={!isXpReady ? { opacity: 0.75, cursor: "not-allowed" } : undefined}
+          >
+            {!isXpReady ? "Menyiapkan XP..." : "Lanjut"}
+          </button>
+        </div>
       </div>
     </div>
   );

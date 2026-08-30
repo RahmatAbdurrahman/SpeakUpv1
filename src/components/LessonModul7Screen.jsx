@@ -1478,18 +1478,18 @@ function PracticeAnalysis({ result = PRACTICE_ANALYSIS, onFinish }) {
           </div>
           <p className="modul7-analysis-feedback">{result.feedback}</p>
         </div>
-      </div>
 
-      <div className="modul7-lesson-cta-wrapper">
-        <button
-          type="button"
-          className="btn-modul7-next"
-          onClick={onFinish}
-          disabled={!isXpReady}
-          style={!isXpReady ? { opacity: 0.75, cursor: "not-allowed" } : undefined}
-        >
-          {!isXpReady ? "Menyiapkan XP..." : "Lanjut"}
-        </button>
+        <div className="modul7-analysis-cta-wrap">
+          <button
+            type="button"
+            className="btn-modul7-next"
+            onClick={onFinish}
+            disabled={!isXpReady}
+            style={!isXpReady ? { opacity: 0.75, cursor: "not-allowed" } : undefined}
+          >
+            {!isXpReady ? "Menyiapkan XP..." : "Lanjut"}
+          </button>
+        </div>
       </div>
     </div>
   );
