@@ -90,7 +90,8 @@ export function playTapSound() {
 }
 
 /**
- * Global click listener for all interactive elements
+ * Global click listener strictly for real action/CTA buttons
+ * (Excludes bottom nav, icon-only buttons, back buttons, settings, close buttons, cards, etc.)
  */
 export function initGlobalSoundEffects() {
   if (typeof window === "undefined") return;
@@ -108,17 +109,42 @@ export function initGlobalSoundEffects() {
     const target = e.target;
     if (!target) return;
 
-    // Check if clicked element or its parent is a button or interactive
-    const clickable = target.closest(
-      "button, [role='button'], .btn, .btn-primary, .btn-secondary, .home-module-item, .simulasi-scenario-card, .tab-btn, .sosial-room-card, .practice-mode-btn"
-    );
+    // Only target actual <button> elements or elements explicitly marked with .btn-primary / .btn-secondary
+    const btn = target.closest("button, .btn-primary, .btn-secondary");
+    if (!btn) return;
 
-    if (clickable) {
-      if (clickable.getAttribute("data-no-sound") === "true") return;
-      if (clickable.hasAttribute("disabled") || clickable.getAttribute("aria-disabled") === "true") return;
+    // 1. Explicit opt-out
+    if (btn.getAttribute("data-no-sound") === "true") return;
 
-      playTapSound();
+    // 2. Disabled buttons
+    if (btn.hasAttribute("disabled") || btn.getAttribute("aria-disabled") === "true") return;
+
+    // 3. Exclude bottom navigation & toggle bars completely
+    if (btn.closest(".bottom-nav, .home-bottom-nav, .nav-bar, nav, .skeleton-bottom-nav, .tab-buttons-container, .practice-mode-toggle, .sosial-tab-btn, .tab-btn")) {
+      return;
     }
+
+    // 4. Exclude icon-only buttons / navigation / back / settings / close buttons
+    const className = (typeof btn.className === "string" ? btn.className : "");
+    const isIconOrNav =
+      className.includes("back") ||
+      className.includes("close") ||
+      className.includes("settings") ||
+      className.includes("icon") ||
+      className.includes("round-back") ||
+      className.includes("reaction") ||
+      className.includes("teams-control") ||
+      className.includes("chat-send") ||
+      btn.closest(".lesson-back-btn, .btn-profile-settings, .btn-modul7-round-back, .btn-round-back, .modal-close-btn");
+
+    if (isIconOrNav) return;
+
+    // 5. Exclude if there is no readable text inside the button (e.g. only contains SVG/image)
+    const text = (btn.innerText || "").trim();
+    if (!text) return;
+
+    // 6. Play the sound for actual action/CTA buttons
+    playTapSound();
   };
 
   window.addEventListener("pointerdown", handlePointerDown, { passive: true });
