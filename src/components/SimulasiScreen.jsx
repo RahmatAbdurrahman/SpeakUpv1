@@ -1004,6 +1004,7 @@ export default function SimulasiScreen({ onNavigateHome, onNavigateSosial, onNav
   // | prep | recording | processing | results
   const [step, setStep] = useState("picker");
   const [scenario, setScenario] = useState(null);
+  const [selectedScenario, setSelectedScenario] = useState(null);
   const [errorMessage, setErrorMessage] = useState("");
   const [simulationId, setSimulationId] = useState(null);
   const [sessionId, setSessionId] = useState(null);
@@ -1017,6 +1018,7 @@ export default function SimulasiScreen({ onNavigateHome, onNavigateSosial, onNav
 
   const resetToPicker = () => {
     setScenario(null);
+    setSelectedScenario(null);
     setSimulationId(null);
     setSessionId(null);
     setNotes("");
@@ -1330,24 +1332,39 @@ export default function SimulasiScreen({ onNavigateHome, onNavigateSosial, onNav
         {errorMessage && <p className="simulasi-error-banner">{errorMessage}</p>}
 
         <div className="simulasi-card-list">
-          {SCENARIOS.map((s) => (
-            <button
-              key={s.id}
-              type="button"
-              className="simulasi-scenario-card"
-              onClick={() => handlePick(s)}
-            >
-              <span className="simulasi-scenario-icon">
-                <ScenarioIcon id={s.id} />
-              </span>
-              <span className="simulasi-scenario-text">
-                <span className="simulasi-scenario-title">{s.title}</span>
-                <span className="simulasi-scenario-desc">{s.description}</span>
-              </span>
-            </button>
-          ))}
+          {SCENARIOS.map((s) => {
+            const isSelected = selectedScenario?.id === s.id;
+            return (
+              <button
+                key={s.id}
+                type="button"
+                className={`simulasi-scenario-card ${isSelected ? "simulasi-scenario-card--selected" : ""}`}
+                onClick={() => setSelectedScenario(s)}
+              >
+                <span className="simulasi-scenario-icon">
+                  <ScenarioIcon id={s.id} />
+                </span>
+                <span className="simulasi-scenario-text">
+                  <span className="simulasi-scenario-title">{s.title}</span>
+                  <span className="simulasi-scenario-desc">{s.description}</span>
+                </span>
+              </button>
+            );
+          })}
         </div>
       </div>
+
+      {selectedScenario && (
+        <div className="simulasi-bottom-cta-wrapper">
+          <button
+            type="button"
+            className="simulasi-start-btn"
+            onClick={() => handlePick(selectedScenario)}
+          >
+            Mulai
+          </button>
+        </div>
+      )}
 
       <div className="home-bottom-nav">
         <button type="button" className="home-nav-item" onClick={onNavigateHome} aria-label="Home">
