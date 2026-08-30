@@ -28,7 +28,7 @@ import {
   generateNotes,
   analyzeCv,
   saveManualMaterialText,
-  fetchGeneratedQuestions,
+  getRandomSpontaneousTopic,
   createSessionRow,
   updateSessionAudio,
   uploadSessionAudio,
@@ -71,8 +71,23 @@ function ScenarioIcon({ id }) {
   );
 }
 
+// ─── Back Arrow Icon ─────────────────────────────────────────────────────────
+function IconArrowLeft() {
+  return (
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path
+        d="M15 18L9 12L15 6"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
+  );
+}
+
 // ─── Topic step (Spontan only — "Daily Spontaneous Speak") ────────────────
-function TopicStep({ topics, loading, error, onBack, onStart }) {
+function TopicStep({ topics, loading, error, onBack, onStart, onShuffle }) {
   return (
     <div className="simulasi-topic-screen">
       <header className="simulasi-recording-topbar">
@@ -86,20 +101,27 @@ function TopicStep({ topics, loading, error, onBack, onStart }) {
         {loading && <p className="simulasi-hint-text">Menyiapkan topik...</p>}
         {error && <p className="simulasi-error-banner">{error}</p>}
         {!loading && topics.length > 0 && (
-          <>
-            <p className="simulasi-topic-label">Topik kamu hari ini</p>
+          <div className="simulasi-topic-card">
+            <p className="simulasi-topic-label">Topik Kamu Hari Ini</p>
             {topics.map((t, i) => (
               <p key={i} className="simulasi-topic-text">
                 “{t}”
               </p>
             ))}
-          </>
+            <button
+              type="button"
+              className="simulasi-topic-shuffle-btn"
+              onClick={onShuffle}
+            >
+              🎲 Ganti Topik Lain
+            </button>
+          </div>
         )}
       </div>
 
       <div className="simulasi-prep-cta">
         <button type="button" className="btn-simulasi-lanjut" onClick={onStart} disabled={loading}>
-          Mulai
+          Mulai Bicara
         </button>
       </div>
     </div>
@@ -635,7 +657,13 @@ function RecordingStep({ scenario, cheatSheet, questions = [], onBack, onFinish,
             className="simulasi-cheatsheet-toggle"
             onClick={() => setShowCheatSheet((v) => !v)}
           >
-            {showCheatSheet ? "Sembunyikan contekan" : "Lihat contekan"}
+            {showCheatSheet
+              ? scenario?.kategori === "spontan"
+                ? "Sembunyikan topik"
+                : "Sembunyikan contekan"
+              : scenario?.kategori === "spontan"
+                ? "Lihat topik"
+                : "Lihat contekan"}
           </button>
         )}
         {cheatSheet && showCheatSheet && <div className="simulasi-cheatsheet-panel">{cheatSheet}</div>}
@@ -1022,12 +1050,12 @@ export default function SimulasiScreen({ onNavigateHome, onNavigateSosial, onNav
       }
 
       // Spontan: no upload/environment — create the session now so we have
-      // a session_id to attach the AI-generated topic banner to.
+      // a session_id to attach the spontaneous topic banner to.
       const newSessionId = crypto.randomUUID();
       await createSessionRow({ id: newSessionId, simulationId: simulation.id });
       setSessionId(newSessionId);
-      const generated = await fetchGeneratedQuestions(newSessionId, "spontan");
-      setTopics(generated);
+      const initialTopic = getRandomSpontaneousTopic();
+      setTopics([initialTopic]);
       setStep("topic");
     } catch (err) {
       setErrorMessage(friendlySimulasiError(err));
@@ -1140,6 +1168,11 @@ export default function SimulasiScreen({ onNavigateHome, onNavigateSosial, onNav
         error={errorMessage}
         onBack={resetToPicker}
         onStart={() => setStep("recording")}
+        onShuffle={() => {
+          const current = topics[0] || "";
+          const next = getRandomSpontaneousTopic(current);
+          setTopics([next]);
+        }}
       />
     );
   }

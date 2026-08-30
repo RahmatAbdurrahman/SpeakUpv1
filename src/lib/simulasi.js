@@ -107,6 +107,56 @@ export async function saveManualMaterialText(simulationId, kategori, text) {
 
 // ─── Spontan topic banner ("Daily Spontaneous Speak") ──────────────────────
 
+export const SPONTANEOUS_TOPICS = [
+  "Apakah belajar atau bekerja sambil mendengarkan musik benar-benar membuatmu lebih fokus?",
+  "Lebih baik bangun pagi atau begadang saat menyelesaikan pekerjaan penting?",
+  "Pentingkah kita membatasi waktu bermain media sosial setiap hari?",
+  "Uang vs Passion: Mana yang sebaiknya diprioritaskan di awal karir?",
+  "Makanan buatan rumah vs pesan makanan online: Mana yang lebih kamu sukai dan kenapa?",
+  "Apakah kecerdasan buatan (AI) akan menggantikan pekerjaan manusia atau justru membantu kita?",
+  "Kopi atau teh di pagi hari: Mana minuman yang lebih efektif menyemangati harimu?",
+  "Apakah kerja dari rumah (WFH) lebih produktif daripada bekerja langsung di kantor (WFO)?",
+  "Buku fisik vs E-book: Mana yang menurutmu memberikan pengalaman membaca lebih menyenangkan?",
+  "Pentingkah memiliki hobi yang murni untuk kesenangan tanpa harus menghasilkan uang?",
+  "Jika kamu bisa kembali ke masa sekolah, apa satu hal yang ingin kamu lakukan secara berbeda?",
+  "Belanja barang impian vs traveling ke tempat baru: Mana pengalaman yang lebih berharga bagimu?",
+  "Apakah nilai akademik di sekolah atau kampus menentukan kesuksesan seseorang di masa depan?",
+  "Mengapa tidur cukup dan istirahat berkualitas sering kali lebih penting daripada memaksakan lembur?",
+  "Apakah smartphone membuat kita semakin dekat atau justru menjauhkan kita dari orang-orang sekitar?",
+  "Pentingkah sarapan pagi sebelum memulai aktivitas harian?",
+  "Transportasi umum vs kendaraan pribadi: Bagaimana pengalaman dan sudut pandangmu sehari-hari?",
+  "Memiliki sedikit teman dekat yang setia vs memiliki banyak teman tapi sekadar kenal: Mana pilihanmu?",
+  "Olahraga di pagi hari vs malam hari: Mana yang paling cocok untuk gaya hidupmu?",
+  "Ceritakan satu kebiasaan kecil sehari-hari yang ternyata membawa dampak positif besar dalam hidupmu.",
+  "Belanja impulsif: Mengapa kita sering tergoda membeli barang-barang yang sebenarnya tidak kita butuhkan?",
+  "Menurutmu, apa kunci utama untuk menjaga persahabatan tetap awet selama bertahun-tahun?",
+  "Pengalaman pertama kali berbicara di depan umum yang paling membekas dalam ingatanmu.",
+  "Mengapa bersikap jujur dan terbuka sering kali sulit dilakukan tetapi sangat penting?",
+  "Apakah menonton film di bioskop masih lebih seru dibandingkan menonton layanan streaming di rumah?",
+  "Satu tempat wisata atau sudut kota favorit yang selalu membuatmu merasa tenang saat mengunjunginya.",
+  "Bagaimana caramu mengembalikan semangat (mood) saat hari berjalan tidak sesuai rencana?",
+  "Pentingkah kita belajar mengatur keuangan pribadi sejak usia muda?",
+  "Apakah memiliki rencana hidup yang detail lebih baik daripada menjalani hidup secara fleksibel?",
+  "Satu nasihat terbaik dari orang tua, guru, atau sahabat yang selalu kamu ingat sampai hari ini.",
+  "Mengapa memiliki waktu luang sendirian (me time) penting untuk kesehatan mental?",
+  "Menurutmu, apakah memasak sendiri adalah keterampilan wajib yang harus dimiliki semua orang?",
+  "Ceritakan satu hal sederhana yang selalu bisa membuatmu tersenyum hari ini.",
+  "Belanja di pasar tradisional vs supermarket modern: Mana yang lebih kamu sukai?",
+  "Apakah hewan peliharaan seperti kucing atau anjing bisa membantu mengurangi stres?",
+  "Pentingkah kita belajar bahasa asing selain bahasa Indonesia dan bahasa Inggris?",
+  "Mengapa meluangkan waktu bersama keluarga di akhir pekan terasa sangat berharga?",
+  "Bagaimana pengaruh lingkungan pertemanan terhadap kebiasaan dan gaya hidup kita?",
+  "Apakah kita harus selalu mengikuti tren terbaru di media sosial atau tetap menjadi diri sendiri?",
+  "Ceritakan satu makanan favorit masa kecil yang hingga kini masih menjadi kesukaanmu.",
+];
+
+export function getRandomSpontaneousTopic(excludeTopic = "") {
+  const pool = SPONTANEOUS_TOPICS.filter((t) => t !== excludeTopic);
+  const list = pool.length > 0 ? pool : SPONTANEOUS_TOPICS;
+  const index = Math.floor(Math.random() * list.length);
+  return list[index];
+}
+
 /** Also used as the no-real-viewer Q&A fallback for any kategori mid/post-session. */
 export async function fetchGeneratedQuestions(sessionId, kategori) {
   const data = await invokeFunction("generate-live-questions", { session_id: sessionId, kategori });
