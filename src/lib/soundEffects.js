@@ -355,6 +355,61 @@ export function playBreathingCompleteSound() {
 }
 
 /**
+ * Play a serene, calming Zen start chime (432Hz Mindful Gong) when the breathing practice session begins
+ */
+export function playBreathingStartSound() {
+  try {
+    const ctx = getAudioContext();
+    if (!ctx) return;
+
+    const now = ctx.currentTime;
+
+    // 1. Deep 432Hz Relaxing Resonance Gong & Harmonic Pad
+    const startFrequencies = [216.00, 324.00, 432.00, 648.00];
+
+    startFrequencies.forEach((freq, idx) => {
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      const filter = ctx.createBiquadFilter();
+
+      filter.type = "lowpass";
+      filter.frequency.setValueAtTime(900 + idx * 300, now);
+
+      osc.type = idx === 0 ? "sine" : "triangle";
+      osc.frequency.setValueAtTime(freq * 1.006, now);
+      osc.frequency.exponentialRampToValueAtTime(freq, now + 0.05);
+
+      const peakGain = 0.12 / (1 + idx * 0.35);
+      gain.gain.setValueAtTime(0.0001, now);
+      gain.gain.linearRampToValueAtTime(peakGain, now + 0.04);
+      gain.gain.exponentialRampToValueAtTime(0.00001, now + 2.0);
+
+      osc.connect(filter);
+      filter.connect(gain);
+      gain.connect(ctx.destination);
+
+      osc.start(now);
+      osc.stop(now + 2.05);
+    });
+
+    // 2. High crystal breath chime
+    const bellOsc = ctx.createOscillator();
+    const bellGain = ctx.createGain();
+    bellOsc.type = "sine";
+    bellOsc.frequency.setValueAtTime(1296.00, now); // 432Hz * 3 (harmonic E6)
+    bellGain.gain.setValueAtTime(0.0001, now);
+    bellGain.gain.linearRampToValueAtTime(0.05, now + 0.01);
+    bellGain.gain.exponentialRampToValueAtTime(0.00001, now + 1.4);
+
+    bellOsc.connect(bellGain);
+    bellGain.connect(ctx.destination);
+
+    bellOsc.start(now);
+    bellOsc.stop(now + 1.45);
+  } catch {}
+}
+
+/**
  * Global click listener for real action/CTA buttons & card buttons
  * (Includes CTA buttons and card buttons with shadows; excludes bottom nav, icon-only buttons, back buttons, settings, close buttons)
  */

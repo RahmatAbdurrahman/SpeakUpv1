@@ -4,7 +4,7 @@ import LessonModul7Screen from "./LessonModul7Screen";
 import LessonExitModal from "./LessonExitModal";
 import { useAssetPreloader, useGainXpPreloader, getPreloadedVideoSrc } from "../lib/assetPreloader";
 import { useUserProgress } from "../context/UserProgressContext";
-import { playXpTickSound, playXpCompleteSound, playGainXpIntroSound, playBreathingCompleteSound } from "../lib/soundEffects";
+import { playXpTickSound, playXpCompleteSound, playGainXpIntroSound, playBreathingCompleteSound, playBreathingStartSound } from "../lib/soundEffects";
 import "./LessonScreen.css";
 
 // ─── Assets ──────────────────────────────────────────────────────────────────
@@ -350,6 +350,10 @@ function LessonPage4({ onNext, onBack }) {
       }
     }
   };
+
+  useEffect(() => {
+    playBreathingStartSound();
+  }, []);
 
   useEffect(() => {
     if (videoRef.current && !isCompleted) {
