@@ -320,7 +320,10 @@
 /* Tick stop dots */
 .slider-ticks-row {
   position: absolute;
-  inset: 0;
+  left: 12px;
+  right: 12px;
+  top: 0;
+  bottom: 0;
   pointer-events: none;
   display: flex;
   align-items: center;

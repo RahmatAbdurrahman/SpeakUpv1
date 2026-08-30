@@ -240,7 +240,7 @@ function ModernSliderInput({ question, value, onChange }) {
         <div
           className="slider-custom-thumb"
           style={{
-            left: `${percent}%`,
+            left: `calc(12px + (${percent} / 100) * (100% - 24px))`,
             borderColor: themeColor,
           }}
         >
