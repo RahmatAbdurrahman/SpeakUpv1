@@ -111,20 +111,22 @@ export function initGlobalSoundEffects() {
 
     // Target real action buttons and cards with 3D button shadows
     const clickable = target.closest(
-      "button, .btn, .btn-primary, .btn-secondary, .simulasi-scenario-card, .lesson-p1-card, .radio-card, .tag-chip, [data-name*='CardButton'], [data-name*='Card-Button']"
+      "button, .btn, .btn-primary, .btn-secondary, .home-module-item, .home-todays-lesson-card, .simulasi-scenario-card, .lesson-p1-card, .radio-card, .tag-chip, [data-name*='CardButton'], [data-name*='Card-Button']"
     );
     if (!clickable) return;
 
     // 1. Explicit opt-out
     if (clickable.getAttribute("data-no-sound") === "true") return;
 
-    // 2. Disabled or inactive buttons/cards
+    // 2. Disabled or inactive buttons/cards (e.g. inactive module cards, locked lessons)
     if (
       clickable.hasAttribute("disabled") ||
       clickable.getAttribute("aria-disabled") === "true" ||
+      clickable.classList.contains("home-module-item--disabled") ||
+      clickable.classList.contains("home-module-item--inactive") ||
       clickable.classList.contains("btn-lesson-status--inactive") ||
       clickable.classList.contains("btn-open-next-module--inactive") ||
-      clickable.closest("[disabled], [aria-disabled='true'], .btn-lesson-status--inactive")
+      clickable.closest("[disabled], [aria-disabled='true'], .home-module-item--disabled, .home-module-item--inactive, .btn-lesson-status--inactive")
     ) {
       return;
     }
