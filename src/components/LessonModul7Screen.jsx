@@ -39,6 +39,7 @@ import iconMouth from "../assets/pages_assets/ai_analysis/Icons/Mouth-Icon.svg";
 import iconFlash from "../assets/pages_assets/ai_analysis/Icons/Flash-Icon.svg";
 import iconAI from "../assets/pages_assets/ai_analysis/Icons/AI.svg";
 import TranscriptCard from "./TranscriptCard";
+import { exportAnalysisToPDF } from "../lib/pdfExport";
 
 const MODUL7_ASSETS = [
   imgBlankTotal,
@@ -1431,6 +1432,24 @@ function AnalysisChip({ label, tone }) {
 
 function PracticeAnalysis({ result = PRACTICE_ANALYSIS, onFinish }) {
   const { isReady: isXpReady } = useGainXpPreloader(videoGainXP);
+  const [exportingPdf, setExportingPdf] = useState(false);
+
+  const handleExportPDF = async () => {
+    setExportingPdf(true);
+    try {
+      await exportAnalysisToPDF({
+        title: "Modul 7: Hadapi Pertanyaan Menantang",
+        category: "Praktek Modul 7",
+        scores: result.scores,
+        metrics: result.metrics,
+        feedback: result.feedback,
+        motivasi: "Dengan latihan yang konsisten, kamu akan semakin mahir dan percaya diri dalam berbicara!",
+        transcript: result.transcript,
+      });
+    } finally {
+      setExportingPdf(false);
+    }
+  };
 
   return (
     <div className="modul7-lesson-page modul7-analysis-page" data-name="Practice-Hasil Analisis AI">
@@ -1493,6 +1512,14 @@ function PracticeAnalysis({ result = PRACTICE_ANALYSIS, onFinish }) {
         <TranscriptCard rawTranscript={result.transcript} title="Transkrip Latihan" />
 
         <div className="modul7-analysis-cta-wrap">
+          <button
+            type="button"
+            className="btn-export-pdf"
+            onClick={handleExportPDF}
+            disabled={exportingPdf}
+          >
+            {exportingPdf ? "⏳ Menyiapkan PDF..." : "📥 Unduh Laporan PDF"}
+          </button>
           <button
             type="button"
             className="btn-modul7-next"

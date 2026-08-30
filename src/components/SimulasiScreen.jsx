@@ -24,6 +24,7 @@ import { DotLottieReact } from "@lottiefiles/dotlottie-react";
 import animaBotLottie from "../assets/lotties/AnimaBot.lottie";
 import SessionLoadingScreen from "./SessionLoadingScreen";
 import TranscriptCard from "./TranscriptCard";
+import { exportAnalysisToPDF } from "../lib/pdfExport";
 import { supabase } from "../lib/supabaseClient";
 import {
   SCENARIOS,
@@ -847,6 +848,50 @@ export function AnalysisCards({ results }) {
 // feedback card — same shape (results, onDone), same visual language.
 export function ResultsStep({ results, onDone }) {
   const { isReady: isXpReady } = useGainXpPreloader(videoGainXP);
+  const [exportingPdf, setExportingPdf] = useState(false);
+
+  const handleExportPDF = async () => {
+    setExportingPdf(true);
+    try {
+      const sub = results?.feedback?.sub_scores || {};
+      const scores = [
+        {
+          label: "Argumentasi",
+          value: sub.argumentasi ?? sub.kesesuaian_materi ?? (results?.feedback?.skor ? Math.round(results.feedback.skor) : 88),
+          unit: "/ 100",
+          chip: "Kuat",
+        },
+        {
+          label: "Relevansi",
+          value: sub.relevansi ?? sub.kesesuaian_materi ?? sub.fluency ?? 88,
+          unit: "/ 100",
+          chip: "Relevan",
+        },
+      ];
+      const metrics = [
+        { label: "Kata Pengisi", value: results?.metrics?.filler_word_count ?? 0, unit: "Kali", chip: "Stabil" },
+        { label: "Kecepatan", value: Math.round(results?.metrics?.pace_wpm || 140), unit: "wpm", chip: "Stabil" },
+        { label: "Kejelasan", value: sub.fluency ?? 88, unit: "/ 100", chip: "Baik" },
+        { label: "Energi", value: sub.intonasi ?? 80, unit: "/ 100", chip: "Baik" },
+      ];
+
+      await exportAnalysisToPDF({
+        title: "Hasil Simulasi Berbicara",
+        category: "Simulasi AI",
+        scores,
+        metrics,
+        feedback: results?.feedback?.saran || results?.feedback?.feedback,
+        motivasi: results?.feedback?.motivasi || "Dengan latihan yang konsisten, kamu akan semakin mahir dan percaya diri!",
+        transcript:
+          results?.transcript ||
+          results?.metrics?.transcript ||
+          results?.feedback?.transcript ||
+          results?.feedback?.transkrip,
+      });
+    } finally {
+      setExportingPdf(false);
+    }
+  };
 
   return (
     <div className="simulasi-results-screen">
@@ -867,6 +912,14 @@ export function ResultsStep({ results, onDone }) {
         <AnalysisCards results={results} />
         
         <div className="simulasi-results-cta">
+          <button
+            type="button"
+            className="btn-export-pdf"
+            onClick={handleExportPDF}
+            disabled={exportingPdf}
+          >
+            {exportingPdf ? "⏳ Menyiapkan PDF..." : "📥 Unduh Laporan PDF"}
+          </button>
           <button
             type="button"
             className="btn-simulasi-lanjut"

@@ -6,6 +6,7 @@ import arrowLeftIcon from "../assets/pages_assets/questionnaires/arrow_left.svg"
 import { AnalysisCards } from "./SimulasiScreen";
 import { fetchSessionResults, friendlySimulasiError } from "../lib/simulasi";
 import { fetchPeerFeedbackSummary, fetchPeerFeedbackEntries } from "../lib/peerFeedback";
+import { exportAnalysisToPDF } from "../lib/pdfExport";
 import { DotLottieReact } from "@lottiefiles/dotlottie-react";
 import animaBotLottie from "../assets/lotties/AnimaBot.lottie";
 
@@ -67,7 +68,51 @@ export default function SessionDetailScreen({ sessionId, kategori, date, isLive,
     };
   }, [sessionId, isLive]);
 
-  const hasFeedback = Boolean(results?.feedback);
+  const [exportingPdf, setExportingPdf] = useState(false);
+
+  const handleExportPDF = async () => {
+    setExportingPdf(true);
+    try {
+      const sub = results?.feedback?.sub_scores || {};
+      const scores = [
+        {
+          label: "Argumentasi",
+          value: sub.argumentasi ?? sub.kesesuaian_materi ?? (results?.feedback?.skor ? Math.round(results.feedback.skor) : 88),
+          unit: "/ 100",
+          chip: "Kuat",
+        },
+        {
+          label: "Relevansi",
+          value: sub.relevansi ?? sub.kesesuaian_materi ?? sub.fluency ?? 88,
+          unit: "/ 100",
+          chip: "Relevan",
+        },
+      ];
+      const metrics = [
+        { label: "Kata Pengisi", value: results?.metrics?.filler_word_count ?? 0, unit: "Kali", chip: "Stabil" },
+        { label: "Kecepatan", value: Math.round(results?.metrics?.pace_wpm || 140), unit: "wpm", chip: "Stabil" },
+        { label: "Kejelasan", value: sub.fluency ?? 88, unit: "/ 100", chip: "Baik" },
+        { label: "Energi", value: sub.intonasi ?? 80, unit: "/ 100", chip: "Baik" },
+      ];
+
+      await exportAnalysisToPDF({
+        title: `Riwayat: ${KATEGORI_LABEL[kategori] || "Latihan"}`,
+        category: KATEGORI_LABEL[kategori] || "Simulasi",
+        scores,
+        metrics,
+        feedback: results?.feedback?.saran || results?.feedback?.feedback,
+        motivasi: results?.feedback?.motivasi || "Terus berlatih untuk mengasah kemampuan berbicaramu!",
+        transcript:
+          results?.transcript ||
+          results?.metrics?.transcript ||
+          results?.feedback?.transcript ||
+          results?.feedback?.transkrip,
+        date: formatDate(date),
+      });
+    } finally {
+      setExportingPdf(false);
+    }
+  };
 
   return (
     <div className="sessiondetail-screen">
@@ -88,7 +133,20 @@ export default function SessionDetailScreen({ sessionId, kategori, date, isLive,
         {loading && <p className="viewerfb-hint">Memuat detail sesi...</p>}
         {errorMessage && <p className="viewerfb-error">{errorMessage}</p>}
 
-        {!loading && hasFeedback && <AnalysisCards results={results} />}
+        {!loading && hasFeedback && (
+          <>
+            <AnalysisCards results={results} />
+            <button
+              type="button"
+              className="btn-export-pdf"
+              onClick={handleExportPDF}
+              disabled={exportingPdf}
+              style={{ marginTop: "12px", marginBottom: "8px" }}
+            >
+              {exportingPdf ? "⏳ Menyiapkan PDF..." : "📥 Unduh Laporan PDF"}
+            </button>
+          </>
+        )}
 
         {!loading && !hasFeedback && !errorMessage && (
           <div className="viewerfb-empty-card">
