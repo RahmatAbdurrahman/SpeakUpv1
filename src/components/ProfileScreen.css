@@ -160,11 +160,6 @@
   box-sizing: border-box;
 }
 
-.profile-avatar-wrap {
-  position: relative;
-  flex-shrink: 0;
-}
-
 .profile-avatar {
   width: 58px;
   height: 58px;
@@ -179,22 +174,7 @@
   font-weight: 700;
   border: 2px solid #FFFFFF;
   box-shadow: 0 4px 12px rgba(23, 103, 79, 0.2);
-}
-
-.profile-level-badge {
-  position: absolute;
-  bottom: -4px;
-  left: 50%;
-  transform: translateX(-50%);
-  background: #E8753D;
-  color: #FFFFFF;
-  font-family: var(--font-family-base, 'Space Grotesk', sans-serif);
-  font-size: 10px;
-  font-weight: 700;
-  padding: 1px 6px;
-  border-radius: 100px;
-  border: 1.5px solid #FFFFFF;
-  white-space: nowrap;
+  flex-shrink: 0;
 }
 
 .profile-header-text {

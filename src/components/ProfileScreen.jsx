@@ -80,7 +80,6 @@ export default function ProfileScreen({ onNavigateHome, onNavigatePractice, onNa
   const initial = displayName.trim().charAt(0).toUpperCase() || "?";
   const dnaScore = summary?.dnaScore != null ? Math.round(summary.dnaScore) : null;
   const maxTrend = Math.max(1, ...(summary?.dnaTrend ?? []).map((p) => p.agregat_skor));
-  const userLevel = Math.max(1, Math.floor((xp || 0) / 100) + 1);
 
   if (loading && !summary) {
     return (
@@ -129,10 +128,7 @@ export default function ProfileScreen({ onNavigateHome, onNavigatePractice, onNa
           <>
             {/* ── User Header Card ─────────────────────────────────── */}
             <div className="profile-header-card">
-              <div className="profile-avatar-wrap">
-                <div className="profile-avatar">{initial}</div>
-                <div className="profile-level-badge">Lv. {userLevel}</div>
-              </div>
+              <div className="profile-avatar">{initial}</div>
               <div className="profile-header-text">
                 <span className="profile-header-name">{displayName}</span>
                 <div className="profile-header-meta">
