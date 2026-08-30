@@ -36,9 +36,10 @@ function formatDate(iso) {
 }
 
 function SpeakingDnaGauge({ score }) {
-  // Arc geometry: Radius = 78, Center = (100, 95), Arc from (22, 95) to (178, 95)
-  // Arc length = PI * 78 ~= 245.04
-  const arcLength = 245.04;
+  // 260° circular gauge arc
+  // Radius R = 72, Center (100, 96)
+  // Total arc length = (260/360) * 2 * PI * 72 = 326.726
+  const arcLength = 326.726;
   const clampedScore = score != null ? Math.min(100, Math.max(0, score)) : 0;
   const dashOffset = arcLength * (1 - clampedScore / 100);
 
@@ -46,21 +47,21 @@ function SpeakingDnaGauge({ score }) {
     <div className="profile-dna-gauge-container">
       <svg
         className="profile-dna-gauge-svg"
-        viewBox="0 0 200 115"
+        viewBox="0 0 200 180"
         width="200"
-        height="115"
+        height="180"
         aria-hidden="true"
       >
         <defs>
-          <linearGradient id="dnaGaugeGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+          <linearGradient id="dnaGaugeGrad" x1="0%" y1="0%" x2="100%" y2="100%">
             <stop offset="0%" stopColor="#24A981" />
             <stop offset="100%" stopColor="#10B981" />
           </linearGradient>
         </defs>
 
-        {/* Background Track Arc */}
+        {/* Background Track Arc (260° sweep) */}
         <path
-          d="M 22 95 A 78 78 0 0 1 178 95"
+          d="M 44.85 142.28 A 72 72 0 1 1 155.15 142.28"
           fill="none"
           stroke="#E2E8F0"
           strokeWidth="16"
@@ -70,7 +71,7 @@ function SpeakingDnaGauge({ score }) {
         {/* Active Progress Arc */}
         {score != null && (
           <path
-            d="M 22 95 A 78 78 0 0 1 178 95"
+            d="M 44.85 142.28 A 72 72 0 1 1 155.15 142.28"
             fill="none"
             stroke="url(#dnaGaugeGrad)"
             strokeWidth="16"
@@ -82,12 +83,10 @@ function SpeakingDnaGauge({ score }) {
         )}
       </svg>
 
-      {/* Center Number & /100 inside the arc */}
+      {/* Center Number & /100 */}
       <div className="profile-dna-gauge-center">
-        <div className="profile-dna-score-row">
-          <span className="profile-dna-score-num">{score != null ? score : "--"}</span>
-          <span className="profile-dna-score-max">/100</span>
-        </div>
+        <span className="profile-dna-score-num">{score != null ? score : "--"}</span>
+        <span className="profile-dna-score-max">/100</span>
       </div>
     </div>
   );
