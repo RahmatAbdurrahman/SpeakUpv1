@@ -6,6 +6,9 @@ import iconNavMic from "../assets/pages_assets/bottom-nav-icons/Mic.svg";
 import iconNavUser from "../assets/pages_assets/bottom-nav-icons/User.svg";
 import iconNavGroup from "../assets/pages_assets/practice/icon_group.svg";
 import imgAnalysisHero from "../assets/pages_assets/ai_analysis/analysis_hero.png";
+import imgSpontan from "../assets/pages_assets/simulasi/Image-Spontan.png";
+import imgPresentasi from "../assets/pages_assets/simulasi/Image-Presentasi.png";
+import imgInterview from "../assets/pages_assets/simulasi/Image-Interview.png";
 import iconArgument from "../assets/pages_assets/ai_analysis/Icons/Argument-Icon.svg";
 import iconRelevance from "../assets/pages_assets/ai_analysis/Icons/Relevance-Icon.svg";
 import iconSpeed from "../assets/pages_assets/ai_analysis/Icons/Speed-Icon.svg";
@@ -41,35 +44,20 @@ import {
 import { useUserProgress } from "../context/UserProgressContext";
 import { SimulasiSkeleton } from "./SkeletonLoader";
 
-// ─── Simple category icons (placeholder — real Figma illustrations weren't
-// exportable this round; swap for real assets when available) ─────────────
+const SCENARIO_IMAGES = {
+  spontan: imgSpontan,
+  presentasi: imgPresentasi,
+  interview: imgInterview,
+};
+
 function ScenarioIcon({ id }) {
-  if (id === "spontan") {
-    return (
-      <svg width="28" height="28" viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <circle cx="14" cy="14" r="13" fill="#FFF3E0" />
-        <path d="M15.5 6L9 15.5H13.5L12.5 22L19 12H14.5L15.5 6Z" fill="#E8753D" />
-      </svg>
-    );
-  }
-  if (id === "presentasi") {
-    return (
-      <svg width="28" height="28" viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <circle cx="14" cy="14" r="13" fill="#EFF8FF" />
-        <rect x="6" y="8" width="16" height="10" rx="1.5" stroke="#2E7FE8" strokeWidth="1.6" />
-        <path d="M10 22L14 18L18 22" stroke="#2E7FE8" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
-        <path d="M9.5 15L12 12.5L14.2 14.5L18.5 10.5" stroke="#2E7FE8" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" />
-      </svg>
-    );
-  }
+  const imgSrc = SCENARIO_IMAGES[id] || imgSpontan;
   return (
-    <svg width="28" height="28" viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <circle cx="14" cy="14" r="13" fill="#F0FBF8" />
-      <circle cx="10.5" cy="12" r="2.6" stroke="#24A981" strokeWidth="1.6" />
-      <circle cx="17.5" cy="12" r="2.6" stroke="#17674F" strokeWidth="1.6" />
-      <path d="M6 21c0.5-2.5 2.2-4 4.5-4s4 1.5 4.5 4" stroke="#24A981" strokeWidth="1.6" strokeLinecap="round" />
-      <path d="M13.5 21c0.5-2.5 2.2-4 4.5-4s4 1.5 4.5 4" stroke="#17674F" strokeWidth="1.6" strokeLinecap="round" />
-    </svg>
+    <img
+      src={imgSrc}
+      alt=""
+      className="simulasi-scenario-img"
+    />
   );
 }
 
