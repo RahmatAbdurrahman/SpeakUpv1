@@ -3,6 +3,7 @@ import "./LessonModul7Screen.css";
 import LessonExitModal from "./LessonExitModal";
 import LessonAffirmation from "./LessonAffirmation";
 import { useAssetPreloader, useGainXpPreloader, getPreloadedVideoSrc } from "../lib/assetPreloader";
+import { useUserProgress } from "../context/UserProgressContext";
 import { supabase } from "../lib/supabaseClient";
 import {
   createSimulation,
@@ -1458,6 +1459,7 @@ function PracticeAnalysis({ result = PRACTICE_ANALYSIS, onFinish }) {
 
 // ─── Completed Lesson Gain XP Screen ─────────────────────────────────────────
 function CompletedLesson({ onFinish, xpEarned = 95 }) {
+  const { addXp } = useUserProgress();
   const [displayedXP, setDisplayedXP] = useState(0);
   const [isCounting, setIsCounting] = useState(false);
   const [showButton, setShowButton] = useState(false);
@@ -1530,7 +1532,10 @@ function CompletedLesson({ onFinish, xpEarned = 95 }) {
           <button
             type="button"
             className="btn-lesson-finish"
-            onClick={onFinish}
+            onClick={() => {
+              addXp(xpEarned);
+              onFinish?.();
+            }}
           >
             Klaim XP
           </button>

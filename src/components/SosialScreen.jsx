@@ -19,6 +19,7 @@ import {
   friendlySosialError,
 } from "../lib/sosial";
 import { fetchXp } from "../lib/progress";
+import { useUserProgress } from "../context/UserProgressContext";
 
 const KATEGORI_LABEL = {
   spontan: "Spontaneous",
@@ -47,7 +48,7 @@ export default function SosialScreen({ onNavigateHome, onNavigateSimulasi, onNav
   const [friendUsername, setFriendUsername] = useState("");
   const [friendActionMessage, setFriendActionMessage] = useState("");
   const [sendingRequest, setSendingRequest] = useState(false);
-  const [xp, setXp] = useState(0);
+  const { xp } = useUserProgress();
   const unsubscribeRef = useRef(null);
 
   const reloadFriends = async (uid) => {
@@ -73,16 +74,15 @@ export default function SosialScreen({ onNavigateHome, onNavigateSimulasi, onNav
       // permissions hiccup on the leaderboard RPC) shouldn't blank out the
       // other sections if they succeeded.
       const tasks = [fetchLeaderboard(), fetchLiveRooms()];
-      if (user?.id) tasks.push(fetchFriends(user.id), fetchIncomingFriendRequests(user.id), fetchXp(user.id));
+      if (user?.id) tasks.push(fetchFriends(user.id), fetchIncomingFriendRequests(user.id));
       const results = await Promise.allSettled(tasks);
       if (!active) return;
 
-      const [boardResult, roomsResult, friendsResult, incomingResult, xpResult] = results;
+      const [boardResult, roomsResult, friendsResult, incomingResult] = results;
       if (boardResult.status === "fulfilled") setLeaderboard(boardResult.value);
       if (roomsResult.status === "fulfilled") setLiveRooms(roomsResult.value);
       if (friendsResult?.status === "fulfilled") setFriends(friendsResult.value);
       if (incomingResult?.status === "fulfilled") setIncomingRequests(incomingResult.value);
-      if (xpResult?.status === "fulfilled") setXp(xpResult.value);
 
       const firstError = results.find((r) => r.status === "rejected");
       if (firstError) setErrorMessage(friendlySosialError(firstError.reason));

@@ -15,6 +15,7 @@ import ModuleDetailScreen from "./components/ModuleDetailScreen";
 import LessonScreen from "./components/LessonScreen";
 import ProfileScreen from "./components/ProfileScreen";
 import SettingsScreen from "./components/SettingsScreen";
+import { UserProgressProvider } from "./context/UserProgressContext";
 import { supabase } from "./lib/supabaseClient";
 import { fetchProfile, updateProfile } from "./lib/profile";
 import "./App.css";
@@ -171,129 +172,132 @@ function App() {
   };
 
   return (
-    <PhoneFrame>
-      {currentScreen === "bootstrap" && <div className="app-bootstrap-blank" />}
+    <UserProgressProvider>
+      <PhoneFrame>
+        {currentScreen === "bootstrap" && <div className="app-bootstrap-blank" />}
 
-      {currentScreen === "onboarding" && (
-        <Onboarding
-          onStart={handleStartRegistration}
-          onLogin={() => setCurrentScreen("login")}
-        />
-      )}
+        {currentScreen === "onboarding" && (
+          <Onboarding
+            onStart={handleStartRegistration}
+            onLogin={() => setCurrentScreen("login")}
+          />
+        )}
 
-      {currentScreen === "affirmation" && (
-        <PositiveAffirmation onContinue={handleAffirmationContinue} />
-      )}
+        {currentScreen === "affirmation" && (
+          <PositiveAffirmation onContinue={handleAffirmationContinue} />
+        )}
 
-      {currentScreen === "questionnaire" && (
-        <Questionnaires
-          onBackToOnboarding={handleQuestionnaireBackToAffirmation}
-          onFinish={handleQuestionnaireFinish}
-        />
-      )}
+        {currentScreen === "questionnaire" && (
+          <Questionnaires
+            onBackToOnboarding={handleQuestionnaireBackToAffirmation}
+            onFinish={handleQuestionnaireFinish}
+          />
+        )}
 
-      {currentScreen === "register" && (
-        <RegisterForm
-          onComplete={handleRegisterComplete}
-          onLogin={() => setCurrentScreen("login")}
-          onBackToStart={() => setCurrentScreen("questionnaire")}
-          questionnaireAnswers={questionnaireAnswers}
-        />
-      )}
+        {currentScreen === "register" && (
+          <RegisterForm
+            onComplete={handleRegisterComplete}
+            onLogin={() => setCurrentScreen("login")}
+            onBackToStart={() => setCurrentScreen("questionnaire")}
+            questionnaireAnswers={questionnaireAnswers}
+          />
+        )}
 
-      {currentScreen === "login" && (
-        <LoginScreen
-          onComplete={handleLoginComplete}
-          onBack={handleBackToOnboarding}
-          onNavigateRegister={handleBackToOnboarding}
-        />
-      )}
+        {currentScreen === "login" && (
+          <LoginScreen
+            onComplete={handleLoginComplete}
+            onBack={handleBackToOnboarding}
+            onNavigateRegister={handleBackToOnboarding}
+          />
+        )}
 
-      {currentScreen === "confirm-email" && (
-        <EmailConfirmNotice
-          email={pendingEmail}
-          onGoToLogin={() => setCurrentScreen("login")}
-        />
-      )}
+        {currentScreen === "confirm-email" && (
+          <EmailConfirmNotice
+            email={pendingEmail}
+            onGoToLogin={() => setCurrentScreen("login")}
+          />
+        )}
 
-      {currentScreen === "welcoming" && (
-        <WelcomingScreen
-          userName={userProfile.name}
-          onStartApp={handleStartApp}
-        />
-      )}
+        {currentScreen === "welcoming" && (
+          <WelcomingScreen
+            userName={userProfile.name}
+            onStartApp={handleStartApp}
+          />
+        )}
 
-      {currentScreen === "home" && (
-        <HomeScreen
-          userName={userProfile.name}
-          onSelectModule={handleSelectModule}
-          onNavigatePractice={() => setCurrentScreen("practice")}
-          onNavigateSosial={() => setCurrentScreen("sosial")}
-          onNavigateProfile={() => setCurrentScreen("profile")}
-        />
-      )}
+        {currentScreen === "home" && (
+          <HomeScreen
+            userName={userProfile.name}
+            onSelectModule={handleSelectModule}
+            onNavigatePractice={() => setCurrentScreen("practice")}
+            onNavigateSosial={() => setCurrentScreen("sosial")}
+            onNavigateProfile={() => setCurrentScreen("profile")}
+          />
+        )}
 
-      {currentScreen === "practice" && (
-        <SimulasiScreen
-          userName={userProfile.name}
-          onNavigateHome={() => setCurrentScreen("home")}
-          onNavigateSosial={() => setCurrentScreen("sosial")}
-          onNavigateProfile={() => setCurrentScreen("profile")}
-          onGoLive={handleJoinRoom}
-        />
-      )}
+        {currentScreen === "practice" && (
+          <SimulasiScreen
+            userName={userProfile.name}
+            onNavigateHome={() => setCurrentScreen("home")}
+            onNavigateSosial={() => setCurrentScreen("sosial")}
+            onNavigateProfile={() => setCurrentScreen("profile")}
+            onGoLive={handleJoinRoom}
+          />
+        )}
 
-      {currentScreen === "sosial" && (
-        <SosialScreen
-          onNavigateHome={() => setCurrentScreen("home")}
-          onNavigateSimulasi={() => setCurrentScreen("practice")}
-          onNavigateProfile={() => setCurrentScreen("profile")}
-          onJoinRoom={handleJoinRoom}
-        />
-      )}
+        {currentScreen === "sosial" && (
+          <SosialScreen
+            userName={userProfile.name}
+            onNavigateHome={() => setCurrentScreen("home")}
+            onNavigateSimulasi={() => setCurrentScreen("practice")}
+            onNavigateProfile={() => setCurrentScreen("profile")}
+            onJoinRoom={handleJoinRoom}
+          />
+        )}
 
-      {currentScreen === "profile" && (
-        <ProfileScreen
-          onNavigateHome={() => setCurrentScreen("home")}
-          onNavigatePractice={() => setCurrentScreen("practice")}
-          onNavigateSosial={() => setCurrentScreen("sosial")}
-          onOpenSettings={() => setCurrentScreen("settings")}
-        />
-      )}
+        {currentScreen === "profile" && (
+          <ProfileScreen
+            onNavigateHome={() => setCurrentScreen("home")}
+            onNavigatePractice={() => setCurrentScreen("practice")}
+            onNavigateSosial={() => setCurrentScreen("sosial")}
+            onOpenSettings={() => setCurrentScreen("settings")}
+          />
+        )}
 
-      {currentScreen === "settings" && (
-        <SettingsScreen
-          onBack={() => setCurrentScreen("profile")}
-          onNavigateHome={() => setCurrentScreen("home")}
-          onNavigatePractice={() => setCurrentScreen("practice")}
-          onNavigateSosial={() => setCurrentScreen("sosial")}
-        />
-      )}
+        {currentScreen === "settings" && (
+          <SettingsScreen
+            onBack={() => setCurrentScreen("profile")}
+            onNavigateHome={() => setCurrentScreen("home")}
+            onNavigatePractice={() => setCurrentScreen("practice")}
+            onNavigateSosial={() => setCurrentScreen("sosial")}
+          />
+        )}
 
-      {currentScreen === "live-room" && (
-        <LiveRoomScreen
-          roomData={selectedLiveRoom}
-          onLeaveRoom={handleLeaveLiveRoom}
-        />
-      )}
+        {currentScreen === "live-room" && (
+          <LiveRoomScreen
+            roomData={selectedLiveRoom}
+            onLeaveRoom={handleLeaveLiveRoom}
+          />
+        )}
 
-      {currentScreen === "module-detail" && (
-        <ModuleDetailScreen
-          moduleData={selectedModule}
-          onBack={handleBackToHome}
-          onStartLesson={(num) => handleStartLesson(num, selectedModule)}
-          onOpenNextModule={(nextNum) => alert(`Membuka Modul ${nextNum}`)}
-        />
-      )}
+        {currentScreen === "module-detail" && (
+          <ModuleDetailScreen
+            moduleData={selectedModule}
+            onBack={handleBackToHome}
+            onStartLesson={(num) => handleStartLesson(num, selectedModule)}
+            onOpenNextModule={(nextNum) => alert(`Membuka Modul ${nextNum}`)}
+          />
+        )}
 
-      {currentScreen === "lesson" && (
-        <LessonScreen
-          lessonData={selectedLesson}
-          onBack={handleBackToModuleDetail}
-          onFinish={handleLessonFinish}
-        />
-      )}
-    </PhoneFrame>
+        {currentScreen === "lesson" && (
+          <LessonScreen
+            lessonData={selectedLesson}
+            onBack={handleBackToModuleDetail}
+            onFinish={handleLessonFinish}
+          />
+        )}
+      </PhoneFrame>
+    </UserProgressProvider>
   );
 }
 

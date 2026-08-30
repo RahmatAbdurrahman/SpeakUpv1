@@ -8,6 +8,7 @@ import { supabase } from "../lib/supabaseClient";
 import { fetchProfile } from "../lib/profile";
 import { fetchProgressSummary } from "../lib/progress";
 import { fetchMyPeerRatingSummary } from "../lib/peerFeedback";
+import { useUserProgress } from "../context/UserProgressContext";
 
 const KATEGORI_LABEL = {
   spontan: "Spontaneous",
@@ -22,11 +23,18 @@ function formatDate(iso) {
 }
 
 export default function ProfileScreen({ onNavigateHome, onNavigatePractice, onNavigateSosial, onOpenSettings }) {
-  const [loading, setLoading] = useState(true);
+  const { progressSummary } = useUserProgress();
+  const [loading, setLoading] = useState(!progressSummary);
   const [errorMessage, setErrorMessage] = useState("");
   const [displayName, setDisplayName] = useState("");
-  const [summary, setSummary] = useState(null);
+  const [summary, setSummary] = useState(progressSummary);
   const [peerRating, setPeerRating] = useState(null);
+
+  useEffect(() => {
+    if (progressSummary) {
+      setSummary(progressSummary);
+    }
+  }, [progressSummary]);
 
   useEffect(() => {
     let active = true;

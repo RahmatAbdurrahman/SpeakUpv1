@@ -38,6 +38,7 @@ import {
   friendlySimulasiError,
 } from "../lib/simulasi";
 import { fetchXp } from "../lib/progress";
+import { useUserProgress } from "../context/UserProgressContext";
 import { goLive } from "../lib/sosial";
 
 // ─── Simple category icons (placeholder — real Figma illustrations weren't
@@ -1012,26 +1013,7 @@ export default function SimulasiScreen({ onNavigateHome, onNavigateSosial, onNav
   const [questions, setQuestions] = useState([]);
   const [questionsLoading, setQuestionsLoading] = useState(false);
   const [results, setResults] = useState(null);
-  const [xp, setXp] = useState(0);
-
-  useEffect(() => {
-    let active = true;
-    (async () => {
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
-      if (!active || !user) return;
-      try {
-        const value = await fetchXp(user.id);
-        if (active) setXp(value);
-      } catch {
-        // Non-critical widget — badge just stays at 0 on failure.
-      }
-    })();
-    return () => {
-      active = false;
-    };
-  }, []);
+  const { xp, addXp, refreshProgress } = useUserProgress();
 
   const resetToPicker = () => {
     setScenario(null);
@@ -1164,6 +1146,7 @@ export default function SimulasiScreen({ onNavigateHome, onNavigateSosial, onNav
       await runAnalysis({ sessionId, audioPath, durationSeconds });
       const data = await fetchSessionResults(sessionId);
       await markSimulationCompleted(simulationId);
+      refreshProgress();
 
       setResults(data);
       setStep("results");
@@ -1312,18 +1295,8 @@ export default function SimulasiScreen({ onNavigateHome, onNavigateSosial, onNav
     return (
       <SimulasiGainXpStep
         xpEarned={earned}
-        onClaim={async () => {
-          try {
-            const {
-              data: { user },
-            } = await supabase.auth.getUser();
-            if (user) {
-              const nextXp = await fetchXp(user.id);
-              setXp(nextXp);
-            }
-          } catch {
-            // non-fatal
-          }
+        onClaim={() => {
+          addXp(earned);
           setResults(null);
           resetToPicker();
         }}

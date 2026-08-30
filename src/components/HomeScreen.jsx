@@ -1,7 +1,6 @@
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import "./HomeScreen.css";
-import { supabase } from "../lib/supabaseClient";
-import { fetchStreakSummary, fetchXp } from "../lib/progress";
+import { useUserProgress } from "../context/UserProgressContext";
 
 // ─── Assets ──────────────────────────────────────────────────────────────────
 import todaysLessonImg from "../assets/pages_assets/modul_details/modul_7/Image-Lesson6.png";
@@ -70,31 +69,8 @@ const MODULE_COLORS = [
 export default function HomeScreen({ userName, onSelectModule, onNavigatePractice, onNavigateSosial, onNavigateProfile }) {
   const displayName = userName?.trim() || "Nadine Euvania";
   const [activeTab, setActiveTab] = useState("home");
-  const [streakCount, setStreakCount] = useState(0);
-  const [streakDays, setStreakDays] = useState(EMPTY_STREAK_DAYS);
-  const [xp, setXp] = useState(0);
-
-  useEffect(() => {
-    let active = true;
-    (async () => {
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
-      if (!active || !user) return;
-      // Independent widgets — a failure in one (e.g. streak) shouldn't blank
-      // out the other if it succeeded.
-      const [streakResult, xpResult] = await Promise.allSettled([fetchStreakSummary(user.id), fetchXp(user.id)]);
-      if (!active) return;
-      if (streakResult.status === "fulfilled") {
-        setStreakCount(streakResult.value.count);
-        setStreakDays(streakResult.value.days);
-      }
-      if (xpResult.status === "fulfilled") setXp(xpResult.value);
-    })();
-    return () => {
-      active = false;
-    };
-  }, []);
+  const { xp, streakCount, streakDays: globalStreakDays } = useUserProgress();
+  const streakDays = globalStreakDays?.length > 0 ? globalStreakDays : EMPTY_STREAK_DAYS;
 
   const handleModuleClick = (mod) => {
     const isAvailable = Boolean(mod?.active || (mod?.tag && mod.tag.toLowerCase().includes("testing")));

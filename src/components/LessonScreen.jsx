@@ -3,6 +3,7 @@ import LessonAffirmation from "./LessonAffirmation";
 import LessonModul7Screen from "./LessonModul7Screen";
 import LessonExitModal from "./LessonExitModal";
 import { useAssetPreloader, useGainXpPreloader, getPreloadedVideoSrc } from "../lib/assetPreloader";
+import { useUserProgress } from "../context/UserProgressContext";
 import "./LessonScreen.css";
 
 // ─── Assets ──────────────────────────────────────────────────────────────────
@@ -501,6 +502,7 @@ function LessonPage5({ onNext, onBack }) {
 
 // ─── Page 6: Completed Lesson / Gain XP (node 281:919) ──────────────────────
 function CompletedLesson({ onFinish, xpEarned = 25 }) {
+  const { addXp } = useUserProgress();
   const [displayedXP, setDisplayedXP] = useState(0);
   const [isVideoEnded, setIsVideoEnded] = useState(false);
   const [isCounting, setIsCounting] = useState(false);
@@ -593,7 +595,10 @@ function CompletedLesson({ onFinish, xpEarned = 25 }) {
           <button
             type="button"
             className="btn-lesson-finish"
-            onClick={onFinish}
+            onClick={() => {
+              addXp(xpEarned);
+              onFinish?.();
+            }}
             data-node-id="281:932"
           >
             Klaim XP
