@@ -29,6 +29,7 @@ import {
   analyzeCv,
   saveManualMaterialText,
   getRandomSpontaneousTopic,
+  generateSpontaneousTopicAI,
   createSessionRow,
   updateSessionAudio,
   uploadSessionAudio,
@@ -87,7 +88,7 @@ function IconArrowLeft() {
 }
 
 // ─── Topic step (Spontan only — "Daily Spontaneous Speak") ────────────────
-function TopicStep({ topics, loading, error, onBack, onStart, onShuffle }) {
+function TopicStep({ topics, loading, error, onBack, onStart, onShuffle, shuffling }) {
   return (
     <div className="simulasi-topic-screen">
       <header className="simulasi-recording-topbar">
@@ -103,24 +104,31 @@ function TopicStep({ topics, loading, error, onBack, onStart, onShuffle }) {
         {!loading && topics.length > 0 && (
           <div className="simulasi-topic-card">
             <p className="simulasi-topic-label">Topik Kamu Hari Ini</p>
-            {topics.map((t, i) => (
-              <p key={i} className="simulasi-topic-text">
-                “{t}”
+            {shuffling ? (
+              <p className="simulasi-topic-text" style={{ opacity: 0.7, fontStyle: "italic", fontSize: "16px" }}>
+                ✨ AI sedang membuat topik baru...
               </p>
-            ))}
+            ) : (
+              topics.map((t, i) => (
+                <p key={i} className="simulasi-topic-text">
+                  “{t}”
+                </p>
+              ))
+            )}
             <button
               type="button"
               className="simulasi-topic-shuffle-btn"
               onClick={onShuffle}
+              disabled={shuffling}
             >
-              🎲 Ganti Topik Lain
+              {shuffling ? "⏳ Mengacak..." : "🎲 Ganti Topik Lain"}
             </button>
           </div>
         )}
       </div>
 
       <div className="simulasi-prep-cta">
-        <button type="button" className="btn-simulasi-lanjut" onClick={onStart} disabled={loading}>
+        <button type="button" className="btn-simulasi-lanjut" onClick={onStart} disabled={loading || shuffling}>
           Mulai Bicara
         </button>
       </div>
@@ -995,6 +1003,7 @@ export default function SimulasiScreen({ onNavigateHome, onNavigateSosial, onNav
   const [sessionId, setSessionId] = useState(null);
   const [notes, setNotes] = useState("");
   const [topics, setTopics] = useState([]);
+  const [shufflingTopic, setShufflingTopic] = useState(false);
   const [questions, setQuestions] = useState([]);
   const [questionsLoading, setQuestionsLoading] = useState(false);
   const [results, setResults] = useState(null);
@@ -1054,8 +1063,11 @@ export default function SimulasiScreen({ onNavigateHome, onNavigateSosial, onNav
       const newSessionId = crypto.randomUUID();
       await createSessionRow({ id: newSessionId, simulationId: simulation.id });
       setSessionId(newSessionId);
-      const initialTopic = getRandomSpontaneousTopic();
-      setTopics([initialTopic]);
+      const aiTopic = await generateSpontaneousTopicAI({
+        sessionId: newSessionId,
+        simulationId: simulation.id,
+      });
+      setTopics([aiTopic]);
       setStep("topic");
     } catch (err) {
       setErrorMessage(friendlySimulasiError(err));
@@ -1166,12 +1178,22 @@ export default function SimulasiScreen({ onNavigateHome, onNavigateSosial, onNav
         topics={topics}
         loading={false}
         error={errorMessage}
+        shuffling={shufflingTopic}
         onBack={resetToPicker}
         onStart={() => setStep("recording")}
-        onShuffle={() => {
-          const current = topics[0] || "";
-          const next = getRandomSpontaneousTopic(current);
-          setTopics([next]);
+        onShuffle={async () => {
+          setShufflingTopic(true);
+          try {
+            const current = topics[0] || "";
+            const next = await generateSpontaneousTopicAI({
+              sessionId,
+              simulationId,
+              excludeTopic: current,
+            });
+            setTopics([next]);
+          } finally {
+            setShufflingTopic(false);
+          }
         }}
       />
     );

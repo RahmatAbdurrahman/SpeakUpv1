@@ -107,7 +107,32 @@ export async function saveManualMaterialText(simulationId, kategori, text) {
 
 // ─── Spontan topic banner ("Daily Spontaneous Speak") ──────────────────────
 
-export const SPONTANEOUS_TOPICS = [
+function cleanTopicText(text) {
+  if (!text) return "";
+  return text
+    .replace(/^["'“‘]+|["'”’]+$/g, "")
+    .replace(/^(\d+[\.\)]|topik\s*:|pertanyaan\s*:)\s*/i, "")
+    .replace(/^\*+|\*+$/g, "")
+    .trim();
+}
+
+function isModeratorOrInterviewerCliche(text) {
+  if (!text) return true;
+  const lower = text.toLowerCase();
+  const cliches = [
+    "latar belakang atau alasan",
+    "alasan utama anda memilih",
+    "poin kunci apa yang ingin",
+    "dampak terbesar apa yang ingin",
+    "sebelum kita mulai lebih jauh",
+    "bagikan kepada kami hari ini",
+    "ceritakan sedikit tentang diri anda",
+    "mengapa anda melamar",
+  ];
+  return cliches.some((c) => lower.includes(c));
+}
+
+export const SPONTANEOUS_TOPICS_FALLBACK = [
   "Apakah belajar atau bekerja sambil mendengarkan musik benar-benar membuatmu lebih fokus?",
   "Lebih baik bangun pagi atau begadang saat menyelesaikan pekerjaan penting?",
   "Pentingkah kita membatasi waktu bermain media sosial setiap hari?",
@@ -151,10 +176,79 @@ export const SPONTANEOUS_TOPICS = [
 ];
 
 export function getRandomSpontaneousTopic(excludeTopic = "") {
-  const pool = SPONTANEOUS_TOPICS.filter((t) => t !== excludeTopic);
-  const list = pool.length > 0 ? pool : SPONTANEOUS_TOPICS;
+  const pool = SPONTANEOUS_TOPICS_FALLBACK.filter((t) => t !== excludeTopic);
+  const list = pool.length > 0 ? pool : SPONTANEOUS_TOPICS_FALLBACK;
   const index = Math.floor(Math.random() * list.length);
   return list[index];
+}
+
+/**
+ * Generates a spontaneous speaking topic using Gemini AI.
+ * Ensures the topic is an easy, common, everyday relatable topic (not interview/moderator questions).
+ */
+export async function generateSpontaneousTopicAI({ sessionId, simulationId, excludeTopic = "" } = {}) {
+  const customPrompt =
+    "Kamu adalah AI untuk latihan berbicara spontan (impromptu speaking / table topics). " +
+    "Tugasmu adalah membuat 1 topik atau pertanyaan bicara spontan dalam Bahasa Indonesia. " +
+    "SYARAT MUTLAK: " +
+    "1. Topik HARUS hal yang sangat umum, mudah, santai, dan diketahui oleh semua orang sehari-hari (contoh: kebiasaan harian, makanan, musik, kopi vs teh, bangun pagi vs malam, hobi ringan, dll). " +
+    "2. DILARANG membuat pertanyaan wawancara kerja atau basa-basi moderator (misal: 'mengapa memilih topik ini', 'apa latar belakang', 'ceritakan diri anda', dll). " +
+    "3. DILARANG membuat topik yang rumit, teoritis, atau akademis. " +
+    "4. HANYA keluarkan 1 kalimat topik/pertanyaan singkat tanpa pengantar, tanpa nomor, tanpa tanda kutip.";
+
+  // 1. Direct Gemini API if VITE_GEMINI_API_KEY is defined
+  const clientKey = import.meta.env.VITE_GEMINI_API_KEY;
+  if (clientKey) {
+    try {
+      const res = await fetch(
+        `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${clientKey}`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            contents: [{ parts: [{ text: customPrompt }] }],
+            generationConfig: { temperature: 0.95, maxOutputTokens: 100 },
+          }),
+        }
+      );
+      if (res.ok) {
+        const data = await res.json();
+        const rawText = data?.candidates?.[0]?.content?.parts?.[0]?.text;
+        const cleaned = cleanTopicText(rawText);
+        if (cleaned && !isModeratorOrInterviewerCliche(cleaned)) {
+          return cleaned;
+        }
+      }
+    } catch (err) {
+      console.warn("Direct Gemini API generation failed, falling back:", err);
+    }
+  }
+
+  // 2. Supabase Edge Function with guided context
+  if (simulationId) {
+    try {
+      await saveManualMaterialText(simulationId, "spontan", customPrompt);
+    } catch {
+      // ignore
+    }
+  }
+
+  if (sessionId) {
+    try {
+      const questions = await fetchGeneratedQuestions(sessionId, "spontan");
+      if (Array.isArray(questions) && questions.length > 0) {
+        const candidate = cleanTopicText(questions[0]);
+        if (candidate && !isModeratorOrInterviewerCliche(candidate)) {
+          return candidate;
+        }
+      }
+    } catch (err) {
+      console.warn("Edge function question generation failed:", err);
+    }
+  }
+
+  // 3. Fallback to clean random everyday topic
+  return getRandomSpontaneousTopic(excludeTopic);
 }
 
 /** Also used as the no-real-viewer Q&A fallback for any kategori mid/post-session. */
