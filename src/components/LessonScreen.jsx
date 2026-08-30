@@ -568,8 +568,10 @@ function CompletedLesson({ onFinish, xpEarned = 25 }) {
     <div className="lesson-completed-screen" data-node-id="281:919" data-name="Completed-Lesson">
       {/* Centered Celebration & XP Content */}
       <div className="lesson-completed-content" data-node-id="281:929">
-        {/* Gain XP Video Animation */}
+        {/* Gain XP Video Animation with Cloud Parting Parallax */}
         <div className="lesson-completed-video-wrap" data-node-id="302:888">
+          <div className="gain-xp-cloud-curtain gain-xp-cloud-left" aria-hidden="true" />
+          <div className="gain-xp-cloud-curtain gain-xp-cloud-right" aria-hidden="true" />
           <video
             ref={videoRef}
             src={videoSrc}
@@ -577,7 +579,7 @@ function CompletedLesson({ onFinish, xpEarned = 25 }) {
             muted
             playsInline
             onEnded={handleVideoEnded}
-            className="lesson-completed-video"
+            className="lesson-completed-video lesson-completed-video--parallax"
             aria-label="Animasi Perolehan XP"
           />
         </div>

@@ -1544,6 +1544,8 @@ function CompletedLesson({ onFinish, xpEarned = 95 }) {
     <div className="lesson-completed-screen">
       <div className="lesson-completed-content">
         <div className="lesson-completed-video-wrap">
+          <div className="gain-xp-cloud-curtain gain-xp-cloud-left" aria-hidden="true" />
+          <div className="gain-xp-cloud-curtain gain-xp-cloud-right" aria-hidden="true" />
           <video
             ref={videoRef}
             src={videoSrc}
@@ -1551,7 +1553,7 @@ function CompletedLesson({ onFinish, xpEarned = 95 }) {
             muted
             playsInline
             onEnded={handleVideoEnded}
-            className="lesson-completed-video"
+            className="lesson-completed-video lesson-completed-video--parallax"
             aria-label="Animasi Perolehan XP"
           />
         </div>
