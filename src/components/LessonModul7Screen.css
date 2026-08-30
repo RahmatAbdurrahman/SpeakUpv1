@@ -1286,12 +1286,19 @@
 }
 
 .modul7-analysis-cta-wrap {
-  width: 100%;
-  margin-top: 18px;
+  position: sticky;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  padding: 14px 16px 32px 16px;
   display: flex;
   align-items: center;
   gap: 12px;
   box-sizing: border-box;
+  z-index: 10;
+  width: 100%;
+  background: linear-gradient(180deg, rgba(250, 248, 243, 0) 0%, rgba(250, 248, 243, 0.96) 25%, #FAF8F3 100%);
+  margin-top: auto;
 }
 
 .btn-analysis-download {

@@ -1511,28 +1511,28 @@ function PracticeAnalysis({ result = PRACTICE_ANALYSIS, onFinish }) {
         </div>
 
         <TranscriptCard rawTranscript={result.transcript} title="Transkrip Latihan" />
+      </div>
 
-        <div className="modul7-analysis-cta-wrap">
-          <button
-            type="button"
-            className="btn-analysis-download"
-            onClick={handleExportPDF}
-            disabled={exportingPdf}
-            aria-label="Unduh Laporan PDF"
-            title="Unduh Laporan PDF"
-          >
-            <img src={iconDownload} alt="" className="btn-analysis-download-icon" />
-          </button>
-          <button
-            type="button"
-            className="btn-modul7-next btn-modul7-next--flex"
-            onClick={onFinish}
-            disabled={!isXpReady}
-            style={!isXpReady ? { opacity: 0.75, cursor: "not-allowed" } : undefined}
-          >
-            {!isXpReady ? "Menyiapkan XP..." : "Lanjut"}
-          </button>
-        </div>
+      <div className="modul7-analysis-cta-wrap">
+        <button
+          type="button"
+          className="btn-analysis-download"
+          onClick={handleExportPDF}
+          disabled={exportingPdf}
+          aria-label="Unduh Laporan PDF"
+          title="Unduh Laporan PDF"
+        >
+          <img src={iconDownload} alt="" className="btn-analysis-download-icon" />
+        </button>
+        <button
+          type="button"
+          className="btn-modul7-next btn-modul7-next--flex"
+          onClick={onFinish}
+          disabled={!isXpReady}
+          style={!isXpReady ? { opacity: 0.75, cursor: "not-allowed" } : undefined}
+        >
+          {!isXpReady ? "Menyiapkan XP..." : "Lanjut"}
+        </button>
       </div>
     </div>
   );

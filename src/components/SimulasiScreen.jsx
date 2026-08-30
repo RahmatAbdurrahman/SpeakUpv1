@@ -911,28 +911,28 @@ export function ResultsStep({ results, onDone }) {
         </div>
 
         <AnalysisCards results={results} />
-        
-        <div className="simulasi-results-cta">
-          <button
-            type="button"
-            className="btn-analysis-download"
-            onClick={handleExportPDF}
-            disabled={exportingPdf}
-            aria-label="Unduh Laporan PDF"
-            title="Unduh Laporan PDF"
-          >
-            <img src={iconDownload} alt="" className="btn-analysis-download-icon" />
-          </button>
-          <button
-            type="button"
-            className="btn-simulasi-lanjut btn-simulasi-lanjut--flex"
-            onClick={onDone}
-            disabled={!isXpReady}
-            style={!isXpReady ? { opacity: 0.75, cursor: "not-allowed" } : undefined}
-          >
-            {!isXpReady ? "Menyiapkan XP..." : "Lanjut"}
-          </button>
-        </div>
+      </div>
+      
+      <div className="simulasi-results-cta">
+        <button
+          type="button"
+          className="btn-analysis-download"
+          onClick={handleExportPDF}
+          disabled={exportingPdf}
+          aria-label="Unduh Laporan PDF"
+          title="Unduh Laporan PDF"
+        >
+          <img src={iconDownload} alt="" className="btn-analysis-download-icon" />
+        </button>
+        <button
+          type="button"
+          className="btn-simulasi-lanjut btn-simulasi-lanjut--flex"
+          onClick={onDone}
+          disabled={!isXpReady}
+          style={!isXpReady ? { opacity: 0.75, cursor: "not-allowed" } : undefined}
+        >
+          {!isXpReady ? "Menyiapkan XP..." : "Lanjut"}
+        </button>
       </div>
     </div>
   );
