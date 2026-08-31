@@ -604,11 +604,11 @@
   font-family: var(--font-family-base, 'Space Grotesk', sans-serif);
   font-size: 68px;
   font-weight: 800;
-  color: var(--color-primary, #E8753D);
+  color: var(--color-text-primary, #243238);
   line-height: 1;
   letter-spacing: -2px;
   margin: 0;
-  text-shadow: 0 1px 3px rgba(139, 72, 39, 0.12);
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.06);
 }
 
 .simulasi-accumulation-info-btn {
@@ -618,9 +618,9 @@
   width: 19px;
   height: 19px;
   border-radius: 50%;
-  border: 1.5px solid var(--color-primary, #E8753D);
-  background: rgba(255, 255, 255, 0.6);
-  color: var(--color-primary, #E8753D);
+  border: 1.5px solid var(--color-text-primary, #243238);
+  background: rgba(255, 255, 255, 0.7);
+  color: var(--color-text-primary, #243238);
   font-size: 11px;
   font-weight: 700;
   font-family: var(--font-family-base, 'Space Grotesk', sans-serif);
@@ -634,7 +634,7 @@
 }
 
 .simulasi-accumulation-info-btn:hover {
-  background: var(--color-primary, #E8753D);
+  background: var(--color-text-primary, #243238);
   color: #FFFFFF;
 }
 
@@ -642,7 +642,7 @@
   font-family: var(--font-family-base, 'Space Grotesk', sans-serif);
   font-size: 13.5px;
   font-weight: 700;
-  color: var(--color-text-caption, #8199A3);
+  color: #4B5A62;
   margin: 6px 0 12px;
 }
 
@@ -650,21 +650,21 @@
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  background: rgba(232, 117, 61, 0.12);
-  border: 1px solid rgba(232, 117, 61, 0.35);
+  background: rgba(232, 117, 61, 0.14);
+  border: 1px solid rgba(232, 117, 61, 0.4);
   border-radius: 20px;
   padding: 6px 14px;
   font-family: var(--font-family-base, 'Space Grotesk', sans-serif);
   font-size: 12px;
-  font-weight: 600;
-  color: #B34F1A;
-  box-shadow: 0 2px 8px rgba(232, 117, 61, 0.12);
+  font-weight: 700;
+  color: var(--color-text-primary, #243238);
+  box-shadow: 0 2px 8px rgba(232, 117, 61, 0.1);
 }
 
 .simulasi-accumulation-check-icon {
   width: 14px;
   height: 14px;
-  border: 1.5px solid #B34F1A;
+  border: 1.5px solid var(--color-text-primary, #243238);
   border-radius: 4px;
   display: inline-flex;
   align-items: center;
@@ -672,6 +672,7 @@
   font-size: 9.5px;
   font-weight: 800;
   line-height: 1;
+  color: var(--color-text-primary, #243238);
 }
 
 .simulasi-accumulation-tooltip {
