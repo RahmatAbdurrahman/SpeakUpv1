@@ -35,6 +35,7 @@ import {
   uploadMaterial,
   generateNotes,
   analyzeCv,
+  getMaterialSignedUrl,
   saveManualMaterialText,
   getRandomSpontaneousTopic,
   generateSpontaneousTopicAI,
@@ -394,7 +395,7 @@ function RecordingGateModal({ variant, secondsElapsed, onResume, onRestart, onAb
 // TIDAK dipotong per pertanyaan supaya analyze-session tetap menerima satu file
 // audio utuh seperti kategori lain — transkrip lengkapnya sudah memuat semua
 // jawaban, jadi tidak perlu menggabung blob webm di sisi client.
-function RecordingStep({ scenario, cheatSheet, questions = [], onBack, onFinish, onAbandon }) {
+function RecordingStep({ scenario, cheatSheet, materialPdfPath, questions = [], onBack, onFinish, onAbandon }) {
   const videoRef = useRef(null);
   const [stream, setStream] = useState(null);
   const [camError, setCamError] = useState(null);
@@ -402,6 +403,12 @@ function RecordingStep({ scenario, cheatSheet, questions = [], onBack, onFinish,
   const [seconds, setSeconds] = useState(0);
   const [showCheatSheet, setShowCheatSheet] = useState(false);
   const [qIndex, setQIndex] = useState(0);
+  // Presentasi (kelas/lomba) only — split-screen camera+materi below replaces
+  // the overlay cheat-sheet other scenarios still use (see isPresentasi).
+  const isPresentasi = scenario?.kategori === "kelas" || scenario?.kategori === "lomba";
+  const [materialView, setMaterialView] = useState("notes"); // "notes" | "slide"
+  const [slideUrl, setSlideUrl] = useState(null);
+  const [slideError, setSlideError] = useState("");
   // null | "silent" | "incomplete" — see attemptFinish() below.
   const [gate, setGate] = useState(null);
   const isInterview = questions.length > 0;
@@ -483,6 +490,24 @@ function RecordingStep({ scenario, cheatSheet, questions = [], onBack, onFinish,
       audioCtx?.close?.().catch(() => {});
     };
   }, [stream]);
+
+  // Lazy — only fetched once the presenter actually taps the Slide toggle,
+  // not on mount, since most of a session may be spent on Notes instead.
+  useEffect(() => {
+    if (!isPresentasi || materialView !== "slide" || !materialPdfPath || slideUrl) return undefined;
+    let active = true;
+    setSlideError("");
+    getMaterialSignedUrl(materialPdfPath)
+      .then((url) => {
+        if (active) setSlideUrl(url);
+      })
+      .catch(() => {
+        if (active) setSlideError("Gagal memuat slide. Coba lagi.");
+      });
+    return () => {
+      active = false;
+    };
+  }, [isPresentasi, materialView, materialPdfPath, slideUrl]);
 
   const startTimer = () => {
     timerRef.current = setInterval(() => {
@@ -603,50 +628,107 @@ function RecordingStep({ scenario, cheatSheet, questions = [], onBack, onFinish,
         <span className="simulasi-recording-scenario">{scenario.title}</span>
       </header>
 
-      <div className="simulasi-camera-frame">
-        <video ref={videoRef} autoPlay playsInline muted className="simulasi-camera-video" />
-        {!stream && !camError && (
-          <div className="simulasi-camera-overlay">
-            <div className="simulasi-camera-spinner" />
-            <p>Menghubungkan kamera...</p>
+      {isPresentasi ? (
+        <div className="simulasi-split-stage">
+          <div className="simulasi-split-camera">
+            <video ref={videoRef} autoPlay playsInline muted className="simulasi-camera-video" />
+            {!stream && !camError && (
+              <div className="simulasi-camera-overlay">
+                <div className="simulasi-camera-spinner" />
+                <p>Menghubungkan kamera...</p>
+              </div>
+            )}
+            {camError && (
+              <div className="simulasi-camera-overlay">
+                <p>Kamera/mic belum bisa diakses. Izinkan akses lalu coba lagi.</p>
+              </div>
+            )}
+            {isRecording && (
+              <div className="simulasi-rec-badge">
+                <span className="simulasi-rec-dot" />
+                <span>{formatTime(seconds)}</span>
+              </div>
+            )}
           </div>
-        )}
-        {camError && (
-          <div className="simulasi-camera-overlay">
-            <p>Kamera/mic belum bisa diakses. Izinkan akses lalu coba lagi.</p>
+
+          <div className="simulasi-split-material">
+            <div className="simulasi-split-toggle-row">
+              <button
+                type="button"
+                className={`simulasi-split-toggle ${materialView === "notes" ? "active" : ""}`}
+                onClick={() => setMaterialView("notes")}
+              >
+                📝 Notes
+              </button>
+              <button
+                type="button"
+                className={`simulasi-split-toggle ${materialView === "slide" ? "active" : ""}`}
+                onClick={() => setMaterialView("slide")}
+                disabled={!materialPdfPath}
+              >
+                🖼️ Slide
+              </button>
+            </div>
+
+            <div className="simulasi-split-content">
+              {materialView === "notes" ? (
+                cheatSheet ? (
+                  <p className="simulasi-split-notes-text">{cheatSheet}</p>
+                ) : (
+                  <p className="simulasi-split-empty">Belum ada notes untuk sesi ini.</p>
+                )
+              ) : slideError ? (
+                <p className="simulasi-split-empty">{slideError}</p>
+              ) : slideUrl ? (
+                <iframe src={slideUrl} title="Slide materi presentasi" className="simulasi-split-slide-frame" />
+              ) : materialPdfPath ? (
+                <p className="simulasi-split-empty">Memuat slide...</p>
+              ) : (
+                <p className="simulasi-split-empty">Materi PDF tidak tersedia untuk sesi ini.</p>
+              )}
+            </div>
           </div>
-        )}
-        {isRecording && (
-          <div className="simulasi-rec-badge">
-            <span className="simulasi-rec-dot" />
-            <span>{formatTime(seconds)}</span>
-          </div>
-        )}
-        {isInterview && (
-          <div className="simulasi-question-panel">
-            <p className="simulasi-question-counter">
-              Pertanyaan {qIndex + 1}/{questions.length}
-            </p>
-            <p className="simulasi-question-text">{questions[qIndex]}</p>
-          </div>
-        )}
-        {cheatSheet && (
-          <button
-            type="button"
-            className="simulasi-cheatsheet-toggle"
-            onClick={() => setShowCheatSheet((v) => !v)}
-          >
-            {showCheatSheet
-              ? scenario?.kategori === "spontan"
-                ? "Sembunyikan topik"
-                : "Sembunyikan contekan"
-              : scenario?.kategori === "spontan"
-                ? "Lihat topik"
-                : "Lihat contekan"}
-          </button>
-        )}
-        {cheatSheet && showCheatSheet && <div className="simulasi-cheatsheet-panel">{cheatSheet}</div>}
-      </div>
+        </div>
+      ) : (
+        <div className="simulasi-camera-frame">
+          <video ref={videoRef} autoPlay playsInline muted className="simulasi-camera-video" />
+          {!stream && !camError && (
+            <div className="simulasi-camera-overlay">
+              <div className="simulasi-camera-spinner" />
+              <p>Menghubungkan kamera...</p>
+            </div>
+          )}
+          {camError && (
+            <div className="simulasi-camera-overlay">
+              <p>Kamera/mic belum bisa diakses. Izinkan akses lalu coba lagi.</p>
+            </div>
+          )}
+          {isRecording && (
+            <div className="simulasi-rec-badge">
+              <span className="simulasi-rec-dot" />
+              <span>{formatTime(seconds)}</span>
+            </div>
+          )}
+          {isInterview && (
+            <div className="simulasi-question-panel">
+              <p className="simulasi-question-counter">
+                Pertanyaan {qIndex + 1}/{questions.length}
+              </p>
+              <p className="simulasi-question-text">{questions[qIndex]}</p>
+            </div>
+          )}
+          {cheatSheet && (
+            <button
+              type="button"
+              className="simulasi-cheatsheet-toggle"
+              onClick={() => setShowCheatSheet((v) => !v)}
+            >
+              {showCheatSheet ? "Sembunyikan topik" : "Lihat topik"}
+            </button>
+          )}
+          {cheatSheet && showCheatSheet && <div className="simulasi-cheatsheet-panel">{cheatSheet}</div>}
+        </div>
+      )}
 
       <p className="simulasi-recording-hint">
         {isInterview
@@ -1209,6 +1291,11 @@ export default function SimulasiScreen({ onNavigateHome, onNavigateSosial, onNav
   const [simulationId, setSimulationId] = useState(null);
   const [sessionId, setSessionId] = useState(null);
   const [notes, setNotes] = useState("");
+  // Storage path of the uploaded materi PDF — null for the manual-notes
+  // fallback (edge case 11.1, no real PDF exists) or the spontan/interview
+  // scenarios that never upload one. Only Presentasi's split-screen "Slide"
+  // toggle uses this.
+  const [materialPdfPath, setMaterialPdfPath] = useState(null);
   const [topics, setTopics] = useState([]);
   const [shufflingTopic, setShufflingTopic] = useState(false);
   const [questions, setQuestions] = useState([]);
@@ -1222,6 +1309,7 @@ export default function SimulasiScreen({ onNavigateHome, onNavigateSosial, onNav
     setSimulationId(null);
     setSessionId(null);
     setNotes("");
+    setMaterialPdfPath(null);
     setTopics([]);
     setQuestions([]);
     setQuestionsLoading(false);
@@ -1272,6 +1360,10 @@ export default function SimulasiScreen({ onNavigateHome, onNavigateSosial, onNav
         data: { user },
       } = await supabase.auth.getUser();
       const pdfPath = await uploadMaterial(user.id, simulationId, file);
+      // The PDF itself is safely stored the moment upload succeeds — the
+      // "Slide" toggle can show it even if text extraction below comes back
+      // empty (edge case 11.1) or hasn't happened at all for kategori kelas/lomba.
+      setMaterialPdfPath(pdfPath);
       const text =
         scenario.kategori === "interview" ? await analyzeCv(simulationId, pdfPath) : await generateNotes(simulationId, pdfPath);
 
@@ -1442,6 +1534,7 @@ export default function SimulasiScreen({ onNavigateHome, onNavigateSosial, onNav
       <RecordingStep
         scenario={scenario}
         cheatSheet={scenario.kategori === "spontan" ? topics.join(" / ") : scenario.kategori !== "interview" ? notes : ""}
+        materialPdfPath={materialPdfPath}
         questions={scenario.kategori === "interview" ? questions : []}
         onBack={() => setStep(scenario.needsUpload ? "prep" : "topic")}
         onFinish={handleRecordingFinished}

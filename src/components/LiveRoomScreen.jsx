@@ -17,6 +17,7 @@ import {
   runAnalysis,
   fetchSessionResults,
   markSimulationCompleted,
+  getMaterialSignedUrl,
   friendlySimulasiError,
 } from "../lib/simulasi";
 import { supabase } from "../lib/supabaseClient";
@@ -114,6 +115,13 @@ export default function LiveRoomScreen({ roomData, onLeaveRoom, onSessionEnded }
   const recChunksRef = useRef([]);
   const recStartRef = useRef(null);
   const viewerBoost = useFakeViewerBoost(isBroadcaster && isLivePresentation);
+
+  // Presenter's split-screen Notes/Slide toggle — same shape as
+  // SimulasiScreen's RecordingStep, driven off roomData.notes/materialPdfPath
+  // that LivePresentationScreen hands off.
+  const [materialView, setMaterialView] = useState("notes"); // "notes" | "slide"
+  const [slideUrl, setSlideUrl] = useState(null);
+  const [slideError, setSlideError] = useState("");
 
   // Q&A Drawer Bottom Sheet state
   const [isQaDrawerOpen, setIsQaDrawerOpen] = useState(false);
@@ -394,6 +402,23 @@ export default function LiveRoomScreen({ roomData, onLeaveRoom, onSessionEnded }
     };
   }, [roomData?.roomId, isBroadcaster, isLivePresentation]);
 
+  // Lazy — only fetched once the presenter taps the Slide toggle.
+  useEffect(() => {
+    if (materialView !== "slide" || !roomData?.materialPdfPath || slideUrl) return undefined;
+    let active = true;
+    setSlideError("");
+    getMaterialSignedUrl(roomData.materialPdfPath)
+      .then((url) => {
+        if (active) setSlideUrl(url);
+      })
+      .catch(() => {
+        if (active) setSlideError("Gagal memuat slide. Coba lagi.");
+      });
+    return () => {
+      active = false;
+    };
+  }, [materialView, roomData?.materialPdfPath, slideUrl]);
+
   useEffect(() => {
     // Reset scroll on mount so parent doesn't hold previous scroll offset
     const screenContent = document.querySelector(".iphone-screen-content");
@@ -597,66 +622,139 @@ export default function LiveRoomScreen({ roomData, onLeaveRoom, onSessionEnded }
       </div>
 
       {/* ── Main Conference Split Stage ─────────────────────────── */}
-      <div className="teams-stage-grid">
-        {/* Main Tile: the broadcast — local preview if I'm the broadcaster, remote track if I'm watching */}
-        <div className="teams-video-tile teams-tile-host">
-          <div ref={mainVideoRef} className="teams-video-el-container" />
-
-          {connecting && (
-            <div className="teams-connecting-overlay">
-              <span className="teams-connecting-spinner" />
-              <span>Menyambungkan...</span>
-            </div>
-          )}
-          {!connecting && connectionError && (
-            <div className="teams-connecting-overlay">
-              <span>{connectionError}</span>
-            </div>
-          )}
-          {!connecting && !connectionError && !isBroadcaster && (
-            <>
-              <div className="teams-avatar-circle teams-avatar-host">
-                <span>{initialsFor(speakerName)}</span>
+      {isBroadcaster && isLivePresentation ? (
+        // Presenter's own view: top = their camera (mainVideoRef already
+        // gets the broadcaster's local track — see LocalTrackPublished
+        // above), bottom = Notes/Slide toggle. Same split-screen as
+        // SimulasiScreen's Presentasi RecordingStep, per the design decision
+        // that this look applies "baik simulasi atau Live". The redundant
+        // self-PiP tile other broadcasters used to also get is dropped here
+        // since the camera pane already IS the presenter's own feed.
+        <div className="teams-split-stage">
+          <div className="teams-split-camera">
+            <div ref={mainVideoRef} className="teams-video-el-container" />
+            {connecting && (
+              <div className="teams-connecting-overlay">
+                <span className="teams-connecting-spinner" />
+                <span>Menyambungkan...</span>
               </div>
-              <div className="teams-tile-nameplate">
-                <span>{speakerName}</span>
+            )}
+            {!connecting && connectionError && (
+              <div className="teams-connecting-overlay">
+                <span>{connectionError}</span>
               </div>
-            </>
-          )}
-        </div>
-
-        {/* PiP self-preview — broadcaster only, so they can see their own framing while live */}
-        {isBroadcaster && (
-          <div className="teams-video-tile teams-tile-self">
+            )}
             <div className="teams-tile-nameplate">
               <span>Kamu</span>
               {!isMicOn && <span className="teams-nameplate-muted-icon">🔇</span>}
             </div>
-
             {!isMicOn && showMutedSnackbar && (
               <div className="teams-muted-status-pill">
                 <span className="muted-icon">🔇</span>
                 <span>You are muted</span>
               </div>
             )}
+          </div>
 
-            <div className="teams-pip-camera-box">
-              <div className="teams-pip-content">
-                {isCamOn ? (
-                  <div ref={selfVideoRef} className="teams-video-el-container teams-pip-video" />
+          <div className="teams-split-material">
+            <div className="teams-split-toggle-row">
+              <button
+                type="button"
+                className={`teams-split-toggle ${materialView === "notes" ? "active" : ""}`}
+                onClick={() => setMaterialView("notes")}
+              >
+                📝 Notes
+              </button>
+              <button
+                type="button"
+                className={`teams-split-toggle ${materialView === "slide" ? "active" : ""}`}
+                onClick={() => setMaterialView("slide")}
+                disabled={!roomData?.materialPdfPath}
+              >
+                🖼️ Slide
+              </button>
+            </div>
+            <div className="teams-split-content">
+              {materialView === "notes" ? (
+                roomData?.notes ? (
+                  <p className="teams-split-notes-text">{roomData.notes}</p>
                 ) : (
-                  <div className="teams-pip-cam-off">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#94A3B8" strokeWidth="2">
-                      <line x1="1" y1="1" x2="23" y2="23" />
-                      <path d="M21 21H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h3m3-3h6l2 3h4a2 2 0 0 1 2 2v9.34m-7.72-2.06a4 4 0 1 1-5.56-5.56" />
-                    </svg>
-                  </div>
-                )}
-              </div>
+                  <p className="teams-split-empty">Belum ada notes untuk sesi ini.</p>
+                )
+              ) : slideError ? (
+                <p className="teams-split-empty">{slideError}</p>
+              ) : slideUrl ? (
+                <iframe src={slideUrl} title="Slide materi presentasi" className="teams-split-slide-frame" />
+              ) : roomData?.materialPdfPath ? (
+                <p className="teams-split-empty">Memuat slide...</p>
+              ) : (
+                <p className="teams-split-empty">Materi PDF tidak tersedia untuk sesi ini.</p>
+              )}
             </div>
           </div>
-        )}
-      </div>
+        </div>
+      ) : (
+        <div className="teams-stage-grid">
+          {/* Main Tile: the broadcast — local preview if I'm the broadcaster, remote track if I'm watching */}
+          <div className="teams-video-tile teams-tile-host">
+            <div ref={mainVideoRef} className="teams-video-el-container" />
+
+            {connecting && (
+              <div className="teams-connecting-overlay">
+                <span className="teams-connecting-spinner" />
+                <span>Menyambungkan...</span>
+              </div>
+            )}
+            {!connecting && connectionError && (
+              <div className="teams-connecting-overlay">
+                <span>{connectionError}</span>
+              </div>
+            )}
+            {!connecting && !connectionError && !isBroadcaster && (
+              <>
+                <div className="teams-avatar-circle teams-avatar-host">
+                  <span>{initialsFor(speakerName)}</span>
+                </div>
+                <div className="teams-tile-nameplate">
+                  <span>{speakerName}</span>
+                </div>
+              </>
+            )}
+          </div>
+
+          {/* PiP self-preview — broadcaster only, so they can see their own framing while live */}
+          {isBroadcaster && (
+            <div className="teams-video-tile teams-tile-self">
+              <div className="teams-tile-nameplate">
+                <span>Kamu</span>
+                {!isMicOn && <span className="teams-nameplate-muted-icon">🔇</span>}
+              </div>
+
+              {!isMicOn && showMutedSnackbar && (
+                <div className="teams-muted-status-pill">
+                  <span className="muted-icon">🔇</span>
+                  <span>You are muted</span>
+                </div>
+              )}
+
+              <div className="teams-pip-camera-box">
+                <div className="teams-pip-content">
+                  {isCamOn ? (
+                    <div ref={selfVideoRef} className="teams-video-el-container teams-pip-video" />
+                  ) : (
+                    <div className="teams-pip-cam-off">
+                      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#94A3B8" strokeWidth="2">
+                        <line x1="1" y1="1" x2="23" y2="23" />
+                        <path d="M21 21H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h3m3-3h6l2 3h4a2 2 0 0 1 2 2v9.34m-7.72-2.06a4 4 0 1 1-5.56-5.56" />
+                      </svg>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
+      )}
 
       {/* ── Quick Q&A Open Trigger Banner — Live Presentation's presenter
           gets the phase-transition CTA here instead; everyone else (viewers,

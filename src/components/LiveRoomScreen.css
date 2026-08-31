@@ -189,6 +189,114 @@
   box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.06);
 }
 
+/* ── Live Presentation presenter split-screen — same top/bottom idea as
+   SimulasiScreen's Presentasi RecordingStep, dark-themed to match this
+   call UI. ──────────────────────────────────────────────────────────── */
+.teams-split-stage {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 6px 8px;
+  background-color: #141414;
+  overflow: hidden;
+  box-sizing: border-box;
+}
+
+.teams-split-camera {
+  flex: 1 1 50%;
+  min-height: 0;
+  background: #252525;
+  border-radius: 14px;
+  position: relative;
+  overflow: hidden;
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.06);
+}
+
+.teams-split-material {
+  flex: 1 1 50%;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  background: #1F1F1F;
+  border-radius: 14px;
+  padding: 10px;
+  box-sizing: border-box;
+  overflow: hidden;
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.06);
+}
+
+.teams-split-toggle-row {
+  display: flex;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.teams-split-toggle {
+  flex: 1;
+  height: 32px;
+  border-radius: 20px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: #141414;
+  color: #94A3B8;
+  font-family: var(--font-family-base, 'Space Grotesk', sans-serif);
+  font-size: 11.5px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.12s ease, color 0.12s ease, border-color 0.12s ease;
+}
+.teams-split-toggle.active {
+  background: #15B392;
+  border-color: #15B392;
+  color: #FFFFFF;
+}
+.teams-split-toggle:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.teams-split-content {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  border-radius: 10px;
+}
+
+.teams-split-notes-text {
+  font-family: var(--font-family-base, 'Space Grotesk', sans-serif);
+  font-size: 12px;
+  font-weight: 500;
+  color: #E2E8F0;
+  line-height: 1.55;
+  white-space: pre-wrap;
+  margin: 4px;
+}
+
+.teams-split-slide-frame {
+  width: 100%;
+  height: 100%;
+  min-height: 120px;
+  border: none;
+  border-radius: 10px;
+  background: #F1F1F1;
+}
+
+.teams-split-empty {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  min-height: 90px;
+  text-align: center;
+  padding: 10px;
+  font-family: var(--font-family-base, 'Space Grotesk', sans-serif);
+  font-size: 12px;
+  font-weight: 500;
+  color: #94A3B8;
+}
+
 .teams-avatar-circle {
   width: 88px;
   height: 88px;

@@ -79,6 +79,19 @@ export async function uploadMaterial(userId, simulationId, file) {
   return path;
 }
 
+/**
+ * The `materials` bucket is private (RLS: owner-only), so the "Slide" toggle
+ * on the Presentasi recording screen needs a signed URL to embed the PDF —
+ * a plain public URL would 400. 10 minutes comfortably covers one recording
+ * take; re-called fresh each time the toggle is opened rather than cached,
+ * so an unusually long session never sits on an expired link.
+ */
+export async function getMaterialSignedUrl(path) {
+  const { data, error } = await supabase.storage.from("materials").createSignedUrl(path, 600);
+  if (error) throw error;
+  return data.signedUrl;
+}
+
 /** Kelas/Lomba: PDF materi → simulation_materials.generated_notes (shown to user). */
 export async function generateNotes(simulationId, pdfPath) {
   const data = await invokeFunction("generate-notes", { simulation_id: simulationId, pdf_storage_path: pdfPath });

@@ -25,6 +25,7 @@ export default function LivePresentationScreen({ onBack, onEnterLive }) {
   const [simulationId, setSimulationId] = useState(null);
   const [sessionId, setSessionId] = useState(null);
   const [notes, setNotes] = useState("");
+  const [materialPdfPath, setMaterialPdfPath] = useState(null);
   const [errorMessage, setErrorMessage] = useState("");
 
   useEffect(() => {
@@ -55,6 +56,10 @@ export default function LivePresentationScreen({ onBack, onEnterLive }) {
         data: { user },
       } = await supabase.auth.getUser();
       const pdfPath = await uploadMaterial(user.id, simulationId, file);
+      // Stored regardless of whether text extraction below succeeds — the
+      // Slide toggle during the live broadcast shows the PDF itself, same
+      // reasoning as SimulasiScreen's own Presentasi flow.
+      setMaterialPdfPath(pdfPath);
       const text = await generateNotes(simulationId, pdfPath);
 
       if (!text) {
@@ -101,6 +106,8 @@ export default function LivePresentationScreen({ onBack, onEnterLive }) {
         simulationId,
         title: `Live Presentasi: ${hostName}`,
         hostName,
+        notes,
+        materialPdfPath,
       });
     } catch (err) {
       setErrorMessage(friendlySimulasiError(err));
