@@ -407,14 +407,12 @@ function RecordingStep({ scenario, cheatSheet, materialPdfPath, questions = [], 
   // Presentasi (kelas/lomba) only — split-screen camera+materi below replaces
   // the overlay cheat-sheet other scenarios still use (see isPresentasi).
   const isPresentasi = scenario?.kategori === "kelas" || scenario?.kategori === "lomba";
+  // "notes" = normal split view (camera + notes). Picking "slide" auto-enters
+  // a full-screen immersive presentation mode (see JSX below) — no separate
+  // manual expand step anymore.
   const [materialView, setMaterialView] = useState("notes"); // "notes" | "slide"
   const [slideUrl, setSlideUrl] = useState(null);
   const [slideError, setSlideError] = useState("");
-  // Slide needs far more room than notes text does, so the split ratio
-  // adapts instead of staying a fixed 50/50 — and "Perbesar" goes further,
-  // giving the slide the whole stage while the camera stays as a corner PiP.
-  const [slideExpanded, setSlideExpanded] = useState(false);
-  const showingSlide = materialView === "slide" && Boolean(slideUrl);
   // null | "silent" | "incomplete" — see attemptFinish() below.
   const [gate, setGate] = useState(null);
   const isInterview = questions.length > 0;
@@ -635,126 +633,89 @@ function RecordingStep({ scenario, cheatSheet, materialPdfPath, questions = [], 
       </header>
 
       {isPresentasi ? (
-        <div
-          className={`simulasi-split-stage${showingSlide ? " simulasi-split-stage--slide" : ""}${
-            showingSlide && slideExpanded ? " simulasi-split-stage--expanded" : ""
-          }`}
-        >
-          <div className="simulasi-split-camera">
-            <video ref={videoRef} autoPlay playsInline muted className="simulasi-camera-video" />
-            {!stream && !camError && (
-              <div className="simulasi-camera-overlay">
-                <div className="simulasi-camera-spinner" />
-                <p>Menghubungkan kamera...</p>
-              </div>
-            )}
-            {camError && (
-              <div className="simulasi-camera-overlay">
-                <p>Kamera/mic belum bisa diakses. Izinkan akses lalu coba lagi.</p>
-              </div>
-            )}
-            {isRecording && (
-              <div className="simulasi-rec-badge">
-                <span className="simulasi-rec-dot" />
-                <span>{formatTime(seconds)}</span>
-              </div>
-            )}
+        materialView === "slide" ? (
+          // Picking Slide jumps straight here — no manual expand step.
+          // Camera preview and every other control are gone; recording
+          // itself keeps running off the independent getUserMedia stream
+          // (see startRecording), so hiding the preview doesn't touch the
+          // take. The only way back to the normal portrait view is
+          // finishing the recording, which leaves this step entirely.
+          <div className="simulasi-slide-immersive">
+            <div className="simulasi-slide-immersive-stage">
+              {slideError ? (
+                <p className="simulasi-split-empty">{slideError}</p>
+              ) : slideUrl ? (
+                <SlideViewer url={slideUrl} expanded tone="light" />
+              ) : (
+                <p className="simulasi-split-empty">Memuat slide...</p>
+              )}
+            </div>
+            <div className="simulasi-immersive-bar">
+              {isRecording && (
+                <span className="simulasi-rec-badge" style={{ position: "static" }}>
+                  <span className="simulasi-rec-dot" />
+                  <span>{formatTime(seconds)}</span>
+                </span>
+              )}
+              <button
+                type="button"
+                className="simulasi-expanded-rec"
+                onClick={handleToggle}
+                disabled={!stream}
+                aria-label={isRecording ? "Berhenti rekam" : "Mulai rekam"}
+              >
+                <span className={isRecording ? "simulasi-expanded-rec-stop" : "simulasi-expanded-rec-dot"} />
+              </button>
+            </div>
           </div>
+        ) : (
+          <div className="simulasi-split-stage">
+            <div className="simulasi-split-camera">
+              <video ref={videoRef} autoPlay playsInline muted className="simulasi-camera-video" />
+              {!stream && !camError && (
+                <div className="simulasi-camera-overlay">
+                  <div className="simulasi-camera-spinner" />
+                  <p>Menghubungkan kamera...</p>
+                </div>
+              )}
+              {camError && (
+                <div className="simulasi-camera-overlay">
+                  <p>Kamera/mic belum bisa diakses. Izinkan akses lalu coba lagi.</p>
+                </div>
+              )}
+              {isRecording && (
+                <div className="simulasi-rec-badge">
+                  <span className="simulasi-rec-dot" />
+                  <span>{formatTime(seconds)}</span>
+                </div>
+              )}
+            </div>
 
-          <div className="simulasi-split-material">
-            {slideExpanded && showingSlide ? (
-              // Expanded lifts over the whole screen, so the controls the
-              // normal layout provides (rec timer, record/stop) have to come
-              // along — otherwise the presenter couldn't stop the take.
-              <div className="simulasi-expanded-bar">
-                <button
-                  type="button"
-                  className="simulasi-split-expand-btn"
-                  onClick={() => setSlideExpanded(false)}
-                  title="Perkecil slide"
-                >
-                  ⤡
+            <div className="simulasi-split-material">
+              <div className="simulasi-split-toggle-row">
+                <button type="button" className="simulasi-split-toggle active" onClick={() => setMaterialView("notes")}>
+                  📝 Notes
                 </button>
                 <button
                   type="button"
                   className="simulasi-split-toggle"
-                  onClick={() => {
-                    setMaterialView("notes");
-                    setSlideExpanded(false);
-                  }}
+                  onClick={() => setMaterialView("slide")}
+                  disabled={!materialPdfPath}
                 >
-                  📝 Notes
-                </button>
-                <span className="simulasi-expanded-spacer" />
-                {isRecording && (
-                  <span className="simulasi-rec-badge" style={{ position: "static" }}>
-                    <span className="simulasi-rec-dot" />
-                    <span>{formatTime(seconds)}</span>
-                  </span>
-                )}
-                <button
-                  type="button"
-                  className="simulasi-expanded-rec"
-                  onClick={handleToggle}
-                  disabled={!stream}
-                  aria-label={isRecording ? "Berhenti rekam" : "Mulai rekam"}
-                >
-                  <span className={isRecording ? "simulasi-expanded-rec-stop" : "simulasi-expanded-rec-dot"} />
+                  🖼️ Slide
                 </button>
               </div>
-            ) : (
-            <div className="simulasi-split-toggle-row">
-              <button
-                type="button"
-                className={`simulasi-split-toggle ${materialView === "notes" ? "active" : ""}`}
-                onClick={() => {
-                  setMaterialView("notes");
-                  setSlideExpanded(false);
-                }}
-              >
-                📝 Notes
-              </button>
-              <button
-                type="button"
-                className={`simulasi-split-toggle ${materialView === "slide" ? "active" : ""}`}
-                onClick={() => setMaterialView("slide")}
-                disabled={!materialPdfPath}
-              >
-                🖼️ Slide
-              </button>
-              {showingSlide && (
-                <button
-                  type="button"
-                  className="simulasi-split-expand-btn"
-                  onClick={() => setSlideExpanded((v) => !v)}
-                  aria-pressed={slideExpanded}
-                  title="Perbesar slide"
-                >
-                  ⤢
-                </button>
-              )}
-            </div>
-            )}
 
-            <div className="simulasi-split-content">
-              {materialView === "notes" ? (
-                cheatSheet ? (
+              <div className="simulasi-split-content">
+                {cheatSheet ? (
                   <p className="simulasi-split-notes-text">{cheatSheet}</p>
                 ) : (
                   <p className="simulasi-split-empty">Belum ada notes untuk sesi ini.</p>
-                )
-              ) : slideError ? (
-                <p className="simulasi-split-empty">{slideError}</p>
-              ) : slideUrl ? (
-                <SlideViewer url={slideUrl} expanded={slideExpanded} tone="light" />
-              ) : materialPdfPath ? (
-                <p className="simulasi-split-empty">Memuat slide...</p>
-              ) : (
-                <p className="simulasi-split-empty">Materi PDF tidak tersedia untuk sesi ini.</p>
-              )}
+                )}
+              </div>
             </div>
           </div>
-        </div>
+        )
       ) : (
         <div className="simulasi-camera-frame">
           <video ref={videoRef} autoPlay playsInline muted className="simulasi-camera-video" />

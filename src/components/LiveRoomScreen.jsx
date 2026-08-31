@@ -119,12 +119,11 @@ export default function LiveRoomScreen({ roomData, onLeaveRoom, onSessionEnded }
 
   // Presenter's split-screen Notes/Slide toggle — same shape as
   // SimulasiScreen's RecordingStep, driven off roomData.notes/materialPdfPath
-  // that LivePresentationScreen hands off.
+  // that LivePresentationScreen hands off. Picking "slide" auto-enters a
+  // full-screen immersive mode (see JSX below) — no separate expand step.
   const [materialView, setMaterialView] = useState("notes"); // "notes" | "slide"
   const [slideUrl, setSlideUrl] = useState(null);
   const [slideError, setSlideError] = useState("");
-  const [slideExpanded, setSlideExpanded] = useState(false);
-  const showingSlide = materialView === "slide" && Boolean(slideUrl);
 
   // Q&A Drawer Bottom Sheet state
   const [isQaDrawerOpen, setIsQaDrawerOpen] = useState(false);
@@ -560,6 +559,45 @@ export default function LiveRoomScreen({ roomData, onLeaveRoom, onSessionEnded }
     return <SessionLoadingScreen text="Menganalisis presentasimu..." />;
   }
 
+  // Broadcaster's phase CTA — advances to Q&A, or (during Q&A) finishes the
+  // presentation and stops the recording. Rendered in its normal place below
+  // the stage, or inside the immersive slide overlay when Slide is picked
+  // (that's the recording's actual "stop" control there — see materialView).
+  const livePhaseTrigger =
+    livePhase === "presenting" ? (
+      <button
+        type="button"
+        className="teams-qa-quick-trigger teams-phase-trigger"
+        onClick={() => {
+          setLivePhase("qna");
+          setIsQaDrawerOpen(true);
+        }}
+      >
+        <div className="teams-qa-trigger-left">
+          <span className="teams-qa-icon-bubble">▶</span>
+          <div className="teams-qa-trigger-text">
+            <span className="teams-qa-trigger-title">Lanjut ke Sesi Tanya Jawab</span>
+            <span className="teams-qa-trigger-sub">{questions.length} pertanyaan sudah menunggu</span>
+          </div>
+        </div>
+      </button>
+    ) : (
+      <button
+        type="button"
+        className="teams-qa-quick-trigger teams-phase-trigger teams-phase-trigger--finish"
+        onClick={handleFinishLivePresentation}
+        disabled={finishing}
+      >
+        <div className="teams-qa-trigger-left">
+          <span className="teams-qa-icon-bubble">✅</span>
+          <div className="teams-qa-trigger-text">
+            <span className="teams-qa-trigger-title">{finishing ? "Menyelesaikan sesi..." : "Selesaikan Sesi"}</span>
+            <span className="teams-qa-trigger-sub">Analisis AI akan langsung diproses</span>
+          </div>
+        </div>
+      </button>
+    );
+
   return (
     <div className="teams-call-container">
       {/* ── Toast Alert ─────────────────────────────────────────── */}
@@ -626,120 +664,81 @@ export default function LiveRoomScreen({ roomData, onLeaveRoom, onSessionEnded }
 
       {/* ── Main Conference Split Stage ─────────────────────────── */}
       {isBroadcaster && isLivePresentation ? (
-        // Presenter's own view: top = their camera (mainVideoRef already
-        // gets the broadcaster's local track — see LocalTrackPublished
-        // above), bottom = Notes/Slide toggle. Same split-screen as
-        // SimulasiScreen's Presentasi RecordingStep, per the design decision
-        // that this look applies "baik simulasi atau Live". The redundant
-        // self-PiP tile other broadcasters used to also get is dropped here
-        // since the camera pane already IS the presenter's own feed.
-        <div
-          className={`teams-split-stage${showingSlide ? " teams-split-stage--slide" : ""}${
-            showingSlide && slideExpanded ? " teams-split-stage--expanded" : ""
-          }`}
-        >
-          <div className="teams-split-camera">
-            <div ref={mainVideoRef} className="teams-video-el-container" />
-            {connecting && (
-              <div className="teams-connecting-overlay">
-                <span className="teams-connecting-spinner" />
-                <span>Menyambungkan...</span>
-              </div>
-            )}
-            {!connecting && connectionError && (
-              <div className="teams-connecting-overlay">
-                <span>{connectionError}</span>
-              </div>
-            )}
-            <div className="teams-tile-nameplate">
-              <span>Kamu</span>
-              {!isMicOn && <span className="teams-nameplate-muted-icon">🔇</span>}
+        materialView === "slide" ? (
+          // Picking Slide jumps straight into full-screen presentation mode
+          // — no manual expand step. Camera and the whole call chrome (topbar,
+          // mic/cam controls) are gone; the only reachable control is the
+          // phase CTA, since that's what actually ends the recording here.
+          <div className="teams-slide-immersive">
+            <div className="teams-slide-immersive-stage">
+              {slideError ? (
+                <p className="teams-split-empty">{slideError}</p>
+              ) : slideUrl ? (
+                <SlideViewer url={slideUrl} expanded tone="dark" />
+              ) : (
+                <p className="teams-split-empty">Memuat slide...</p>
+              )}
             </div>
-            {!isMicOn && showMutedSnackbar && (
-              <div className="teams-muted-status-pill">
-                <span className="muted-icon">🔇</span>
-                <span>You are muted</span>
-              </div>
-            )}
+            <div className="teams-immersive-bar">{livePhaseTrigger}</div>
           </div>
+        ) : (
+          // Presenter's own view: top = their camera (mainVideoRef already
+          // gets the broadcaster's local track — see LocalTrackPublished
+          // above), bottom = Notes/Slide toggle. Same split-screen as
+          // SimulasiScreen's Presentasi RecordingStep, per the design decision
+          // that this look applies "baik simulasi atau Live". The redundant
+          // self-PiP tile other broadcasters used to also get is dropped here
+          // since the camera pane already IS the presenter's own feed.
+          <div className="teams-split-stage">
+            <div className="teams-split-camera">
+              <div ref={mainVideoRef} className="teams-video-el-container" />
+              {connecting && (
+                <div className="teams-connecting-overlay">
+                  <span className="teams-connecting-spinner" />
+                  <span>Menyambungkan...</span>
+                </div>
+              )}
+              {!connecting && connectionError && (
+                <div className="teams-connecting-overlay">
+                  <span>{connectionError}</span>
+                </div>
+              )}
+              <div className="teams-tile-nameplate">
+                <span>Kamu</span>
+                {!isMicOn && <span className="teams-nameplate-muted-icon">🔇</span>}
+              </div>
+              {!isMicOn && showMutedSnackbar && (
+                <div className="teams-muted-status-pill">
+                  <span className="muted-icon">🔇</span>
+                  <span>You are muted</span>
+                </div>
+              )}
+            </div>
 
-          <div className="teams-split-material">
-            {slideExpanded && showingSlide ? (
-              // Expanded covers the call UI, so the way back out has to ride
-              // along — the presenter must never get stuck on the slide.
-              <div className="teams-expanded-bar">
-                <button
-                  type="button"
-                  className="teams-split-expand-btn"
-                  onClick={() => setSlideExpanded(false)}
-                  title="Perkecil slide"
-                >
-                  ⤡
+            <div className="teams-split-material">
+              <div className="teams-split-toggle-row">
+                <button type="button" className="teams-split-toggle active" onClick={() => setMaterialView("notes")}>
+                  📝 Notes
                 </button>
                 <button
                   type="button"
                   className="teams-split-toggle"
-                  onClick={() => {
-                    setMaterialView("notes");
-                    setSlideExpanded(false);
-                  }}
+                  onClick={() => setMaterialView("slide")}
+                  disabled={!roomData?.materialPdfPath}
                 >
-                  📝 Notes
+                  🖼️ Slide
                 </button>
-                <span className="teams-expanded-spacer" />
               </div>
-            ) : (
-            <div className="teams-split-toggle-row">
-              <button
-                type="button"
-                className={`teams-split-toggle ${materialView === "notes" ? "active" : ""}`}
-                onClick={() => {
-                  setMaterialView("notes");
-                  setSlideExpanded(false);
-                }}
-              >
-                📝 Notes
-              </button>
-              <button
-                type="button"
-                className={`teams-split-toggle ${materialView === "slide" ? "active" : ""}`}
-                onClick={() => setMaterialView("slide")}
-                disabled={!roomData?.materialPdfPath}
-              >
-                🖼️ Slide
-              </button>
-              {showingSlide && (
-                <button
-                  type="button"
-                  className="teams-split-expand-btn"
-                  onClick={() => setSlideExpanded((v) => !v)}
-                  aria-pressed={slideExpanded}
-                  title="Perbesar slide"
-                >
-                  ⤢
-                </button>
-              )}
-            </div>
-            )}
-            <div className="teams-split-content">
-              {materialView === "notes" ? (
-                roomData?.notes ? (
+              <div className="teams-split-content">
+                {roomData?.notes ? (
                   <p className="teams-split-notes-text">{roomData.notes}</p>
                 ) : (
                   <p className="teams-split-empty">Belum ada notes untuk sesi ini.</p>
-                )
-              ) : slideError ? (
-                <p className="teams-split-empty">{slideError}</p>
-              ) : slideUrl ? (
-                <SlideViewer url={slideUrl} expanded={slideExpanded} tone="dark" />
-              ) : roomData?.materialPdfPath ? (
-                <p className="teams-split-empty">Memuat slide...</p>
-              ) : (
-                <p className="teams-split-empty">Materi PDF tidak tersedia untuk sesi ini.</p>
-              )}
+                )}
+              </div>
             </div>
           </div>
-        </div>
+        )
       ) : (
         <div className="teams-stage-grid">
           {/* Main Tile: the broadcast — local preview if I'm the broadcaster, remote track if I'm watching */}
@@ -804,42 +803,11 @@ export default function LiveRoomScreen({ roomData, onLeaveRoom, onSessionEnded }
       )}
 
       {/* ── Quick Q&A Open Trigger Banner — Live Presentation's presenter
-          gets the phase-transition CTA here instead; everyone else (viewers,
-          duet) keeps the plain "open the Q&A drawer" trigger. ──────────── */}
+          gets the phase-transition CTA here instead (unless it's already
+          showing inside the immersive slide overlay above); everyone else
+          (viewers, duet) keeps the plain "open the Q&A drawer" trigger. ── */}
       {isBroadcaster && isLivePresentation ? (
-        livePhase === "presenting" ? (
-          <button
-            type="button"
-            className="teams-qa-quick-trigger teams-phase-trigger"
-            onClick={() => {
-              setLivePhase("qna");
-              setIsQaDrawerOpen(true);
-            }}
-          >
-            <div className="teams-qa-trigger-left">
-              <span className="teams-qa-icon-bubble">▶</span>
-              <div className="teams-qa-trigger-text">
-                <span className="teams-qa-trigger-title">Lanjut ke Sesi Tanya Jawab</span>
-                <span className="teams-qa-trigger-sub">{questions.length} pertanyaan sudah menunggu</span>
-              </div>
-            </div>
-          </button>
-        ) : (
-          <button
-            type="button"
-            className="teams-qa-quick-trigger teams-phase-trigger teams-phase-trigger--finish"
-            onClick={handleFinishLivePresentation}
-            disabled={finishing}
-          >
-            <div className="teams-qa-trigger-left">
-              <span className="teams-qa-icon-bubble">✅</span>
-              <div className="teams-qa-trigger-text">
-                <span className="teams-qa-trigger-title">{finishing ? "Menyelesaikan sesi..." : "Selesaikan Sesi"}</span>
-                <span className="teams-qa-trigger-sub">Analisis AI akan langsung diproses</span>
-              </div>
-            </div>
-          </button>
-        )
+        materialView !== "slide" && livePhaseTrigger
       ) : (
         <button
           type="button"

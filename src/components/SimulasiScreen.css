@@ -376,73 +376,43 @@
   transition: flex-basis 0.22s ease;
 }
 
-/* Slide selected: a PDF page needs much more room than a few lines of notes,
-   so the camera gives up most of its half. Notes stays a plain 50/50. */
-.simulasi-split-stage--slide .simulasi-split-camera {
-  flex-basis: 30%;
-  min-height: 96px;
-}
-.simulasi-split-stage--slide .simulasi-split-material {
-  flex-basis: 70%;
-}
+/* Picking Slide leaves this stage entirely for the immersive view below —
+   the plain split-stage is only ever shown for Notes now, so it stays a
+   fixed 50/50. */
 
-/* "Perbesar": the slide is rotated 90deg (pdf.js does the rotation, see
-   SlideViewer) so a landscape deck can use the phone's LONG axis as its
-   width. That only pays off if it also gets the screen's full HEIGHT —
-   confined to the stage it stays height-limited — so this lifts out over
-   the whole recording screen. Every control comes along: camera as a PiP,
-   rec timer, record/stop and page nav all stay reachable. */
-.simulasi-split-stage--expanded {
+/* Full-screen "presentation mode", entered automatically the instant Slide
+   is picked — no manual expand step, and no way back except finishing the
+   recording. The slide is rotated 90deg by pdf.js itself (see SlideViewer)
+   so a landscape deck can use the phone's LONG axis as its width; that only
+   pays off with the screen's full HEIGHT too, hence the full-screen lift
+   instead of staying confined to a stage. Camera preview is dropped rather
+   than kept as a PiP — recording runs off the independent getUserMedia
+   stream regardless of what's on screen, so there's nothing functional lost
+   by not showing it. */
+.simulasi-slide-immersive {
   position: absolute;
   inset: 0;
   z-index: 50;
   padding: 12px;
   gap: 8px;
+  display: flex;
+  flex-direction: column;
   background: var(--color-bg-app, #FAF8F3);
   box-sizing: border-box;
 }
-.simulasi-split-stage--expanded .simulasi-split-camera {
-  position: absolute;
-  /* Bottom-left: a 90deg rotation maps the slide's bottom-right (its
-     emptiest corner — footers, page numbers) to here, so the PiP covers
-     the least content. Sits clear of the page-nav row underneath. */
-  bottom: 62px;
-  left: 20px;
-  z-index: 5;
-  flex: none;
-  width: 76px;
-  height: 100px;
+.simulasi-slide-immersive-stage {
+  flex: 1;
   min-height: 0;
-  border-radius: 12px;
-  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.3);
-}
-.simulasi-split-stage--expanded .simulasi-split-material {
-  flex: 1 1 100%;
-  border: none;
-  background: transparent;
-  padding: 0;
-}
-/* The camera overlay copy is written for a full-size frame; at PiP scale it
-   would overflow, so only the spinner survives. */
-.simulasi-split-stage--expanded .simulasi-camera-overlay p {
-  display: none;
-}
-.simulasi-split-stage--expanded .simulasi-rec-badge {
-  top: 6px;
-  right: 6px;
-  padding: 3px 7px;
-  font-size: 10px;
+  display: flex;
 }
 
-/* Compact control bar, only in expanded mode. */
-.simulasi-expanded-bar {
+/* Compact control bar — only the rec timer and record/stop stay reachable. */
+.simulasi-immersive-bar {
   display: flex;
   align-items: center;
+  justify-content: center;
   gap: 10px;
   flex-shrink: 0;
-}
-.simulasi-expanded-spacer {
-  flex: 1;
 }
 .simulasi-expanded-rec {
   width: 42px;
@@ -503,34 +473,11 @@
   cursor: not-allowed;
 }
 
-.simulasi-split-expand-btn {
-  flex: 0 0 auto;
-  width: 34px;
-  height: 34px;
-  border-radius: 20px;
-  border: 1px solid var(--color-border, rgba(20, 60, 63, 0.12));
-  background: var(--color-bg-app, #FAF8F3);
-  color: var(--color-text-primary, #243238);
-  font-size: 14px;
-  line-height: 1;
-  cursor: pointer;
-  -webkit-tap-highlight-color: transparent;
-}
-.simulasi-split-expand-btn:active {
-  transform: scale(0.94);
-}
-
 .simulasi-split-content {
   flex: 1;
   min-height: 0;
   overflow-y: auto;
   border-radius: 14px;
-}
-
-/* The embedded PDF scrolls itself — letting the wrapper scroll too is what
-   produced the stacked double scrollbar. */
-.simulasi-split-stage--slide .simulasi-split-content {
-  overflow: hidden;
 }
 
 .simulasi-split-notes-text {
