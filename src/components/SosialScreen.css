@@ -981,3 +981,194 @@
 .sosial-empty-friends {
   padding: 12px 4px;
 }
+
+/* ── Matchmaking Search AlertDialog Popup ─────────────────────────────────── */
+.sosial-dialog-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.55);
+  backdrop-filter: blur(5px);
+  -webkit-backdrop-filter: blur(5px);
+  z-index: 999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  box-sizing: border-box;
+  animation: sosialFadeIn 0.2s ease-out;
+}
+
+.sosial-dialog-card {
+  width: 100%;
+  max-width: 320px;
+  background: #FFFFFF;
+  border-radius: 20px;
+  padding: 28px 20px 20px 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 14px;
+  box-shadow: 0 20px 40px -8px rgba(0, 0, 0, 0.24);
+  border: 1px solid var(--color-border, rgba(20, 60, 63, 0.12));
+  box-sizing: border-box;
+  animation: sosialPopIn 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.sosial-dialog-radar-wrap {
+  position: relative;
+  width: 96px;
+  height: 96px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 4px 0 2px 0;
+}
+
+.sosial-dialog-radar-ring {
+  position: absolute;
+  border: 2px solid rgba(36, 169, 129, 0.4);
+  border-radius: 50%;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  animation: sosialRadarWave 2.2s cubic-bezier(0.2, 0.8, 0.2, 1) infinite;
+}
+
+.sosial-dialog-radar-ring.ring-1 {
+  animation-delay: 0s;
+}
+
+.sosial-dialog-radar-ring.ring-2 {
+  animation-delay: 0.7s;
+}
+
+.sosial-dialog-radar-ring.ring-3 {
+  animation-delay: 1.4s;
+}
+
+@keyframes sosialRadarWave {
+  0% {
+    transform: scale(0.7);
+    opacity: 0.8;
+  }
+  70% {
+    opacity: 0.4;
+  }
+  100% {
+    transform: scale(1.8);
+    opacity: 0;
+  }
+}
+
+.sosial-dialog-avatar-center {
+  width: 68px;
+  height: 68px;
+  border-radius: 50%;
+  background: #F0FDF4;
+  border: 2px solid #24A981;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  overflow: hidden;
+  position: relative;
+  z-index: 2;
+  box-shadow: 0 4px 14px rgba(36, 169, 129, 0.25);
+}
+
+.sosial-dialog-avatar-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center top;
+  transform: scale(1.18);
+  transform-origin: center bottom;
+  display: block;
+}
+
+.sosial-dialog-text {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.sosial-dialog-title {
+  font-family: var(--font-family-base, 'Space Grotesk', sans-serif);
+  font-size: 18px;
+  font-weight: 700;
+  color: #243238;
+  margin: 0;
+  letter-spacing: -0.4px;
+}
+
+.sosial-dialog-desc {
+  font-family: var(--font-family-base, 'Space Grotesk', sans-serif);
+  font-size: 12.5px;
+  font-weight: 400;
+  color: #8199A3;
+  line-height: 1.45;
+  margin: 0;
+}
+
+.sosial-dialog-status-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(36, 169, 129, 0.1);
+  border: 1px solid rgba(36, 169, 129, 0.25);
+  border-radius: 100px;
+  padding: 4px 12px;
+  font-family: var(--font-family-base, 'Space Grotesk', sans-serif);
+  font-size: 11.5px;
+  font-weight: 600;
+  color: #17674F;
+}
+
+.sosial-dialog-pulse-dot {
+  width: 6px;
+  height: 6px;
+  background-color: #24A981;
+  border-radius: 50%;
+  animation: pulse-dot 1.2s infinite;
+}
+
+.btn-sosial-dialog-cancel {
+  width: 100%;
+  height: 38px;
+  background: #FAF8F3;
+  color: #475569;
+  border: 1px solid var(--color-border, rgba(20, 60, 63, 0.15));
+  border-radius: 34px;
+  font-family: var(--font-family-base, 'Space Grotesk', sans-serif);
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  box-shadow: 0px 2px 0px 0px #CBD5E1;
+  transition: transform 0.12s ease, box-shadow 0.12s ease, filter 0.15s ease;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.btn-sosial-dialog-cancel:hover {
+  background: #F1F5F9;
+}
+
+.btn-sosial-dialog-cancel:active {
+  transform: translateY(1px);
+  box-shadow: 0px 1px 0px 0px #CBD5E1;
+}
+
+@keyframes sosialFadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes sosialPopIn {
+  from {
+    opacity: 0;
+    transform: scale(0.92) translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
