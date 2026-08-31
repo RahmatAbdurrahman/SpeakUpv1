@@ -734,11 +734,6 @@ export function AccumulationScoreHero({ score }) {
 
         <p className="simulasi-accumulation-sub">dari 100</p>
 
-        <div className="simulasi-accumulation-pill">
-          <span className="simulasi-accumulation-check-icon">✓</span>
-          <span>Berdasarkan evaluasi AI</span>
-        </div>
-
         {showTooltip && (
           <div className="simulasi-accumulation-tooltip">
             Skor total dihitung dari akumulasi penilaian argumentasi, relevansi konteks, kestabilan tempo bicara, dan artikulasi intonasi.
