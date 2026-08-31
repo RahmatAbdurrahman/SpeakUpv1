@@ -699,14 +699,23 @@ function SimulasiAnalysisChip({ label, tone }) {
 export function AnalysisCards({ results }) {
   const metrics = results?.metrics;
   const feedback = results?.feedback;
-  const sub = feedback?.sub_scores || {};
+  const sub = (() => {
+    if (feedback?.sub_scores && typeof feedback.sub_scores === "object") return feedback.sub_scores;
+    if (typeof feedback?.sub_scores === "string") {
+      try {
+        const parsed = JSON.parse(feedback.sub_scores);
+        if (parsed && typeof parsed === "object") return parsed;
+      } catch {}
+    }
+    return {};
+  })();
 
-  const argScore = sub.argumentasi ?? sub.kesesuaian_materi ?? (feedback?.skor ? Math.round(feedback.skor) : 88);
-  const relScore = sub.relevansi ?? sub.kesesuaian_materi ?? sub.fluency ?? 88;
+  const argScore = sub?.argumentasi ?? sub?.kesesuaian_materi ?? (feedback?.skor ? Math.round(feedback.skor) : 88);
+  const relScore = sub?.relevansi ?? sub?.kesesuaian_materi ?? sub?.fluency ?? 88;
   const fillerCount = metrics?.filler_word_count != null ? metrics.filler_word_count : 0;
   const paceWpm = metrics?.pace_wpm != null ? Math.round(metrics.pace_wpm) : 140;
-  const clarityScore = sub.fluency ?? 88;
-  const energyScore = sub.intonasi ?? 80;
+  const clarityScore = sub?.fluency ?? 88;
+  const energyScore = sub?.intonasi ?? 80;
 
   const scores = [
     {

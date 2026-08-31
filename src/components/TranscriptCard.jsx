@@ -8,11 +8,20 @@ export default function TranscriptCard({
   title = "Transkrip & Analisis Kata",
   fallbackText = "Halo semuanya, pada kesempatan kali ini saya ingin menyampaikan beberapa argumen penting terkait topik ini. Pertama, komunikasi yang efektif adalah kunci dari kolaborasi tim. Kedua, dengan latihan yang rutin, kita bisa menyampaikan gagasan secara lebih terstruktur dan percaya diri.",
 }) {
-  const text = rawTranscript || fallbackText;
+  const text = (() => {
+    if (typeof rawTranscript === "string" && rawTranscript.trim()) return rawTranscript;
+    if (rawTranscript && typeof rawTranscript === "object") {
+      const extracted = rawTranscript.text || rawTranscript.transcript || rawTranscript.transkrip;
+      if (typeof extracted === "string" && extracted.trim()) return extracted;
+    }
+    return fallbackText;
+  })();
+
   const [selectedToken, setSelectedToken] = useState(null);
   const [copied, setCopied] = useState(false);
 
-  const { tokens, stats } = useMemo(() => analyzeTranscript(text), [text]);
+  const { tokens = [], stats = { fillerCount: 0, correctionCount: 0, strongCount: 0, totalWords: 0 } } =
+    useMemo(() => analyzeTranscript(text) || {}, [text]);
 
   const handleCopy = async () => {
     try {

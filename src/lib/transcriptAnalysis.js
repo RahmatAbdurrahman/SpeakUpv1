@@ -71,7 +71,23 @@ export const STRONG_MARKERS = [
 /**
  * Analyzes a raw transcript and splits it into annotated token segments.
  */
-export function analyzeTranscript(rawText) {
+export function analyzeTranscript(rawInput) {
+  let rawText = "";
+  if (typeof rawInput === "string") {
+    rawText = rawInput;
+  } else if (rawInput && typeof rawInput === "object") {
+    if (typeof rawInput.text === "string") rawText = rawInput.text;
+    else if (typeof rawInput.transcript === "string") rawText = rawInput.transcript;
+    else if (typeof rawInput.transkrip === "string") rawText = rawInput.transkrip;
+    else {
+      try {
+        rawText = JSON.stringify(rawInput);
+      } catch {
+        rawText = "";
+      }
+    }
+  }
+
   if (!rawText || typeof rawText !== "string" || !rawText.trim()) {
     return {
       tokens: [],
@@ -85,7 +101,7 @@ export function analyzeTranscript(rawText) {
     };
   }
 
-  const cleanText = rawText.trim();
+  const cleanText = String(rawText).trim();
   const lowerText = cleanText.toLowerCase();
 
   // Find multi-word matches first
