@@ -5,6 +5,7 @@ import iconNavMic from "../assets/pages_assets/bottom-nav-icons/Mic.svg";
 import iconNavUser from "../assets/pages_assets/bottom-nav-icons/User.svg";
 import iconGroup from "../assets/pages_assets/practice/icon_group.svg";
 import imgLive from "../assets/pages_assets/sosial/Image-Live.png";
+import imgMatchmakingDuet from "../assets/pages_assets/sosial/Image-Card-MatchmakingDuet.png";
 import { supabase } from "../lib/supabaseClient";
 import {
   fetchLeaderboard,
@@ -216,9 +217,15 @@ export default function SosialScreen({ onNavigateHome, onNavigateSimulasi, onNav
               <span className="sosial-match-badge-dot"></span>
               <span>Matchmaking Duet</span>
             </div>
-            <div className="sosial-match-text">
-              <h3>Cari Partner Latihan</h3>
-              <p>Dipasangkan otomatis dengan pengguna lain untuk latihan bareng & saling beri masukan secara live.</p>
+
+            <div className="sosial-match-body">
+              <div className="sosial-match-text">
+                <h3>Cari Partner Latihan</h3>
+                <p>Dipasangkan otomatis dengan pengguna lain untuk latihan bareng & saling beri masukan secara live.</p>
+              </div>
+              <div className="sosial-match-illus-wrapper">
+                <img src={imgMatchmakingDuet} alt="Cari Partner Latihan" className="sosial-match-illus" />
+              </div>
             </div>
             {queueState === "idle" && (
               <button type="button" className="btn-sosial-match" onClick={handleFindPartner}>
