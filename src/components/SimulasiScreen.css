@@ -525,7 +525,7 @@
 .simulasi-accumulation-hero {
   position: relative;
   width: 100%;
-  padding: 18px 16px 14px;
+  padding: 16px 16px 10px;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -533,149 +533,67 @@
   text-align: center;
   box-sizing: border-box;
   overflow: visible;
-  margin: 0 auto 2px;
+  margin: 0 auto 4px;
 }
 
-.simulasi-accumulation-aura {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  width: 230px;
-  height: 230px;
-  border-radius: 50%;
-  background: radial-gradient(
-    circle,
-    rgba(74, 163, 255, 0.72) 0%,
-    rgba(125, 195, 255, 0.52) 32%,
-    rgba(175, 222, 255, 0.28) 55%,
-    rgba(215, 238, 255, 0.12) 72%,
-    rgba(250, 248, 243, 0) 86%
-  );
-  filter: blur(12px);
-  pointer-events: none;
-  z-index: 0;
-  animation: auraPulse 4.5s ease-in-out infinite alternate, auraRotate 24s linear infinite;
+/* ── Circular Gauge Meter (Donut Progress Ring Style) ── */
+.simulasi-gauge-container {
+  position: relative;
+  width: 160px;
+  height: 160px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 4px auto 8px;
 }
 
-@keyframes auraRotate {
-  0% {
-    transform: translate(-50%, -50%) rotate(0deg);
-  }
-  100% {
-    transform: translate(-50%, -50%) rotate(360deg);
-  }
-}
-
-@keyframes auraPulse {
-  0% {
-    transform: translate(-50%, -50%) scale(0.93);
-    opacity: 0.82;
-  }
-  100% {
-    transform: translate(-50%, -50%) scale(1.07);
-    opacity: 1;
-  }
-}
-
-.simulasi-accumulation-core-glow {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  width: 140px;
-  height: 140px;
-  border-radius: 50%;
-  background: radial-gradient(
-    circle,
-    rgba(240, 248, 255, 0.98) 0%,
-    rgba(205, 235, 255, 0.75) 50%,
-    rgba(165, 215, 255, 0) 82%
-  );
-  filter: blur(6px);
-  pointer-events: none;
-  z-index: 1;
-  animation: coreGlowPulse 3.5s ease-in-out infinite alternate;
-}
-
-@keyframes coreGlowPulse {
-  0% {
-    transform: translate(-50%, -50%) scale(0.95);
-    opacity: 0.85;
-  }
-  100% {
-    transform: translate(-50%, -50%) scale(1.05);
-    opacity: 1;
-  }
-}
-
-.simulasi-accumulation-sparkles {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  width: 0;
-  height: 0;
-  pointer-events: none;
-  z-index: 2;
-}
-
-.simulasi-sparkle-dot {
+.simulasi-gauge-svg {
   position: absolute;
   top: 0;
   left: 0;
-  border-radius: 50%;
-  background: #FFFFFF;
-  box-shadow: 0 0 5px 1.5px rgba(255, 255, 255, 0.98), 0 0 9px 2.5px rgba(74, 163, 255, 0.85);
-  animation: smoothBlackholeFlow 3.2s cubic-bezier(0.22, 0.61, 0.36, 1) infinite;
-  transform-origin: center center;
-  pointer-events: none;
-  backface-visibility: hidden;
+  width: 160px;
+  height: 160px;
+  overflow: visible;
+  filter: drop-shadow(0 6px 16px rgba(0, 0, 0, 0.12));
 }
 
-@keyframes smoothBlackholeFlow {
-  0% {
-    transform: translate3d(0, 0, 0) scale(0);
-    opacity: 0;
-  }
-  15% {
-    opacity: 1;
-    transform: translate3d(calc(var(--tx) * 0.25), calc(var(--ty) * 0.25), 0) scale(1.3);
-  }
-  60% {
-    opacity: 0.8;
-    transform: translate3d(calc(var(--tx) * 0.72), calc(var(--ty) * 0.72), 0) scale(0.95);
-  }
-  85% {
-    opacity: 0.25;
-    transform: translate3d(calc(var(--tx) * 0.94), calc(var(--ty) * 0.94), 0) scale(0.4);
-  }
-  100% {
-    /* Immediately dissolves cleanly as it reaches the destination without pause */
-    transform: translate3d(var(--tx), var(--ty), 0) scale(0);
-    opacity: 0;
-  }
+.simulasi-gauge-inner-disc {
+  fill: #5B6675;
+  transition: fill 0.3s ease;
 }
 
-.simulasi-sparkle-dot--1 { --tx: 85px; --ty: -10px; width: 4px; height: 4px; animation-delay: 0s; }
-.simulasi-sparkle-dot--2 { --tx: 75px; --ty: 42px; width: 4.5px; height: 4.5px; animation-delay: 0.26s; }
-.simulasi-sparkle-dot--3 { --tx: 45px; --ty: 78px; width: 3.5px; height: 3.5px; animation-delay: 0.52s; }
-.simulasi-sparkle-dot--4 { --tx: 0px; --ty: 85px; width: 4.5px; height: 4.5px; animation-delay: 0.78s; }
-.simulasi-sparkle-dot--5 { --tx: -45px; --ty: 78px; width: 4px; height: 4px; animation-delay: 1.04s; }
-.simulasi-sparkle-dot--6 { --tx: -75px; --ty: 42px; width: 4.5px; height: 4.5px; animation-delay: 1.30s; }
-.simulasi-sparkle-dot--7 { --tx: -85px; --ty: -10px; width: 3.5px; height: 3.5px; animation-delay: 1.56s; }
-.simulasi-sparkle-dot--8 { --tx: -70px; --ty: -50px; width: 4.5px; height: 4.5px; animation-delay: 1.82s; }
-.simulasi-sparkle-dot--9 { --tx: -40px; --ty: -78px; width: 4px; height: 4px; animation-delay: 2.08s; }
-.simulasi-sparkle-dot--10 { --tx: 0px; --ty: -85px; width: 4.5px; height: 4.5px; animation-delay: 2.34s; }
-.simulasi-sparkle-dot--11 { --tx: 40px; --ty: -78px; width: 3.5px; height: 3.5px; animation-delay: 2.60s; }
-.simulasi-sparkle-dot--12 { --tx: 70px; --ty: -50px; width: 4.5px; height: 4.5px; animation-delay: 2.86s; }
+.simulasi-gauge-track {
+  fill: none;
+  stroke: #414B58;
+  transition: stroke 0.3s ease;
+}
 
-.simulasi-accumulation-center {
+.simulasi-gauge-progress {
+  fill: none;
+  stroke: #E8EEF3;
+  transition: stroke-dashoffset 1.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.simulasi-gauge-center {
   position: relative;
-  z-index: 3;
+  z-index: 2;
   display: flex;
   flex-direction: column;
   align-items: center;
+  justify-content: center;
+  text-align: center;
+  user-select: none;
+}
+
+.simulasi-gauge-number {
+  font-family: var(--font-family-base, 'Space Grotesk', sans-serif);
+  font-size: 52px;
+  font-weight: 800;
+  color: #FFFFFF;
+  line-height: 1;
+  letter-spacing: -1.5px;
+  margin: 0;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.15);
 }
 
 .simulasi-accumulation-number-wrap {
@@ -685,28 +603,17 @@
   justify-content: center;
 }
 
-.simulasi-accumulation-number {
-  font-family: var(--font-family-base, 'Space Grotesk', sans-serif);
-  font-size: 68px;
-  font-weight: 800;
-  color: var(--color-text-primary, #243238);
-  line-height: 1;
-  letter-spacing: -2px;
-  margin: 0;
-  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.06);
-}
-
 .simulasi-accumulation-info-btn {
   position: absolute;
-  top: 6px;
-  right: -24px;
-  width: 19px;
-  height: 19px;
+  top: -2px;
+  right: -20px;
+  width: 18px;
+  height: 18px;
   border-radius: 50%;
-  border: 1.5px solid var(--color-text-primary, #243238);
-  background: rgba(255, 255, 255, 0.7);
-  color: var(--color-text-primary, #243238);
-  font-size: 11px;
+  border: 1.5px solid rgba(255, 255, 255, 0.7);
+  background: rgba(0, 0, 0, 0.18);
+  color: #FFFFFF;
+  font-size: 10.5px;
   font-weight: 700;
   font-family: var(--font-family-base, 'Space Grotesk', sans-serif);
   display: flex;
@@ -715,24 +622,25 @@
   cursor: pointer;
   padding: 0;
   line-height: 1;
-  transition: background 0.15s ease, color 0.15s ease;
+  transition: background 0.15s ease, border-color 0.15s ease;
 }
 
 .simulasi-accumulation-info-btn:hover {
-  background: var(--color-text-primary, #243238);
-  color: #FFFFFF;
+  background: rgba(255, 255, 255, 0.3);
+  border-color: #FFFFFF;
 }
 
-.simulasi-accumulation-sub {
+.simulasi-gauge-sub {
   font-family: var(--font-family-base, 'Space Grotesk', sans-serif);
-  font-size: 13.5px;
+  font-size: 11.5px;
   font-weight: 700;
-  color: #4B5A62;
-  margin: 6px 0 0;
+  color: rgba(232, 238, 243, 0.75);
+  margin: 3px 0 0;
+  letter-spacing: 0.3px;
 }
 
 .simulasi-accumulation-tooltip {
-  margin-top: 10px;
+  margin-top: 8px;
   padding: 8px 14px;
   background: #1B2E3D;
   border: 1px solid rgba(74, 163, 255, 0.4);

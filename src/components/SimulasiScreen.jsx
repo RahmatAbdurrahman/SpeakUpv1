@@ -691,57 +691,78 @@ function SimulasiAnalysisChip({ label, tone }) {
   return <span className={`simulasi-analysis-chip simulasi-analysis-chip--${tone}`}>{label}</span>;
 }
 
-// ─── Accumulation Score Hero (Aura Halo Style from Mobbin Cleo AI) ───
+// ─── Accumulation Score Hero (Circular Gauge Donut Progress Style) ───
 export function AccumulationScoreHero({ score }) {
   const [showTooltip, setShowTooltip] = useState(false);
-  const clampedScore = score != null ? Math.round(score) : 80;
+  const clampedScore = Math.max(0, Math.min(100, score != null ? Math.round(score) : 80));
+
+  const size = 160;
+  const strokeWidth = 16;
+  const radius = (size - strokeWidth) / 2;
+  const circumference = 2 * Math.PI * radius;
+  const strokeDashoffset = circumference - (clampedScore / 100) * circumference;
 
   return (
-    <div className="simulasi-accumulation-hero">
-      {/* Outer ambient radiant gradient */}
-      <div className="simulasi-accumulation-aura" />
+    <div className="simulasi-accumulation-hero simulasi-accumulation-hero--gauge">
+      <div className="simulasi-gauge-container">
+        <svg
+          className="simulasi-gauge-svg"
+          width={size}
+          height={size}
+          viewBox={`0 0 ${size} ${size}`}
+        >
+          {/* Inner filled background disc */}
+          <circle
+            className="simulasi-gauge-inner-disc"
+            cx={size / 2}
+            cy={size / 2}
+            r={radius - strokeWidth / 2 + 1}
+          />
+          {/* Background track circle */}
+          <circle
+            className="simulasi-gauge-track"
+            cx={size / 2}
+            cy={size / 2}
+            r={radius}
+            strokeWidth={strokeWidth}
+          />
+          {/* Active progress arc */}
+          <circle
+            className="simulasi-gauge-progress"
+            cx={size / 2}
+            cy={size / 2}
+            r={radius}
+            strokeWidth={strokeWidth}
+            strokeDasharray={circumference}
+            strokeDashoffset={strokeDashoffset}
+            strokeLinecap="round"
+            transform={`rotate(-90 ${size / 2} ${size / 2})`}
+          />
+        </svg>
 
-      {/* Inner focused core glow without hard borders */}
-      <div className="simulasi-accumulation-core-glow" />
-
-      {/* Floating sprinkle circular dots radiating from center to outer sides */}
-      <div className="simulasi-accumulation-sparkles">
-        <span className="simulasi-sparkle-dot simulasi-sparkle-dot--1" />
-        <span className="simulasi-sparkle-dot simulasi-sparkle-dot--2" />
-        <span className="simulasi-sparkle-dot simulasi-sparkle-dot--3" />
-        <span className="simulasi-sparkle-dot simulasi-sparkle-dot--4" />
-        <span className="simulasi-sparkle-dot simulasi-sparkle-dot--5" />
-        <span className="simulasi-sparkle-dot simulasi-sparkle-dot--6" />
-        <span className="simulasi-sparkle-dot simulasi-sparkle-dot--7" />
-        <span className="simulasi-sparkle-dot simulasi-sparkle-dot--8" />
-        <span className="simulasi-sparkle-dot simulasi-sparkle-dot--9" />
-        <span className="simulasi-sparkle-dot simulasi-sparkle-dot--10" />
-        <span className="simulasi-sparkle-dot simulasi-sparkle-dot--11" />
-        <span className="simulasi-sparkle-dot simulasi-sparkle-dot--12" />
-      </div>
-
-      <div className="simulasi-accumulation-center">
-        <div className="simulasi-accumulation-number-wrap">
-          <h2 className="simulasi-accumulation-number">{clampedScore}</h2>
-          <button
-            type="button"
-            className="simulasi-accumulation-info-btn"
-            onClick={() => setShowTooltip((prev) => !prev)}
-            aria-label="Info akumulasi skor"
-            title="Info akumulasi skor"
-          >
-            i
-          </button>
-        </div>
-
-        <p className="simulasi-accumulation-sub">dari 100</p>
-
-        {showTooltip && (
-          <div className="simulasi-accumulation-tooltip">
-            Skor total dihitung dari akumulasi penilaian argumentasi, relevansi konteks, kestabilan tempo bicara, dan artikulasi intonasi.
+        {/* Center score content */}
+        <div className="simulasi-gauge-center">
+          <div className="simulasi-accumulation-number-wrap">
+            <h2 className="simulasi-gauge-number">{clampedScore}</h2>
+            <button
+              type="button"
+              className="simulasi-accumulation-info-btn simulasi-gauge-info-btn"
+              onClick={() => setShowTooltip((prev) => !prev)}
+              aria-label="Info akumulasi skor"
+              title="Info akumulasi skor"
+            >
+              i
+            </button>
           </div>
-        )}
+          <p className="simulasi-gauge-sub">dari 100</p>
+        </div>
       </div>
+
+      {showTooltip && (
+        <div className="simulasi-accumulation-tooltip">
+          Skor total dihitung dari akumulasi penilaian argumentasi, relevansi konteks, kestabilan tempo bicara, dan artikulasi intonasi.
+        </div>
+      )}
     </div>
   );
 }
