@@ -214,34 +214,19 @@ export default function SosialScreen({ onNavigateHome, onNavigateSimulasi, onNav
         {/* ── Match Partner Card ─────────────────────────────────── */}
         <section className="sosial-section">
           <div className="sosial-match-card">
-            {/* Background Texture Decor */}
-            <div className="sosial-match-bg-decor" aria-hidden="true">
-              <img src={cardBgDecor} alt="" className="sosial-match-bg-img" />
+            {/* Left side: Transparent Character Illustration */}
+            <div className="sosial-match-illus-side">
+              <img src={imgMatchmakingDuet} alt="Cari Partner Latihan" className="sosial-match-duet-img" />
             </div>
 
-            <div className="sosial-match-card-content">
-              {/* Main row: Circle Avatar/Pedestal on Left, Info on Right */}
-              <div className="sosial-match-row">
-                <div className="sosial-match-avatar-wrapper">
-                  <div className="sosial-match-avatar-circle">
-                    <img src={imgMatchmakingDuet} alt="Cari Partner Latihan" className="sosial-match-avatar-img" />
-                  </div>
-                </div>
+            {/* Right side: Content */}
+            <div className="sosial-match-content-side">
+              <span className="sosial-match-badge-orange">MATCHMAKING DUET</span>
+              <h3 className="sosial-match-title">Cari Partner Latihan</h3>
+              <p className="sosial-match-desc">
+                Dipasangkan otomatis dengan pengguna lain untuk latihan bareng & saling beri masukan secara live.
+              </p>
 
-                <div className="sosial-match-info">
-                  <div className="sosial-match-badge">
-                    <span className="sosial-match-badge-dot"></span>
-                    <span>Matchmaking Duet</span>
-                  </div>
-
-                  <div className="sosial-match-text">
-                    <h3>Cari Partner Latihan</h3>
-                    <p>Dipasangkan otomatis dengan pengguna lain untuk latihan bareng & saling beri masukan secara live.</p>
-                  </div>
-                </div>
-              </div>
-
-              {/* Bottom Row: CTA Button / States */}
               {queueState === "idle" && (
                 <button type="button" className="btn-sosial-match" onClick={handleFindPartner}>
                   Cari Partner Sekarang
@@ -258,8 +243,8 @@ export default function SosialScreen({ onNavigateHome, onNavigateSimulasi, onNav
                   <div className="sosial-waiting-left">
                     <span className="sosial-waiting-spinner" />
                     <div className="sosial-waiting-info">
-                      <span className="sosial-waiting-title">Menunggu partner bergabung...</span>
-                      <span className="sosial-waiting-sub">Kamu bisa tetap di halaman ini</span>
+                      <span className="sosial-waiting-title">Menunggu partner...</span>
+                      <span className="sosial-waiting-sub">Tetap di halaman ini</span>
                     </div>
                   </div>
                   <button type="button" className="btn-sosial-cancel-match" onClick={handleCancelQueue}>
