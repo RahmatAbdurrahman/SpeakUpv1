@@ -704,7 +704,7 @@ export function AccumulationScoreHero({ score }) {
       {/* Inner focused core glow without hard borders */}
       <div className="simulasi-accumulation-core-glow" />
 
-      {/* Floating sprinkle circular dots */}
+      {/* Floating sprinkle circular dots radiating from center to outer sides */}
       <div className="simulasi-accumulation-sparkles">
         <span className="simulasi-sparkle-dot simulasi-sparkle-dot--1" />
         <span className="simulasi-sparkle-dot simulasi-sparkle-dot--2" />
@@ -716,6 +716,8 @@ export function AccumulationScoreHero({ score }) {
         <span className="simulasi-sparkle-dot simulasi-sparkle-dot--8" />
         <span className="simulasi-sparkle-dot simulasi-sparkle-dot--9" />
         <span className="simulasi-sparkle-dot simulasi-sparkle-dot--10" />
+        <span className="simulasi-sparkle-dot simulasi-sparkle-dot--11" />
+        <span className="simulasi-sparkle-dot simulasi-sparkle-dot--12" />
       </div>
 
       <div className="simulasi-accumulation-center">
