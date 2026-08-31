@@ -1768,7 +1768,7 @@ export default function LessonModul7Screen({ onBack, onFinish }) {
     const recorded = audioResultRef.current;
     if (!recorded?.blob) {
       setAnalysisError("Rekaman latihan tidak ditemukan. Pastikan mikrofon diizinkan, lalu ulangi latihannya.");
-      setStep("analysis-error");
+      setStep((curr) => (curr === "analyzing" ? "analysis-error" : curr));
       return;
     }
     setAnalysisError("");
@@ -1793,10 +1793,10 @@ export default function LessonModul7Screen({ onBack, onFinish }) {
       await markSimulationCompleted(simulation.id);
 
       setAnalysisResult(mapSessionResultToAnalysis(data));
-      setStep("analysis");
+      setStep((curr) => (curr === "analyzing" ? "analysis" : curr));
     } catch (err) {
       setAnalysisError(friendlySimulasiError(err));
-      setStep("analysis-error");
+      setStep((curr) => (curr === "analyzing" ? "analysis-error" : curr));
     }
   };
 

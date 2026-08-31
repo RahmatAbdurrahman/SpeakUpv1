@@ -1351,10 +1351,10 @@ export default function SimulasiScreen({ onNavigateHome, onNavigateSosial, onNav
       refreshProgress();
 
       setResults(data);
-      setStep("results");
+      setStep((curr) => (curr === "processing" ? "results" : curr));
     } catch (err) {
       setErrorMessage(friendlySimulasiError(err));
-      resetToPicker();
+      setStep((curr) => (curr === "processing" ? "picker" : curr));
     }
   };
 
