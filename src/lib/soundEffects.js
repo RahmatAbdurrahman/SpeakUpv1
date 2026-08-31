@@ -418,6 +418,133 @@ export function playBreathingStartSound() {
 }
 
 /**
+ * Immersive UI page transition sound, diving into a digital portal,
+ * deep anti-gravity whoosh, smooth low-end sweep, futuristic session enter sound effect,
+ * clean and cinematic, 2 to 3 seconds.
+ * Triggered when entering any lesson session.
+ */
+export function playLessonEnterPortalSound() {
+  try {
+    const ctx = getAudioContext();
+    if (!ctx) return;
+
+    const now = ctx.currentTime;
+
+    // 1. Deep Sub-Bass Anti-Gravity Glide (145Hz down to 42Hz with resonant body)
+    const subOsc = ctx.createOscillator();
+    const subGain = ctx.createGain();
+    const subFilter = ctx.createBiquadFilter();
+
+    subFilter.type = "lowpass";
+    subFilter.frequency.setValueAtTime(220, now);
+    subFilter.frequency.exponentialRampToValueAtTime(80, now + 1.2);
+
+    subOsc.type = "sine";
+    subOsc.frequency.setValueAtTime(145, now);
+    subOsc.frequency.exponentialRampToValueAtTime(42, now + 0.65);
+    subOsc.frequency.setValueAtTime(42, now + 0.65);
+    subOsc.frequency.linearRampToValueAtTime(38, now + 2.4);
+
+    subGain.gain.setValueAtTime(0.0001, now);
+    subGain.gain.linearRampToValueAtTime(0.35, now + 0.12);
+    subGain.gain.exponentialRampToValueAtTime(0.18, now + 0.7);
+    subGain.gain.exponentialRampToValueAtTime(0.00001, now + 2.4);
+
+    subOsc.connect(subFilter);
+    subFilter.connect(subGain);
+    subGain.connect(ctx.destination);
+
+    subOsc.start(now);
+    subOsc.stop(now + 2.45);
+
+    // 2. Digital Portal Vortex / Dimensional Whoosh (Noise buffer filtered through sweeping bandpass)
+    const bufferSize = Math.floor(ctx.sampleRate * 2.3);
+    const noiseBuffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
+    const output = noiseBuffer.getChannelData(0);
+    let lastOut = 0.0;
+    // Generate warm pink-tinted noise
+    for (let i = 0; i < bufferSize; i++) {
+      const white = Math.random() * 2 - 1;
+      output[i] = (lastOut + 0.02 * white) / 1.02;
+      lastOut = output[i];
+      output[i] *= 3.5;
+    }
+
+    const noiseSource = ctx.createBufferSource();
+    noiseSource.buffer = noiseBuffer;
+
+    const noiseFilter = ctx.createBiquadFilter();
+    noiseFilter.type = "bandpass";
+    noiseFilter.Q.setValueAtTime(1.8, now);
+    noiseFilter.frequency.setValueAtTime(180, now);
+    noiseFilter.frequency.exponentialRampToValueAtTime(1650, now + 0.42); // Whoosh portal opening peak
+    noiseFilter.frequency.exponentialRampToValueAtTime(260, now + 1.9);  // Smooth trailing vacuum
+
+    const noiseGain = ctx.createGain();
+    noiseGain.gain.setValueAtTime(0.0001, now);
+    noiseGain.gain.linearRampToValueAtTime(0.28, now + 0.38);
+    noiseGain.gain.exponentialRampToValueAtTime(0.08, now + 0.9);
+    noiseGain.gain.exponentialRampToValueAtTime(0.00001, now + 2.2);
+
+    noiseSource.connect(noiseFilter);
+    noiseFilter.connect(noiseGain);
+    noiseGain.connect(ctx.destination);
+
+    noiseSource.start(now);
+    noiseSource.stop(now + 2.25);
+
+    // 3. Futuristic Celestial Chime & Portal Chord Bloom (Radiant E-sus2 / Cosmic Fifth: E4, B4, E5, F#5, B5)
+    const chord = [329.63, 493.88, 659.25, 739.99, 987.77];
+    chord.forEach((freq, idx) => {
+      const padOsc = ctx.createOscillator();
+      const padGain = ctx.createGain();
+      const padFilter = ctx.createBiquadFilter();
+
+      padFilter.type = "lowpass";
+      padFilter.frequency.setValueAtTime(600, now);
+      padFilter.frequency.exponentialRampToValueAtTime(2800, now + 0.5);
+      padFilter.frequency.exponentialRampToValueAtTime(800, now + 2.4);
+
+      padOsc.type = idx % 2 === 0 ? "sine" : "triangle";
+      // Slight pitch glide upwards as user "dives in"
+      padOsc.frequency.setValueAtTime(freq * 0.97, now);
+      padOsc.frequency.exponentialRampToValueAtTime(freq, now + 0.35);
+
+      const peakVolume = 0.08 / (1 + idx * 0.25);
+      padGain.gain.setValueAtTime(0.0001, now);
+      padGain.gain.linearRampToValueAtTime(peakVolume, now + 0.25 + idx * 0.04);
+      padGain.gain.exponentialRampToValueAtTime(peakVolume * 0.4, now + 0.9);
+      padGain.gain.exponentialRampToValueAtTime(0.00001, now + 2.5);
+
+      padOsc.connect(padFilter);
+      padFilter.connect(padGain);
+      padGain.connect(ctx.destination);
+
+      padOsc.start(now);
+      padOsc.stop(now + 2.55);
+    });
+
+    // 4. Anti-Gravity Energy Shimmer (High crystal octave shimmer)
+    const shimmerOsc = ctx.createOscillator();
+    const shimmerGain = ctx.createGain();
+    shimmerOsc.type = "sine";
+    shimmerOsc.frequency.setValueAtTime(1318.51, now); // E6
+    shimmerOsc.frequency.exponentialRampToValueAtTime(1975.53, now + 0.45); // B6
+    shimmerOsc.frequency.exponentialRampToValueAtTime(1318.51, now + 1.2);
+
+    shimmerGain.gain.setValueAtTime(0.0001, now);
+    shimmerGain.gain.linearRampToValueAtTime(0.04, now + 0.42);
+    shimmerGain.gain.exponentialRampToValueAtTime(0.00001, now + 1.8);
+
+    shimmerOsc.connect(shimmerGain);
+    shimmerGain.connect(ctx.destination);
+
+    shimmerOsc.start(now);
+    shimmerOsc.stop(now + 1.85);
+  } catch {}
+}
+
+/**
  * Play an energetic, triumphant celebration fanfare & confetti pop
  * when user passes a difficult challenge (e.g. Modul 7 "Kamu berhasil melewati pertanyaan sulit!")
  */

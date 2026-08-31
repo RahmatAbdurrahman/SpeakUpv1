@@ -4,7 +4,7 @@ import LessonExitModal from "./LessonExitModal";
 import LessonAffirmation from "./LessonAffirmation";
 import { useAssetPreloader, useGainXpPreloader, getPreloadedVideoSrc } from "../lib/assetPreloader";
 import { useUserProgress } from "../context/UserProgressContext";
-import { playXpTickSound, playXpCompleteSound, playGainXpIntroSound, playChallengePassedSound, playBreathingStartSound } from "../lib/soundEffects";
+import { playXpTickSound, playXpCompleteSound, playGainXpIntroSound, playChallengePassedSound, playBreathingStartSound, playLessonEnterPortalSound } from "../lib/soundEffects";
 import { supabase } from "../lib/supabaseClient";
 import {
   createSimulation,
@@ -1734,6 +1734,10 @@ export default function LessonModul7Screen({ onBack, onFinish }) {
 
   // Asset preloading: ensure >= 50% assets are ready before proceeding
   const { isThresholdMet } = useAssetPreloader(MODUL7_ASSETS, 0.5);
+
+  useEffect(() => {
+    playLessonEnterPortalSound();
+  }, []);
 
   // Real audio capture spans the whole practice section (step 10, "Sampaikan
   // pendapatmu", through step 16, the second Q&A answer) as ONE continuous

@@ -4,7 +4,7 @@ import LessonModul7Screen from "./LessonModul7Screen";
 import LessonExitModal from "./LessonExitModal";
 import { useAssetPreloader, useGainXpPreloader, getPreloadedVideoSrc } from "../lib/assetPreloader";
 import { useUserProgress } from "../context/UserProgressContext";
-import { playXpTickSound, playXpCompleteSound, playGainXpIntroSound, playBreathingCompleteSound, playBreathingStartSound } from "../lib/soundEffects";
+import { playXpTickSound, playXpCompleteSound, playGainXpIntroSound, playBreathingCompleteSound, playBreathingStartSound, playLessonEnterPortalSound } from "../lib/soundEffects";
 import "./LessonScreen.css";
 
 // ─── Assets ──────────────────────────────────────────────────────────────────
@@ -667,6 +667,10 @@ export default function LessonScreen({ lessonData, onBack, onFinish }) {
 
   // Asset preloading: ensure >= 50% assets are ready before leaving affirmation
   const { isThresholdMet } = useAssetPreloader(LESSON1_ASSETS, 0.5);
+
+  useEffect(() => {
+    playLessonEnterPortalSound();
+  }, []);
 
   if (isModul7) {
     return (
