@@ -33,6 +33,7 @@ import {
 } from "../lib/livekit";
 import PeerRatingModal from "./PeerRatingModal";
 import SessionLoadingScreen from "./SessionLoadingScreen";
+import SlideViewer from "./SlideViewer";
 
 const AVATAR_COLORS = ["#E0F2FE:#0369A1", "#FEF3C7:#B45309", "#DCFCE7:#15803D", "#FCE7F3:#BE185D"];
 
@@ -122,6 +123,8 @@ export default function LiveRoomScreen({ roomData, onLeaveRoom, onSessionEnded }
   const [materialView, setMaterialView] = useState("notes"); // "notes" | "slide"
   const [slideUrl, setSlideUrl] = useState(null);
   const [slideError, setSlideError] = useState("");
+  const [slideExpanded, setSlideExpanded] = useState(false);
+  const showingSlide = materialView === "slide" && Boolean(slideUrl);
 
   // Q&A Drawer Bottom Sheet state
   const [isQaDrawerOpen, setIsQaDrawerOpen] = useState(false);
@@ -630,7 +633,11 @@ export default function LiveRoomScreen({ roomData, onLeaveRoom, onSessionEnded }
         // that this look applies "baik simulasi atau Live". The redundant
         // self-PiP tile other broadcasters used to also get is dropped here
         // since the camera pane already IS the presenter's own feed.
-        <div className="teams-split-stage">
+        <div
+          className={`teams-split-stage${showingSlide ? " teams-split-stage--slide" : ""}${
+            showingSlide && slideExpanded ? " teams-split-stage--expanded" : ""
+          }`}
+        >
           <div className="teams-split-camera">
             <div ref={mainVideoRef} className="teams-video-el-container" />
             {connecting && (
@@ -657,11 +664,39 @@ export default function LiveRoomScreen({ roomData, onLeaveRoom, onSessionEnded }
           </div>
 
           <div className="teams-split-material">
+            {slideExpanded && showingSlide ? (
+              // Expanded covers the call UI, so the way back out has to ride
+              // along — the presenter must never get stuck on the slide.
+              <div className="teams-expanded-bar">
+                <button
+                  type="button"
+                  className="teams-split-expand-btn"
+                  onClick={() => setSlideExpanded(false)}
+                  title="Perkecil slide"
+                >
+                  ⤡
+                </button>
+                <button
+                  type="button"
+                  className="teams-split-toggle"
+                  onClick={() => {
+                    setMaterialView("notes");
+                    setSlideExpanded(false);
+                  }}
+                >
+                  📝 Notes
+                </button>
+                <span className="teams-expanded-spacer" />
+              </div>
+            ) : (
             <div className="teams-split-toggle-row">
               <button
                 type="button"
                 className={`teams-split-toggle ${materialView === "notes" ? "active" : ""}`}
-                onClick={() => setMaterialView("notes")}
+                onClick={() => {
+                  setMaterialView("notes");
+                  setSlideExpanded(false);
+                }}
               >
                 📝 Notes
               </button>
@@ -673,7 +708,19 @@ export default function LiveRoomScreen({ roomData, onLeaveRoom, onSessionEnded }
               >
                 🖼️ Slide
               </button>
+              {showingSlide && (
+                <button
+                  type="button"
+                  className="teams-split-expand-btn"
+                  onClick={() => setSlideExpanded((v) => !v)}
+                  aria-pressed={slideExpanded}
+                  title="Perbesar slide"
+                >
+                  ⤢
+                </button>
+              )}
             </div>
+            )}
             <div className="teams-split-content">
               {materialView === "notes" ? (
                 roomData?.notes ? (
@@ -684,7 +731,7 @@ export default function LiveRoomScreen({ roomData, onLeaveRoom, onSessionEnded }
               ) : slideError ? (
                 <p className="teams-split-empty">{slideError}</p>
               ) : slideUrl ? (
-                <iframe src={slideUrl} title="Slide materi presentasi" className="teams-split-slide-frame" />
+                <SlideViewer url={slideUrl} expanded={slideExpanded} tone="dark" />
               ) : roomData?.materialPdfPath ? (
                 <p className="teams-split-empty">Memuat slide...</p>
               ) : (

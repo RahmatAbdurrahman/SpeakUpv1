@@ -193,6 +193,7 @@
    SimulasiScreen's Presentasi RecordingStep, dark-themed to match this
    call UI. ──────────────────────────────────────────────────────────── */
 .teams-split-stage {
+  position: relative;
   flex: 1;
   min-height: 0;
   display: flex;
@@ -212,6 +213,7 @@
   position: relative;
   overflow: hidden;
   box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.06);
+  transition: flex-basis 0.22s ease;
 }
 
 .teams-split-material {
@@ -226,6 +228,58 @@
   box-sizing: border-box;
   overflow: hidden;
   box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.06);
+  transition: flex-basis 0.22s ease;
+}
+
+/* Slide selected: a PDF page needs far more room than a few lines of notes,
+   so the camera gives up most of its half. Notes stays a plain 50/50. */
+.teams-split-stage--slide .teams-split-camera {
+  flex-basis: 30%;
+}
+.teams-split-stage--slide .teams-split-material {
+  flex-basis: 70%;
+}
+
+/* "Perbesar": the slide is rotated 90deg (pdf.js does it — see SlideViewer)
+   so a landscape deck uses the phone's LONG axis as its width. That only
+   pays off with the screen's full HEIGHT too, so this lifts out over the
+   whole call UI; the camera stays as a PiP and page nav comes along. */
+.teams-split-stage--expanded {
+  position: absolute;
+  inset: 0;
+  z-index: 50;
+  padding: 10px;
+  gap: 8px;
+  background: #141414;
+}
+.teams-split-stage--expanded .teams-split-camera {
+  position: absolute;
+  /* Bottom-left: after a 90deg rotation the slide's emptiest corner (its
+     footer) lands here, so the PiP hides the least. Clears the nav row. */
+  bottom: 56px;
+  left: 18px;
+  z-index: 5;
+  flex: none;
+  width: 74px;
+  height: 98px;
+  border-radius: 12px;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.5);
+}
+.teams-split-stage--expanded .teams-split-material {
+  flex: 1 1 100%;
+  background: transparent;
+  box-shadow: none;
+  padding: 0;
+}
+
+.teams-expanded-bar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+.teams-expanded-spacer {
+  flex: 1;
 }
 
 .teams-split-toggle-row {
@@ -257,11 +311,34 @@
   cursor: not-allowed;
 }
 
+.teams-split-expand-btn {
+  flex: 0 0 auto;
+  width: 32px;
+  height: 32px;
+  border-radius: 20px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: #141414;
+  color: #E2E8F0;
+  font-size: 13px;
+  line-height: 1;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+.teams-split-expand-btn:active {
+  transform: scale(0.94);
+}
+
 .teams-split-content {
   flex: 1;
   min-height: 0;
   overflow-y: auto;
   border-radius: 10px;
+}
+
+/* The embedded PDF scrolls itself — letting the wrapper scroll too is what
+   produced the stacked double scrollbar. */
+.teams-split-stage--slide .teams-split-content {
+  overflow: hidden;
 }
 
 .teams-split-notes-text {

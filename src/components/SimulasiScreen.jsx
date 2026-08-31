@@ -24,6 +24,7 @@ import { playXpTickSound, playXpCompleteSound, playGainXpIntroSound, playScoreRe
 import { DotLottieReact } from "@lottiefiles/dotlottie-react";
 import animaBotLottie from "../assets/lotties/AnimaBot.lottie";
 import SessionLoadingScreen from "./SessionLoadingScreen";
+import SlideViewer from "./SlideViewer";
 import TranscriptCard from "./TranscriptCard";
 import { exportAnalysisToPDF } from "../lib/pdfExport";
 import { supabase } from "../lib/supabaseClient";
@@ -409,6 +410,11 @@ function RecordingStep({ scenario, cheatSheet, materialPdfPath, questions = [], 
   const [materialView, setMaterialView] = useState("notes"); // "notes" | "slide"
   const [slideUrl, setSlideUrl] = useState(null);
   const [slideError, setSlideError] = useState("");
+  // Slide needs far more room than notes text does, so the split ratio
+  // adapts instead of staying a fixed 50/50 — and "Perbesar" goes further,
+  // giving the slide the whole stage while the camera stays as a corner PiP.
+  const [slideExpanded, setSlideExpanded] = useState(false);
+  const showingSlide = materialView === "slide" && Boolean(slideUrl);
   // null | "silent" | "incomplete" — see attemptFinish() below.
   const [gate, setGate] = useState(null);
   const isInterview = questions.length > 0;
@@ -629,7 +635,11 @@ function RecordingStep({ scenario, cheatSheet, materialPdfPath, questions = [], 
       </header>
 
       {isPresentasi ? (
-        <div className="simulasi-split-stage">
+        <div
+          className={`simulasi-split-stage${showingSlide ? " simulasi-split-stage--slide" : ""}${
+            showingSlide && slideExpanded ? " simulasi-split-stage--expanded" : ""
+          }`}
+        >
           <div className="simulasi-split-camera">
             <video ref={videoRef} autoPlay playsInline muted className="simulasi-camera-video" />
             {!stream && !camError && (
@@ -652,11 +662,55 @@ function RecordingStep({ scenario, cheatSheet, materialPdfPath, questions = [], 
           </div>
 
           <div className="simulasi-split-material">
+            {slideExpanded && showingSlide ? (
+              // Expanded lifts over the whole screen, so the controls the
+              // normal layout provides (rec timer, record/stop) have to come
+              // along — otherwise the presenter couldn't stop the take.
+              <div className="simulasi-expanded-bar">
+                <button
+                  type="button"
+                  className="simulasi-split-expand-btn"
+                  onClick={() => setSlideExpanded(false)}
+                  title="Perkecil slide"
+                >
+                  ⤡
+                </button>
+                <button
+                  type="button"
+                  className="simulasi-split-toggle"
+                  onClick={() => {
+                    setMaterialView("notes");
+                    setSlideExpanded(false);
+                  }}
+                >
+                  📝 Notes
+                </button>
+                <span className="simulasi-expanded-spacer" />
+                {isRecording && (
+                  <span className="simulasi-rec-badge" style={{ position: "static" }}>
+                    <span className="simulasi-rec-dot" />
+                    <span>{formatTime(seconds)}</span>
+                  </span>
+                )}
+                <button
+                  type="button"
+                  className="simulasi-expanded-rec"
+                  onClick={handleToggle}
+                  disabled={!stream}
+                  aria-label={isRecording ? "Berhenti rekam" : "Mulai rekam"}
+                >
+                  <span className={isRecording ? "simulasi-expanded-rec-stop" : "simulasi-expanded-rec-dot"} />
+                </button>
+              </div>
+            ) : (
             <div className="simulasi-split-toggle-row">
               <button
                 type="button"
                 className={`simulasi-split-toggle ${materialView === "notes" ? "active" : ""}`}
-                onClick={() => setMaterialView("notes")}
+                onClick={() => {
+                  setMaterialView("notes");
+                  setSlideExpanded(false);
+                }}
               >
                 📝 Notes
               </button>
@@ -668,7 +722,19 @@ function RecordingStep({ scenario, cheatSheet, materialPdfPath, questions = [], 
               >
                 🖼️ Slide
               </button>
+              {showingSlide && (
+                <button
+                  type="button"
+                  className="simulasi-split-expand-btn"
+                  onClick={() => setSlideExpanded((v) => !v)}
+                  aria-pressed={slideExpanded}
+                  title="Perbesar slide"
+                >
+                  ⤢
+                </button>
+              )}
             </div>
+            )}
 
             <div className="simulasi-split-content">
               {materialView === "notes" ? (
@@ -680,7 +746,7 @@ function RecordingStep({ scenario, cheatSheet, materialPdfPath, questions = [], 
               ) : slideError ? (
                 <p className="simulasi-split-empty">{slideError}</p>
               ) : slideUrl ? (
-                <iframe src={slideUrl} title="Slide materi presentasi" className="simulasi-split-slide-frame" />
+                <SlideViewer url={slideUrl} expanded={slideExpanded} tone="light" />
               ) : materialPdfPath ? (
                 <p className="simulasi-split-empty">Memuat slide...</p>
               ) : (

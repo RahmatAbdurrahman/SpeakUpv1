@@ -1,0 +1,103 @@
+.slideview {
+  width: 100%;
+  height: 100%;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+/* The canvas is sized in JS to exactly fit this box, so it must never scroll
+   — Prev/Next replaces scrolling entirely. */
+.slideview-canvas-box {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  border-radius: 10px;
+}
+
+.slideview-canvas {
+  display: block;
+  border-radius: 6px;
+}
+
+.slideview-msg {
+  font-family: var(--font-family-base, 'Space Grotesk', sans-serif);
+  font-size: 12px;
+  font-weight: 500;
+  margin: 0;
+  text-align: center;
+}
+
+.slideview-nav {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+}
+
+.slideview-nav-btn {
+  width: 34px;
+  height: 30px;
+  border-radius: 16px;
+  font-size: 18px;
+  line-height: 1;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  -webkit-tap-highlight-color: transparent;
+  transition: transform 0.1s ease, opacity 0.12s ease;
+}
+.slideview-nav-btn:active:not(:disabled) {
+  transform: scale(0.92);
+}
+.slideview-nav-btn:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+
+.slideview-nav-count {
+  font-family: var(--font-family-base, 'Space Grotesk', sans-serif);
+  font-size: 12px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  min-width: 46px;
+  text-align: center;
+}
+
+/* ── Light tone (Simulasi recording screen) ──────────────────────────── */
+.slideview--light .slideview-canvas-box {
+  background: #F1F1F1;
+}
+.slideview--light .slideview-msg {
+  color: var(--color-text-caption, #8199A3);
+}
+.slideview--light .slideview-nav-btn {
+  border: 1px solid var(--color-border, rgba(20, 60, 63, 0.12));
+  background: var(--color-bg-app, #FAF8F3);
+  color: var(--color-text-primary, #243238);
+}
+.slideview--light .slideview-nav-count {
+  color: var(--color-text-caption, #8199A3);
+}
+
+/* ── Dark tone (Live Presentation call UI) ───────────────────────────── */
+.slideview--dark .slideview-canvas-box {
+  background: #0F0F0F;
+}
+.slideview--dark .slideview-msg {
+  color: #94A3B8;
+}
+.slideview--dark .slideview-nav-btn {
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  background: #141414;
+  color: #E2E8F0;
+}
+.slideview--dark .slideview-nav-count {
+  color: #94A3B8;
+}
