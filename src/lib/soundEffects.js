@@ -418,9 +418,8 @@ export function playBreathingStartSound() {
 }
 
 /**
- * Immersive UI page transition sound, diving into a digital portal,
- * deep anti-gravity whoosh, smooth low-end sweep, futuristic session enter sound effect,
- * clean and cinematic, 2 to 3 seconds.
+ * Immersive session enter UI sound, smooth digital swoop with a soft bouncing sonar echo,
+ * futuristic anti-gravity drop, crisp resonant reverb tail, pleasant and satisfying ear candy.
  * Triggered when entering any lesson session.
  */
 export function playLessonEnterPortalSound() {
@@ -430,117 +429,132 @@ export function playLessonEnterPortalSound() {
 
     const now = ctx.currentTime;
 
-    // 1. Deep Sub-Bass Anti-Gravity Glide (145Hz down to 42Hz with resonant body)
+    // ── 1. Smooth Digital Swoop (Liquid ascending curve 260Hz -> 840Hz) ─────────
+    const swoopOsc = ctx.createOscillator();
+    const swoopGain = ctx.createGain();
+    const swoopFilter = ctx.createBiquadFilter();
+
+    swoopFilter.type = "lowpass";
+    swoopFilter.frequency.setValueAtTime(800, now);
+    swoopFilter.frequency.exponentialRampToValueAtTime(3200, now + 0.14);
+
+    swoopOsc.type = "sine";
+    swoopOsc.frequency.setValueAtTime(260, now);
+    swoopOsc.frequency.exponentialRampToValueAtTime(840, now + 0.14);
+
+    swoopGain.gain.setValueAtTime(0.0001, now);
+    swoopGain.gain.linearRampToValueAtTime(0.24, now + 0.08);
+    swoopGain.gain.exponentialRampToValueAtTime(0.001, now + 0.22);
+
+    swoopOsc.connect(swoopFilter);
+    swoopFilter.connect(swoopGain);
+    swoopGain.connect(ctx.destination);
+
+    swoopOsc.start(now);
+    swoopOsc.stop(now + 0.25);
+
+    // ── 2. Futuristic Anti-Gravity Drop (Round, satisfying sub-bass glide 220Hz -> 50Hz) ──
     const subOsc = ctx.createOscillator();
     const subGain = ctx.createGain();
     const subFilter = ctx.createBiquadFilter();
 
     subFilter.type = "lowpass";
-    subFilter.frequency.setValueAtTime(220, now);
-    subFilter.frequency.exponentialRampToValueAtTime(80, now + 1.2);
+    subFilter.frequency.setValueAtTime(350, now + 0.08);
+    subFilter.frequency.exponentialRampToValueAtTime(90, now + 1.2);
 
     subOsc.type = "sine";
-    subOsc.frequency.setValueAtTime(145, now);
-    subOsc.frequency.exponentialRampToValueAtTime(42, now + 0.65);
-    subOsc.frequency.setValueAtTime(42, now + 0.65);
-    subOsc.frequency.linearRampToValueAtTime(38, now + 2.4);
+    subOsc.frequency.setValueAtTime(220, now + 0.08);
+    subOsc.frequency.exponentialRampToValueAtTime(50, now + 0.48);
+    subOsc.frequency.linearRampToValueAtTime(42, now + 2.0);
 
-    subGain.gain.setValueAtTime(0.0001, now);
-    subGain.gain.linearRampToValueAtTime(0.35, now + 0.12);
-    subGain.gain.exponentialRampToValueAtTime(0.18, now + 0.7);
-    subGain.gain.exponentialRampToValueAtTime(0.00001, now + 2.4);
+    subGain.gain.setValueAtTime(0.0001, now + 0.08);
+    subGain.gain.linearRampToValueAtTime(0.38, now + 0.18);
+    subGain.gain.exponentialRampToValueAtTime(0.12, now + 0.7);
+    subGain.gain.exponentialRampToValueAtTime(0.00001, now + 2.1);
 
     subOsc.connect(subFilter);
     subFilter.connect(subGain);
     subGain.connect(ctx.destination);
 
-    subOsc.start(now);
-    subOsc.stop(now + 2.45);
+    subOsc.start(now + 0.08);
+    subOsc.stop(now + 2.15);
 
-    // 2. Digital Portal Vortex / Dimensional Whoosh (Noise buffer filtered through sweeping bandpass)
-    const bufferSize = Math.floor(ctx.sampleRate * 2.3);
-    const noiseBuffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
-    const output = noiseBuffer.getChannelData(0);
-    let lastOut = 0.0;
-    // Generate warm pink-tinted noise
-    for (let i = 0; i < bufferSize; i++) {
-      const white = Math.random() * 2 - 1;
-      output[i] = (lastOut + 0.02 * white) / 1.02;
-      lastOut = output[i];
-      output[i] *= 3.5;
-    }
+    // ── 3. Soft Bouncing Sonar Echoes (Rhythmic crystal droplet pings) ───────────
+    // Rhythmic pings: Main ping + 3 decaying bounces with subtle pitch shifts
+    const sonarPings = [
+      { delay: 0.12, freq: 1318.51, gain: 0.14, dur: 0.28 }, // E6 primary sonar
+      { delay: 0.32, freq: 1567.98, gain: 0.08, dur: 0.24 }, // G6 bounce 1
+      { delay: 0.54, freq: 1975.53, gain: 0.045, dur: 0.22 }, // B6 bounce 2
+      { delay: 0.78, freq: 2637.02, gain: 0.025, dur: 0.20 }, // E7 bounce 3
+    ];
 
-    const noiseSource = ctx.createBufferSource();
-    noiseSource.buffer = noiseBuffer;
+    sonarPings.forEach(({ delay, freq, gain: pingVol, dur }) => {
+      const pingTime = now + delay;
 
-    const noiseFilter = ctx.createBiquadFilter();
-    noiseFilter.type = "bandpass";
-    noiseFilter.Q.setValueAtTime(1.8, now);
-    noiseFilter.frequency.setValueAtTime(180, now);
-    noiseFilter.frequency.exponentialRampToValueAtTime(1650, now + 0.42); // Whoosh portal opening peak
-    noiseFilter.frequency.exponentialRampToValueAtTime(260, now + 1.9);  // Smooth trailing vacuum
+      // Pure crystal sine
+      const pingOsc = ctx.createOscillator();
+      const pingGain = ctx.createGain();
 
-    const noiseGain = ctx.createGain();
-    noiseGain.gain.setValueAtTime(0.0001, now);
-    noiseGain.gain.linearRampToValueAtTime(0.28, now + 0.38);
-    noiseGain.gain.exponentialRampToValueAtTime(0.08, now + 0.9);
-    noiseGain.gain.exponentialRampToValueAtTime(0.00001, now + 2.2);
+      pingOsc.type = "sine";
+      pingOsc.frequency.setValueAtTime(freq * 1.02, pingTime);
+      pingOsc.frequency.exponentialRampToValueAtTime(freq, pingTime + 0.02);
 
-    noiseSource.connect(noiseFilter);
-    noiseFilter.connect(noiseGain);
-    noiseGain.connect(ctx.destination);
+      pingGain.gain.setValueAtTime(0.0001, pingTime);
+      pingGain.gain.linearRampToValueAtTime(pingVol, pingTime + 0.004);
+      pingGain.gain.exponentialRampToValueAtTime(0.00001, pingTime + dur);
 
-    noiseSource.start(now);
-    noiseSource.stop(now + 2.25);
+      pingOsc.connect(pingGain);
+      pingGain.connect(ctx.destination);
 
-    // 3. Futuristic Celestial Chime & Portal Chord Bloom (Radiant E-sus2 / Cosmic Fifth: E4, B4, E5, F#5, B5)
-    const chord = [329.63, 493.88, 659.25, 739.99, 987.77];
-    chord.forEach((freq, idx) => {
+      pingOsc.start(pingTime);
+      pingOsc.stop(pingTime + dur + 0.02);
+
+      // Delicate bell harmonic overtone (3x frequency) for glassy shimmer
+      const overtoneOsc = ctx.createOscillator();
+      const overtoneGain = ctx.createGain();
+
+      overtoneOsc.type = "triangle";
+      overtoneOsc.frequency.setValueAtTime(freq * 2.5, pingTime);
+
+      overtoneGain.gain.setValueAtTime(0.0001, pingTime);
+      overtoneGain.gain.linearRampToValueAtTime(pingVol * 0.25, pingTime + 0.003);
+      overtoneGain.gain.exponentialRampToValueAtTime(0.00001, pingTime + dur * 0.55);
+
+      overtoneOsc.connect(overtoneGain);
+      overtoneGain.connect(ctx.destination);
+
+      overtoneOsc.start(pingTime);
+      overtoneOsc.stop(pingTime + dur * 0.6);
+    });
+
+    // ── 4. Crisp Resonant Reverb Bloom & Ambient Tail (Luminous E-Major chord) ────
+    const ambientChord = [329.63, 493.88, 659.25, 830.61, 987.77, 1318.51];
+    ambientChord.forEach((freq, idx) => {
       const padOsc = ctx.createOscillator();
       const padGain = ctx.createGain();
       const padFilter = ctx.createBiquadFilter();
 
       padFilter.type = "lowpass";
-      padFilter.frequency.setValueAtTime(600, now);
-      padFilter.frequency.exponentialRampToValueAtTime(2800, now + 0.5);
-      padFilter.frequency.exponentialRampToValueAtTime(800, now + 2.4);
+      padFilter.frequency.setValueAtTime(500, now + 0.1);
+      padFilter.frequency.exponentialRampToValueAtTime(2400, now + 0.55);
+      padFilter.frequency.exponentialRampToValueAtTime(600, now + 2.4);
 
       padOsc.type = idx % 2 === 0 ? "sine" : "triangle";
-      // Slight pitch glide upwards as user "dives in"
-      padOsc.frequency.setValueAtTime(freq * 0.97, now);
-      padOsc.frequency.exponentialRampToValueAtTime(freq, now + 0.35);
+      padOsc.frequency.setValueAtTime(freq, now + 0.1);
 
-      const peakVolume = 0.08 / (1 + idx * 0.25);
-      padGain.gain.setValueAtTime(0.0001, now);
-      padGain.gain.linearRampToValueAtTime(peakVolume, now + 0.25 + idx * 0.04);
-      padGain.gain.exponentialRampToValueAtTime(peakVolume * 0.4, now + 0.9);
-      padGain.gain.exponentialRampToValueAtTime(0.00001, now + 2.5);
+      const maxGain = 0.065 / (1 + idx * 0.22);
+      padGain.gain.setValueAtTime(0.0001, now + 0.1);
+      padGain.gain.linearRampToValueAtTime(maxGain, now + 0.35 + idx * 0.03);
+      padGain.gain.exponentialRampToValueAtTime(maxGain * 0.35, now + 0.95);
+      padGain.gain.exponentialRampToValueAtTime(0.00001, now + 2.45);
 
       padOsc.connect(padFilter);
       padFilter.connect(padGain);
       padGain.connect(ctx.destination);
 
-      padOsc.start(now);
-      padOsc.stop(now + 2.55);
+      padOsc.start(now + 0.1);
+      padOsc.stop(now + 2.5);
     });
-
-    // 4. Anti-Gravity Energy Shimmer (High crystal octave shimmer)
-    const shimmerOsc = ctx.createOscillator();
-    const shimmerGain = ctx.createGain();
-    shimmerOsc.type = "sine";
-    shimmerOsc.frequency.setValueAtTime(1318.51, now); // E6
-    shimmerOsc.frequency.exponentialRampToValueAtTime(1975.53, now + 0.45); // B6
-    shimmerOsc.frequency.exponentialRampToValueAtTime(1318.51, now + 1.2);
-
-    shimmerGain.gain.setValueAtTime(0.0001, now);
-    shimmerGain.gain.linearRampToValueAtTime(0.04, now + 0.42);
-    shimmerGain.gain.exponentialRampToValueAtTime(0.00001, now + 1.8);
-
-    shimmerOsc.connect(shimmerGain);
-    shimmerGain.connect(ctx.destination);
-
-    shimmerOsc.start(now);
-    shimmerOsc.stop(now + 1.85);
   } catch {}
 }
 
