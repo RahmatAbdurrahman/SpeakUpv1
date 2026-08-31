@@ -242,19 +242,51 @@
   gap: 12px;
 }
 
-.sosial-match-top-row {
+.sosial-match-row {
   display: flex;
-  align-items: flex-end;
-  justify-content: space-between;
-  gap: 10px;
+  align-items: center;
+  gap: 14px;
 }
 
-.sosial-match-info-col {
+.sosial-match-avatar-wrapper {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.sosial-match-avatar-circle {
+  width: 82px;
+  height: 82px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.22);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 2px solid rgba(255, 255, 255, 0.35);
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  overflow: hidden;
+  position: relative;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.08);
+}
+
+.sosial-match-avatar-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center 20%;
+  transform: scale(1.15);
+  transform-origin: center bottom;
+  display: block;
+}
+
+.sosial-match-info {
   flex: 1;
   min-width: 0;
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 6px;
 }
 
 .sosial-match-badge {
@@ -265,10 +297,10 @@
   backdrop-filter: blur(8px);
   -webkit-backdrop-filter: blur(8px);
   border-radius: 100px;
-  padding: 4px 10px;
+  padding: 3px 9px;
   align-self: flex-start;
   font-family: var(--font-family-base, 'Space Grotesk', sans-serif);
-  font-size: 11px;
+  font-size: 10.5px;
   font-weight: 700;
   color: #FFFFFF;
   letter-spacing: 0.2px;
@@ -292,12 +324,12 @@
 .sosial-match-text {
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 3px;
 }
 
 .sosial-match-text h3 {
   font-family: var(--font-family-base, 'Space Grotesk', sans-serif);
-  font-size: 18px;
+  font-size: 17.5px;
   font-weight: 700;
   color: #FFFFFF;
   margin: 0;
@@ -312,25 +344,6 @@
   color: rgba(255, 255, 255, 0.9);
   line-height: 1.38;
   margin: 0;
-}
-
-.sosial-match-illus-col {
-  width: 130px;
-  height: 125px;
-  flex-shrink: 0;
-  display: flex;
-  align-items: flex-end;
-  justify-content: flex-end;
-  margin-right: -4px;
-  margin-bottom: -4px;
-}
-
-.sosial-match-duet-img {
-  width: 100%;
-  height: 100%;
-  object-fit: contain;
-  object-position: right bottom;
-  display: block;
 }
 
 .btn-sosial-match {

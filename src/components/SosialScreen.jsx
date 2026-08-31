@@ -220,9 +220,15 @@ export default function SosialScreen({ onNavigateHome, onNavigateSimulasi, onNav
             </div>
 
             <div className="sosial-match-card-content">
-              {/* Top Row: Left Info + Right Duet Illustration */}
-              <div className="sosial-match-top-row">
-                <div className="sosial-match-info-col">
+              {/* Main row: Circle Avatar/Pedestal on Left, Info on Right */}
+              <div className="sosial-match-row">
+                <div className="sosial-match-avatar-wrapper">
+                  <div className="sosial-match-avatar-circle">
+                    <img src={imgMatchmakingDuet} alt="Cari Partner Latihan" className="sosial-match-avatar-img" />
+                  </div>
+                </div>
+
+                <div className="sosial-match-info">
                   <div className="sosial-match-badge">
                     <span className="sosial-match-badge-dot"></span>
                     <span>Matchmaking Duet</span>
@@ -232,10 +238,6 @@ export default function SosialScreen({ onNavigateHome, onNavigateSimulasi, onNav
                     <h3>Cari Partner Latihan</h3>
                     <p>Dipasangkan otomatis dengan pengguna lain untuk latihan bareng & saling beri masukan secara live.</p>
                   </div>
-                </div>
-
-                <div className="sosial-match-illus-col">
-                  <img src={imgMatchmakingDuet} alt="Cari Partner Latihan" className="sosial-match-duet-img" />
                 </div>
               </div>
 
