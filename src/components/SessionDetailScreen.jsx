@@ -138,23 +138,7 @@ export default function SessionDetailScreen({ sessionId, kategori, date, isLive,
         {errorMessage && <p className="viewerfb-error">{errorMessage}</p>}
 
         {!loading && hasFeedback && (
-          <>
-            <AnalysisCards results={results} />
-            <button
-              type="button"
-              className="btn-export-pdf"
-              onClick={handleExportPDF}
-              disabled={exportingPdf}
-              style={{ marginTop: "12px", marginBottom: "8px" }}
-            >
-              <img
-                src={iconDownload}
-                alt=""
-                style={{ width: "18px", height: "18px", display: "inline-block" }}
-              />
-              <span>{exportingPdf ? "Menyiapkan PDF..." : "Unduh Laporan PDF"}</span>
-            </button>
-          </>
+          <AnalysisCards results={results} />
         )}
 
         {!loading && !hasFeedback && !errorMessage && (
@@ -218,6 +202,20 @@ export default function SessionDetailScreen({ sessionId, kategori, date, isLive,
           </>
         )}
       </div>
+
+      {!loading && hasFeedback && (
+        <div className="sessiondetail-cta-wrap">
+          <button
+            type="button"
+            className="btn-sessiondetail-download"
+            onClick={handleExportPDF}
+            disabled={exportingPdf}
+          >
+            <img src={iconDownload} alt="" className="btn-sessiondetail-download-icon" />
+            <span>{exportingPdf ? "Menyiapkan PDF..." : "Unduh Laporan PDF"}</span>
+          </button>
+        </div>
+      )}
     </div>
   );
 }
