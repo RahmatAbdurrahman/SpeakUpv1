@@ -128,7 +128,9 @@ export async function fetchProgressSummary(userId) {
   if (dnaErr) throw dnaErr;
   if (sessionsErr) throw sessionsErr;
 
-  const feedbackRows = (sessions ?? []).map((s) => s.simulation_feedback).filter(Boolean);
+  const feedbackRows = (sessions ?? [])
+    .map((s) => (Array.isArray(s.simulation_feedback) ? s.simulation_feedback[0] : s.simulation_feedback))
+    .filter(Boolean);
   const avgSkor = average(feedbackRows.map((f) => f.skor).filter((n) => typeof n === "number"));
   const avgSubScores = {};
   for (const key of SUB_SCORE_KEYS) {
@@ -147,12 +149,13 @@ export async function fetchProgressSummary(userId) {
     avgSkor,
     avgSubScores,
     recentSessions: (sessions ?? []).map((s) => {
+      const fb = Array.isArray(s.simulation_feedback) ? s.simulation_feedback[0] : s.simulation_feedback;
       const peerRows = Array.isArray(s.peer_feedback) ? s.peer_feedback : [];
       return {
         id: s.id,
         date: s.started_at,
         kategori: s.simulations?.kategori ?? null,
-        skor: s.simulation_feedback?.skor ?? null,
+        skor: fb?.skor ?? null,
         isLive: Array.isArray(s.live_rooms) && s.live_rooms.length > 0,
         peerRatingCount: peerRows.length,
         peerAvgStars: peerRows.length > 0 ? peerRows.reduce((sum, r) => sum + r.stars, 0) / peerRows.length : null,

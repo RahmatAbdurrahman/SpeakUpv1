@@ -381,7 +381,9 @@ export default function ProfileScreen({ onNavigateHome, onNavigatePractice, onNa
                   <div className="profile-peer-header">
                     <div className="profile-peer-stars-wrap">
                       <span className="profile-peer-star-icon">⭐</span>
-                      <span className="profile-peer-score-val">{peerRating.avgStars.toFixed(1)}</span>
+                      <span className="profile-peer-score-val">
+                        {peerRating.avgStars != null ? peerRating.avgStars.toFixed(1) : "0.0"}
+                      </span>
                       <span className="profile-peer-score-max">/5.0</span>
                     </div>
                     <span className="profile-peer-rating-count">Berdasarkan {peerRating.count} rating latihan</span>
@@ -454,7 +456,7 @@ export default function ProfileScreen({ onNavigateHome, onNavigatePractice, onNa
                             </div>
                             <span className="profile-history-desc">
                               {s.isLive ? "Sesi Live Presentasi" : "Sesi Latihan Simulasi"}
-                              {s.isLive && s.peerRatingCount > 0 && (
+                              {s.isLive && s.peerRatingCount > 0 && s.peerAvgStars != null && (
                                 <> · ⭐ {s.peerAvgStars.toFixed(1)} ({s.peerRatingCount})</>
                               )}
                             </span>

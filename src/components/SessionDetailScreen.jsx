@@ -13,11 +13,12 @@ import animaBotLottie from "../assets/lotties/AnimaBot.lottie";
 
 const KATEGORI_LABEL = { spontan: "Spontaneous", kelas: "Presentasi", lomba: "Presentasi", interview: "Interview" };
 
-function Stars({ count }) {
+function Stars({ count = 0 }) {
+  const c = Number(count) || 0;
   return (
-    <span className="viewerfb-stars" aria-label={`${count} dari 5 bintang`}>
+    <span className="viewerfb-stars" aria-label={`${c} dari 5 bintang`}>
       {[1, 2, 3, 4, 5].map((n) => (
-        <span key={n} className={`viewerfb-star ${n <= count ? "filled" : ""}`}>
+        <span key={n} className={`viewerfb-star ${n <= c ? "filled" : ""}`}>
           ★
         </span>
       ))}
@@ -178,7 +179,9 @@ export default function SessionDetailScreen({ sessionId, kategori, date, isLive,
               <>
                 <div className="viewerfb-summary-card">
                   <div className="viewerfb-summary-score">
-                    <span className="viewerfb-summary-num">{peerSummary.avgStars.toFixed(1)}</span>
+                    <span className="viewerfb-summary-num">
+                      {peerSummary.avgStars != null ? Number(peerSummary.avgStars).toFixed(1) : "–"}
+                    </span>
                     <span className="viewerfb-summary-max">/5.0</span>
                   </div>
                   <p className="viewerfb-summary-count">Berdasarkan {peerSummary.count} rating dari penonton</p>

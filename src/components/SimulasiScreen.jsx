@@ -774,6 +774,19 @@ export function AnalysisCards({ results }) {
     },
   ];
 
+  const saranList = (() => {
+    if (Array.isArray(feedback?.saran)) return feedback.saran;
+    if (typeof feedback?.saran === "string" && feedback.saran.trim()) {
+      try {
+        const parsed = JSON.parse(feedback.saran);
+        if (Array.isArray(parsed)) return parsed;
+      } catch {
+        return [feedback.saran];
+      }
+    }
+    return [];
+  })();
+
   return (
     <>
       {scores.map((score) => (
@@ -816,9 +829,9 @@ export function AnalysisCards({ results }) {
           <img src={iconAI} alt="" className="simulasi-analysis-icon" />
           <p className="simulasi-analysis-card-label">Feedback AI</p>
         </div>
-        {feedback?.saran?.length > 0 ? (
+        {saranList.length > 0 ? (
           <div className="simulasi-analysis-feedback">
-            {feedback.saran.map((item, i) => (
+            {saranList.map((item, i) => (
               <p key={i} className="simulasi-analysis-feedback-item">
                 • {item}
               </p>
@@ -827,6 +840,7 @@ export function AnalysisCards({ results }) {
         ) : (
           <p className="simulasi-analysis-feedback">
             {feedback?.feedback ||
+              feedback?.motivasi ||
               "Kamu sudah menyelesaikan sesi simulasi dengan baik! Pertahankan artikulasi dan kurangi kata pengisi di sesi berikutnya."}
           </p>
         )}
