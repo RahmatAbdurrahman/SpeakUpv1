@@ -209,9 +209,9 @@
 .sosial-match-card {
   position: relative;
   background: #FFFFFF;
-  border: 2px solid #24A981;
-  border-radius: 16px;
-  box-shadow: 0 4px 16px rgba(36, 169, 129, 0.12), 0 2px 4px rgba(0, 0, 0, 0.04);
+  border: 1px solid var(--color-border, rgba(20, 60, 63, 0.12));
+  border-radius: 14px;
+  box-shadow: 0px 3px 0px 0px #E3E8E8;
   box-sizing: border-box;
   overflow: hidden;
   display: flex;
