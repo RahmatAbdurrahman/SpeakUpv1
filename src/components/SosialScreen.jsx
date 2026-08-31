@@ -219,48 +219,48 @@ export default function SosialScreen({ onNavigateHome, onNavigateSimulasi, onNav
               <img src={cardBgDecor} alt="" className="sosial-match-bg-img" />
             </div>
 
-            {/* Glowing Aura behind illustration */}
-            <div className="sosial-match-aura" aria-hidden="true" />
-
-            <div className="sosial-match-badge">
-              <span className="sosial-match-badge-dot"></span>
-              <span>Matchmaking Duet</span>
+            {/* Large Transparent Illustration anchored flush to card edges */}
+            <div className="sosial-match-illus-pane" aria-hidden="true">
+              <img src={imgMatchmakingDuet} alt="" className="sosial-match-illus-img" />
             </div>
 
-            <div className="sosial-match-body">
+            <div className="sosial-match-content">
+              <div className="sosial-match-badge">
+                <span className="sosial-match-badge-dot"></span>
+                <span>Matchmaking Duet</span>
+              </div>
+
               <div className="sosial-match-text">
                 <h3>Cari Partner Latihan</h3>
                 <p>Dipasangkan otomatis dengan pengguna lain untuk latihan bareng & saling beri masukan secara live.</p>
               </div>
-              <div className="sosial-match-illus-wrapper">
-                <img src={imgMatchmakingDuet} alt="Cari Partner Latihan" className="sosial-match-illus" />
-              </div>
-            </div>
-            {queueState === "idle" && (
-              <button type="button" className="btn-sosial-match" onClick={handleFindPartner}>
-                Cari Partner Sekarang
-              </button>
-            )}
-            {queueState === "matching" && (
-              <button type="button" className="btn-sosial-match btn-sosial-match--searching" disabled>
-                <span className="sosial-btn-spinner" />
-                Mencari Partner...
-              </button>
-            )}
-            {queueState === "waiting" && (
-              <div className="sosial-waiting-box">
-                <div className="sosial-waiting-left">
-                  <span className="sosial-waiting-spinner" />
-                  <div className="sosial-waiting-info">
-                    <span className="sosial-waiting-title">Menunggu partner bergabung...</span>
-                    <span className="sosial-waiting-sub">Kamu bisa tetap di halaman ini</span>
-                  </div>
-                </div>
-                <button type="button" className="btn-sosial-cancel-match" onClick={handleCancelQueue}>
-                  Batal
+
+              {queueState === "idle" && (
+                <button type="button" className="btn-sosial-match" onClick={handleFindPartner}>
+                  Cari Partner Sekarang
                 </button>
-              </div>
-            )}
+              )}
+              {queueState === "matching" && (
+                <button type="button" className="btn-sosial-match btn-sosial-match--searching" disabled>
+                  <span className="sosial-btn-spinner" />
+                  Mencari Partner...
+                </button>
+              )}
+              {queueState === "waiting" && (
+                <div className="sosial-waiting-box">
+                  <div className="sosial-waiting-left">
+                    <span className="sosial-waiting-spinner" />
+                    <div className="sosial-waiting-info">
+                      <span className="sosial-waiting-title">Menunggu partner bergabung...</span>
+                      <span className="sosial-waiting-sub">Kamu bisa tetap di halaman ini</span>
+                    </div>
+                  </div>
+                  <button type="button" className="btn-sosial-cancel-match" onClick={handleCancelQueue}>
+                    Batal
+                  </button>
+                </div>
+              )}
+            </div>
           </div>
         </section>
 

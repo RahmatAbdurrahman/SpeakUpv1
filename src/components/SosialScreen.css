@@ -208,16 +208,11 @@
 /* ── Match Partner Card ───────────────────────────────────────────────────── */
 .sosial-match-card {
   position: relative;
-  background: linear-gradient(135deg, #24A981 0%, #1A8766 100%);
-  border-radius: 18px;
-  padding: 16px 16px 16px 16px;
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-  box-shadow: 0 8px 24px -4px rgba(23, 103, 79, 0.28), 0 2px 6px rgba(0, 0, 0, 0.04);
+  background: #24A981;
+  border-radius: 14px;
+  box-shadow: 0 4px 16px rgba(23, 103, 79, 0.18);
   box-sizing: border-box;
   overflow: hidden;
-  border: 1px solid rgba(255, 255, 255, 0.18);
 }
 
 .sosial-match-bg-decor {
@@ -226,10 +221,9 @@
   width: 100%;
   height: 100%;
   pointer-events: none;
-  border-radius: 18px;
+  border-radius: 14px;
   overflow: hidden;
   z-index: 0;
-  opacity: 0.85;
 }
 
 .sosial-match-bg-img {
@@ -239,28 +233,48 @@
   display: block;
 }
 
-.sosial-match-aura {
+/* Large Transparent Illustration anchored flush to top, right, and bottom edges */
+.sosial-match-illus-pane {
   position: absolute;
-  top: 0px;
-  right: -10px;
-  width: 180px;
-  height: 180px;
-  background: radial-gradient(circle, rgba(255, 255, 255, 0.24) 0%, rgba(255, 255, 255, 0.06) 55%, rgba(255, 255, 255, 0) 75%);
-  border-radius: 50%;
+  right: 0;
+  top: 0;
+  bottom: 0;
+  width: 155px;
+  height: 100%;
   pointer-events: none;
   z-index: 1;
+  overflow: hidden;
+  display: flex;
+  align-items: flex-end;
+  justify-content: flex-end;
+  border-top-right-radius: 14px;
+  border-bottom-right-radius: 14px;
+}
+
+.sosial-match-illus-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: right bottom;
+  display: block;
+}
+
+.sosial-match-content {
+  position: relative;
+  z-index: 2;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
 }
 
 .sosial-match-badge {
-  position: relative;
-  z-index: 2;
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  background: rgba(255, 255, 255, 0.2);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
-  border: 1px solid rgba(255, 255, 255, 0.35);
+  background: rgba(255, 255, 255, 0.18);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
   border-radius: 100px;
   padding: 4px 10px;
   align-self: flex-start;
@@ -268,9 +282,8 @@
   font-size: 11px;
   font-weight: 700;
   color: #FFFFFF;
-  letter-spacing: 0.3px;
+  letter-spacing: 0.2px;
   text-transform: uppercase;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.06);
 }
 
 .sosial-match-badge-dot {
@@ -278,7 +291,6 @@
   height: 6px;
   background-color: #69F0AE;
   border-radius: 50%;
-  box-shadow: 0 0 6px #69F0AE;
   animation: pulse-dot 1.5s infinite;
 }
 
@@ -288,19 +300,8 @@
   100% { transform: scale(0.9); opacity: 0.7; }
 }
 
-.sosial-match-body {
-  position: relative;
-  z-index: 2;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 10px;
-  min-height: 100px;
-}
-
 .sosial-match-text {
-  flex: 1;
-  min-width: 0;
+  max-width: calc(100% - 118px);
   display: flex;
   flex-direction: column;
   gap: 4px;
@@ -314,39 +315,15 @@
   margin: 0;
   letter-spacing: -0.4px;
   line-height: 1.25;
-  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.08);
 }
 
 .sosial-match-text p {
   font-family: var(--font-family-base, 'Space Grotesk', sans-serif);
   font-size: 12.5px;
   font-weight: 400;
-  color: rgba(255, 255, 255, 0.92);
-  line-height: 1.45;
+  color: rgba(255, 255, 255, 0.9);
+  line-height: 1.4;
   margin: 0;
-}
-
-.sosial-match-illus-wrapper {
-  width: 95px;
-  height: 95px;
-  border-radius: 8px;
-  border: 1.4px solid rgba(255, 255, 255, 0.5);
-  background: #FFFFFF;
-  overflow: hidden;
-  flex-shrink: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
-}
-
-.sosial-match-illus {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  object-position: center 20%;
-  border-radius: 8px;
-  display: block;
 }
 
 .btn-sosial-match {
