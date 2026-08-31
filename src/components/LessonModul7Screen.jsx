@@ -593,10 +593,10 @@ function TypingQuote({ text, speed = 16, dataNodeId }) {
 }
 
 // ─── Page 2: Quotes / Mindset (Figma node 329:1710) ──────────────────────────
-function LessonPage2({ onNext, onBack }) {
+function LessonPage2({ onNext, onPrev, onExit }) {
   return (
     <div className="modul7-lesson-page modul7-lesson-page-2" data-node-id="329:1710" data-name="Lesson-Hadapi Pertanyaan Menantang">
-      <LessonTopBar currentStep={2} totalSteps={TOTAL_LESSON_STEPS} onBack={onBack} />
+      <LessonTopBar currentStep={2} totalSteps={TOTAL_LESSON_STEPS} onBack={onExit} />
 
       {/* Center Quotes Area */}
       <div className="modul7-page2-content" data-node-id="329:1719">
@@ -620,7 +620,7 @@ function LessonPage2({ onNext, onBack }) {
         <button
           type="button"
           className="btn-modul7-round-back"
-          onClick={onBack}
+          onClick={onPrev}
           aria-label="Kembali ke halaman sebelumnya"
           data-node-id="338:2222"
         >
@@ -662,10 +662,10 @@ const DottedArrow = () => (
 );
 
 // ─── Page 3: Cognitive Restructuring (Figma node 329:1733) ───────────────────
-function LessonPage3({ onNext, onBack }) {
+function LessonPage3({ onNext, onPrev, onExit }) {
   return (
     <div className="modul7-lesson-page" data-node-id="329:1733" data-name="Lesson-Hadapi Pertanyaan Menantang">
-      <LessonTopBar currentStep={3} totalSteps={TOTAL_LESSON_STEPS} onBack={onBack} />
+      <LessonTopBar currentStep={3} totalSteps={TOTAL_LESSON_STEPS} onBack={onExit} />
 
       <div className="modul7-lesson-content modul7-page3-content" data-node-id="329:1742">
         {/* Title Header */}
@@ -714,7 +714,7 @@ function LessonPage3({ onNext, onBack }) {
         <button
           type="button"
           className="btn-modul7-round-back"
-          onClick={onBack}
+          onClick={onPrev}
           aria-label="Kembali ke halaman sebelumnya"
           data-node-id="338:2186"
         >
@@ -756,10 +756,10 @@ const DottedArrowShort = () => (
 );
 
 // ─── Page 4: Cognitive Defusion (Figma node 333:1784) ────────────────────────
-function LessonPage4({ onNext, onBack }) {
+function LessonPage4({ onNext, onPrev, onExit }) {
   return (
     <div className="modul7-lesson-page" data-node-id="333:1784" data-name="Lesson-Hadapi Pertanyaan Menantang">
-      <LessonTopBar currentStep={4} totalSteps={TOTAL_LESSON_STEPS} onBack={onBack} />
+      <LessonTopBar currentStep={4} totalSteps={TOTAL_LESSON_STEPS} onBack={onExit} />
 
       <div className="modul7-lesson-content modul7-page4-content" data-node-id="333:1793">
         {/* Title Header */}
@@ -816,7 +816,7 @@ function LessonPage4({ onNext, onBack }) {
         <button
           type="button"
           className="btn-modul7-round-back"
-          onClick={onBack}
+          onClick={onPrev}
           aria-label="Kembali ke halaman sebelumnya"
           data-node-id="338:2231"
         >
@@ -836,10 +836,10 @@ function LessonPage4({ onNext, onBack }) {
 }
 
 // ─── Page 5: Conclusion / Empowering Mindset (Figma node 334:1816) ───────────
-function LessonPage5({ onNext, onBack }) {
+function LessonPage5({ onNext, onPrev, onExit }) {
   return (
     <div className="modul7-lesson-page modul7-lesson-page-2" data-node-id="334:1816" data-name="Lesson-Hadapi Pertanyaan Menantang">
-      <LessonTopBar currentStep={5} totalSteps={TOTAL_LESSON_STEPS} onBack={onBack} />
+      <LessonTopBar currentStep={5} totalSteps={TOTAL_LESSON_STEPS} onBack={onExit} />
 
       {/* Center Quotes Area */}
       <div className="modul7-page2-content" data-node-id="334:1825">
@@ -863,7 +863,7 @@ function LessonPage5({ onNext, onBack }) {
         <button
           type="button"
           className="btn-modul7-round-back"
-          onClick={onBack}
+          onClick={onPrev}
           aria-label="Kembali ke halaman sebelumnya"
           data-node-id="338:2240"
         >
@@ -883,10 +883,10 @@ function LessonPage5({ onNext, onBack }) {
 }
 
 // ─── Page 6: Teknik Merespons Kritik (Figma node 334:1838) ───────────────────
-function LessonPage6({ onNext, onBack }) {
+function LessonPage6({ onNext, onPrev, onExit }) {
   return (
     <div className="modul7-lesson-page" data-node-id="334:1838" data-name="Lesson-Hadapi Pertanyaan Menantang">
-      <LessonTopBar currentStep={6} totalSteps={TOTAL_LESSON_STEPS} onBack={onBack} />
+      <LessonTopBar currentStep={6} totalSteps={TOTAL_LESSON_STEPS} onBack={onExit} />
 
       <div className="modul7-lesson-content modul7-page6-content" data-node-id="334:1847">
         {/* Title Header */}
@@ -954,7 +954,7 @@ function LessonPage6({ onNext, onBack }) {
         <button
           type="button"
           className="btn-modul7-round-back"
-          onClick={onBack}
+          onClick={onPrev}
           aria-label="Kembali ke halaman sebelumnya"
           data-node-id="338:2248"
         >
@@ -974,10 +974,10 @@ function LessonPage6({ onNext, onBack }) {
 }
 
 // ─── Page 7: Skenario Latihan — Hadapi Pertanyaan Menantang ──────────────────
-function PracticeIntro({ onNext, onBack }) {
+function PracticeIntro({ onNext, onPrev, onExit }) {
   return (
     <div className="modul7-lesson-page modul7-dark-page" data-name="Practice-Skenario Latihan">
-      <LessonTopBar currentStep={7} totalSteps={TOTAL_LESSON_STEPS} onBack={onBack} tone="dark" />
+      <LessonTopBar currentStep={7} totalSteps={TOTAL_LESSON_STEPS} onBack={onExit} tone="dark" />
 
       <div className="modul7-lesson-content modul7-practice-intro-content">
         <div className="modul7-practice-header">
@@ -1001,7 +1001,7 @@ function PracticeIntro({ onNext, onBack }) {
         <button
           type="button"
           className="btn-modul7-round-back btn-modul7-round-back--dark"
-          onClick={onBack}
+          onClick={onPrev}
           aria-label="Kembali ke halaman sebelumnya"
         >
           <IconArrowLeft color="#FFFFFF" />
@@ -1015,12 +1015,12 @@ function PracticeIntro({ onNext, onBack }) {
 }
 
 // ─── Page 8: Tema nya adalah — random topic reveal ───────────────────────────
-function PracticeTopic({ onNext, onBack }) {
+function PracticeTopic({ onNext, onPrev, onExit }) {
   const remaining = useCountdown(10, onNext);
 
   return (
     <div className="modul7-lesson-page modul7-dark-page" data-name="Practice-Tema">
-      <LessonTopBar currentStep={8} totalSteps={TOTAL_LESSON_STEPS} onBack={onBack} tone="dark" />
+      <LessonTopBar currentStep={8} totalSteps={TOTAL_LESSON_STEPS} onBack={onExit} tone="dark" />
 
       <div className="modul7-lesson-content modul7-practice-centered">
         <p className="modul7-practice-eyebrow">Tema nya adalah</p>
@@ -1033,7 +1033,7 @@ function PracticeTopic({ onNext, onBack }) {
           <button
             type="button"
             className="btn-modul7-round-back btn-modul7-round-back--dark"
-            onClick={onBack}
+            onClick={onPrev}
             aria-label="Kembali ke halaman sebelumnya"
           >
             <IconArrowLeft color="#FFFFFF" />
@@ -1853,13 +1853,13 @@ export default function LessonModul7Screen({ onBack, onFinish }) {
     <div className="modul7-lesson-screen">
       <div key={String(step)} className={`modul7-step-wrapper modul7-slide-${direction}`}>
         {step === 1 && <LessonPage1 onNext={goNext} onBack={handleRequestExit} />}
-        {step === 2 && <LessonPage2 onNext={goNext} onBack={handleRequestExit} />}
-        {step === 3 && <LessonPage3 onNext={goNext} onBack={handleRequestExit} />}
-        {step === 4 && <LessonPage4 onNext={goNext} onBack={handleRequestExit} />}
-        {step === 5 && <LessonPage5 onNext={goNext} onBack={handleRequestExit} />}
-        {step === 6 && <LessonPage6 onNext={goNext} onBack={handleRequestExit} />}
-        {step === 7 && <PracticeIntro onNext={goNext} onBack={handleRequestExit} />}
-        {step === 8 && <PracticeTopic onNext={goNext} onBack={handleRequestExit} />}
+        {step === 2 && <LessonPage2 onNext={goNext} onPrev={goBack} onExit={handleRequestExit} />}
+        {step === 3 && <LessonPage3 onNext={goNext} onPrev={goBack} onExit={handleRequestExit} />}
+        {step === 4 && <LessonPage4 onNext={goNext} onPrev={goBack} onExit={handleRequestExit} />}
+        {step === 5 && <LessonPage5 onNext={goNext} onPrev={goBack} onExit={handleRequestExit} />}
+        {step === 6 && <LessonPage6 onNext={goNext} onPrev={goBack} onExit={handleRequestExit} />}
+        {step === 7 && <PracticeIntro onNext={goNext} onPrev={goBack} onExit={handleRequestExit} />}
+        {step === 8 && <PracticeTopic onNext={goNext} onPrev={goBack} onExit={handleRequestExit} />}
         {step === 9 && <PracticePrep onNext={goNext} onBack={handleRequestExit} />}
         {step === 10 && <PracticeSpeak onNext={goNext} onBack={handleRequestExit} />}
         {step === 11 && <PracticeQaIntro onNext={goNext} onBack={handleRequestExit} />}
