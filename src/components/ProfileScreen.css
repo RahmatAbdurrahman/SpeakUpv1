@@ -263,27 +263,13 @@
   padding: 6px 0 8px 0;
 }
 
-.profile-dna-badge {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  background: rgba(36, 169, 129, 0.1);
-  border: 1px solid rgba(36, 169, 129, 0.22);
-  border-radius: 100px;
-  padding: 4px 14px;
+.profile-dna-title {
   font-family: var(--font-family-base, 'Space Grotesk', sans-serif);
-  font-size: 11px;
+  font-size: 16px;
   font-weight: 700;
-  color: #17674F;
-  letter-spacing: 0.5px;
-  text-transform: uppercase;
-}
-
-.profile-dna-badge-dot {
-  width: 6px;
-  height: 6px;
-  background-color: #24A981;
-  border-radius: 50%;
+  color: var(--color-text-primary, #243238);
+  margin: 0;
+  letter-spacing: -0.3px;
 }
 
 /* ── Speaking DNA Circular Gauge Meter (Matching Analysis Bar) ── */
@@ -369,15 +355,12 @@
   letter-spacing: 0.2px;
 }
 
-.profile-dna-status-pill {
-  background: rgba(36, 169, 129, 0.1);
-  border: 1px solid rgba(36, 169, 129, 0.22);
-  color: #17674F;
+.profile-dna-status-text {
   font-family: var(--font-family-base, 'Space Grotesk', sans-serif);
-  font-size: 12px;
+  font-size: 14px;
   font-weight: 700;
-  padding: 4px 14px;
-  border-radius: 100px;
+  color: var(--color-text-primary, #243238);
+  margin: 4px 0 0;
 }
 
 .profile-dna-desc {

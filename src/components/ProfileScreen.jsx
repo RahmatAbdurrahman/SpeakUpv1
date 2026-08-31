@@ -239,20 +239,17 @@ export default function ProfileScreen({ onNavigateHome, onNavigatePractice, onNa
               </div>
             </div>
 
-            {/* ── Speaking DNA (Container-less Arc Gauge) ──────────── */}
+            {/* ── Speaking DNA ────────────────────────────────────── */}
             <div className="profile-dna-section">
-              <div className="profile-dna-badge">
-                <span className="profile-dna-badge-dot" />
-                <span>Speaking DNA</span>
-              </div>
+              <h2 className="profile-dna-title">Speaking DNA</h2>
 
               {dnaScore != null ? (
                 <>
                   <SpeakingDnaGauge score={dnaScore} />
 
-                  <span className="profile-dna-status-pill">
+                  <p className="profile-dna-status-text">
                     {dnaScore >= 80 ? "✨ Pembicara Percaya Diri" : dnaScore >= 60 ? "🔥 Performa Solid" : "🌱 Sedang Berkembang"}
-                  </span>
+                  </p>
                   <p className="profile-dna-desc">
                     Indeks profil kemampuan public speaking kamu berdasarkan rata-rata 4 pilar utama.
                   </p>
