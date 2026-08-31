@@ -711,6 +711,13 @@ export function AccumulationScoreHero({ score }) {
           height={size}
           viewBox={`0 0 ${size} ${size}`}
         >
+          <defs>
+            <linearGradient id="scoreGaugeGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" stopColor="#FFA767" />
+              <stop offset="100%" stopColor="#E8753D" />
+            </linearGradient>
+          </defs>
+
           {/* Inner filled background disc */}
           <circle
             className="simulasi-gauge-inner-disc"

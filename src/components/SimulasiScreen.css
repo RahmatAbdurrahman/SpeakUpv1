@@ -554,23 +554,26 @@
   width: 160px;
   height: 160px;
   overflow: visible;
-  filter: drop-shadow(0 6px 16px rgba(0, 0, 0, 0.12));
+  filter: drop-shadow(0 6px 16px rgba(20, 60, 63, 0.08));
 }
 
 .simulasi-gauge-inner-disc {
-  fill: #5B6675;
+  fill: #FFFFFF;
+  stroke: rgba(20, 60, 63, 0.08);
+  stroke-width: 1.5px;
   transition: fill 0.3s ease;
 }
 
 .simulasi-gauge-track {
   fill: none;
-  stroke: #414B58;
+  stroke: #EAE6DF;
   transition: stroke 0.3s ease;
 }
 
 .simulasi-gauge-progress {
   fill: none;
-  stroke: #E8EEF3;
+  stroke: url(#scoreGaugeGrad);
+  filter: drop-shadow(0 2px 6px rgba(232, 117, 61, 0.25));
   transition: stroke-dashoffset 1.2s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
@@ -589,11 +592,10 @@
   font-family: var(--font-family-base, 'Space Grotesk', sans-serif);
   font-size: 52px;
   font-weight: 800;
-  color: #FFFFFF;
+  color: var(--color-text-primary, #243238);
   line-height: 1;
   letter-spacing: -1.5px;
   margin: 0;
-  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.15);
 }
 
 .simulasi-accumulation-number-wrap {
@@ -610,9 +612,9 @@
   width: 18px;
   height: 18px;
   border-radius: 50%;
-  border: 1.5px solid rgba(255, 255, 255, 0.7);
-  background: rgba(0, 0, 0, 0.18);
-  color: #FFFFFF;
+  border: 1.5px solid rgba(36, 50, 56, 0.3);
+  background: #FFFFFF;
+  color: var(--color-text-primary, #243238);
   font-size: 10.5px;
   font-weight: 700;
   font-family: var(--font-family-base, 'Space Grotesk', sans-serif);
@@ -622,28 +624,30 @@
   cursor: pointer;
   padding: 0;
   line-height: 1;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
   transition: background 0.15s ease, border-color 0.15s ease;
 }
 
 .simulasi-accumulation-info-btn:hover {
-  background: rgba(255, 255, 255, 0.3);
-  border-color: #FFFFFF;
+  background: var(--color-text-primary, #243238);
+  color: #FFFFFF;
+  border-color: var(--color-text-primary, #243238);
 }
 
 .simulasi-gauge-sub {
   font-family: var(--font-family-base, 'Space Grotesk', sans-serif);
-  font-size: 11.5px;
+  font-size: 12px;
   font-weight: 700;
-  color: rgba(232, 238, 243, 0.75);
+  color: var(--color-text-caption, #8199A3);
   margin: 3px 0 0;
-  letter-spacing: 0.3px;
+  letter-spacing: 0.2px;
 }
 
 .simulasi-accumulation-tooltip {
   margin-top: 8px;
   padding: 8px 14px;
-  background: #1B2E3D;
-  border: 1px solid rgba(74, 163, 255, 0.4);
+  background: #243238;
+  border: 1px solid rgba(232, 117, 61, 0.35);
   color: #FFFFFF;
   border-radius: 10px;
   font-family: var(--font-family-base, 'Space Grotesk', sans-serif);
