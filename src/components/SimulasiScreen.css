@@ -627,7 +627,7 @@
   border-radius: 50%;
   background: #FFFFFF;
   box-shadow: 0 0 6px 1.5px rgba(255, 255, 255, 0.98), 0 0 10px 2.5px rgba(255, 180, 110, 0.8);
-  animation: smoothBlackholeFlow 4.2s cubic-bezier(0.2, 0.8, 0.2, 1) infinite;
+  animation: smoothBlackholeFlow 3.2s cubic-bezier(0.22, 0.61, 0.36, 1) infinite;
   transform-origin: center center;
   pointer-events: none;
   backface-visibility: hidden;
@@ -638,32 +638,37 @@
     transform: translate3d(0, 0, 0) scale(0);
     opacity: 0;
   }
-  20% {
+  15% {
     opacity: 1;
-    transform: translate3d(calc(var(--tx) * 0.32), calc(var(--ty) * 0.32), 0) scale(1.35);
+    transform: translate3d(calc(var(--tx) * 0.25), calc(var(--ty) * 0.25), 0) scale(1.3);
   }
-  70% {
-    opacity: 0.85;
-    transform: translate3d(calc(var(--tx) * 0.82), calc(var(--ty) * 0.82), 0) scale(0.9);
+  60% {
+    opacity: 0.8;
+    transform: translate3d(calc(var(--tx) * 0.72), calc(var(--ty) * 0.72), 0) scale(0.95);
+  }
+  85% {
+    opacity: 0.25;
+    transform: translate3d(calc(var(--tx) * 0.94), calc(var(--ty) * 0.94), 0) scale(0.4);
   }
   100% {
-    transform: translate3d(var(--tx), var(--ty), 0) scale(0.1);
+    /* Immediately dissolves cleanly as it reaches the destination without pause */
+    transform: translate3d(var(--tx), var(--ty), 0) scale(0);
     opacity: 0;
   }
 }
 
 .simulasi-sparkle-dot--1 { --tx: 120px; --ty: -15px; width: 4.5px; height: 4.5px; animation-delay: 0s; }
-.simulasi-sparkle-dot--2 { --tx: 105px; --ty: 60px; width: 5px; height: 5px; animation-delay: 0.35s; }
-.simulasi-sparkle-dot--3 { --tx: 65px; --ty: 110px; width: 4px; height: 4px; animation-delay: 0.7s; }
-.simulasi-sparkle-dot--4 { --tx: 0px; --ty: 120px; width: 5.5px; height: 5.5px; animation-delay: 1.05s; }
-.simulasi-sparkle-dot--5 { --tx: -65px; --ty: 110px; width: 4.5px; height: 4.5px; animation-delay: 1.4s; }
-.simulasi-sparkle-dot--6 { --tx: -105px; --ty: 60px; width: 5px; height: 5px; animation-delay: 1.75s; }
-.simulasi-sparkle-dot--7 { --tx: -120px; --ty: -15px; width: 4px; height: 4px; animation-delay: 2.1s; }
-.simulasi-sparkle-dot--8 { --tx: -100px; --ty: -70px; width: 5px; height: 5px; animation-delay: 2.45s; }
-.simulasi-sparkle-dot--9 { --tx: -55px; --ty: -110px; width: 4.5px; height: 4.5px; animation-delay: 2.8s; }
-.simulasi-sparkle-dot--10 { --tx: 0px; --ty: -120px; width: 5.5px; height: 5.5px; animation-delay: 3.15s; }
-.simulasi-sparkle-dot--11 { --tx: 55px; --ty: -110px; width: 4px; height: 4px; animation-delay: 3.5s; }
-.simulasi-sparkle-dot--12 { --tx: 100px; --ty: -70px; width: 5px; height: 5px; animation-delay: 3.85s; }
+.simulasi-sparkle-dot--2 { --tx: 105px; --ty: 60px; width: 5px; height: 5px; animation-delay: 0.26s; }
+.simulasi-sparkle-dot--3 { --tx: 65px; --ty: 110px; width: 4px; height: 4px; animation-delay: 0.52s; }
+.simulasi-sparkle-dot--4 { --tx: 0px; --ty: 120px; width: 5.5px; height: 5.5px; animation-delay: 0.78s; }
+.simulasi-sparkle-dot--5 { --tx: -65px; --ty: 110px; width: 4.5px; height: 4.5px; animation-delay: 1.04s; }
+.simulasi-sparkle-dot--6 { --tx: -105px; --ty: 60px; width: 5px; height: 5px; animation-delay: 1.30s; }
+.simulasi-sparkle-dot--7 { --tx: -120px; --ty: -15px; width: 4px; height: 4px; animation-delay: 1.56s; }
+.simulasi-sparkle-dot--8 { --tx: -100px; --ty: -70px; width: 5px; height: 5px; animation-delay: 1.82s; }
+.simulasi-sparkle-dot--9 { --tx: -55px; --ty: -110px; width: 4.5px; height: 4.5px; animation-delay: 2.08s; }
+.simulasi-sparkle-dot--10 { --tx: 0px; --ty: -120px; width: 5.5px; height: 5.5px; animation-delay: 2.34s; }
+.simulasi-sparkle-dot--11 { --tx: 55px; --ty: -110px; width: 4px; height: 4px; animation-delay: 2.60s; }
+.simulasi-sparkle-dot--12 { --tx: 100px; --ty: -70px; width: 5px; height: 5px; animation-delay: 2.86s; }
 
 .simulasi-accumulation-center {
   position: relative;
