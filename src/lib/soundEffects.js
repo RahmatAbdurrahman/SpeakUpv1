@@ -418,6 +418,138 @@ export function playBreathingStartSound() {
 }
 
 /**
+ * Short satisfying UI button click, bouncy digital bloop,
+ * soft bubble pop with a quick subtle echo, tactile app interaction sound,
+ * clean ear candy, 1 second.
+ * Triggered when entering any lesson session.
+ */
+export function playLessonEnterPortalSound() {
+  try {
+    const ctx = getAudioContext();
+    if (!ctx) return;
+
+    const now = ctx.currentTime;
+
+    // ── 1. Tactile UI Click Transient (Crisp mechanical snap pop) ───────────────
+    const clickOsc = ctx.createOscillator();
+    const clickGain = ctx.createGain();
+
+    clickOsc.type = "sine";
+    clickOsc.frequency.setValueAtTime(1800, now);
+    clickOsc.frequency.exponentialRampToValueAtTime(140, now + 0.008);
+
+    clickGain.gain.setValueAtTime(0.001, now);
+    clickGain.gain.linearRampToValueAtTime(0.32, now + 0.002);
+    clickGain.gain.exponentialRampToValueAtTime(0.0001, now + 0.015);
+
+    clickOsc.connect(clickGain);
+    clickGain.connect(ctx.destination);
+
+    clickOsc.start(now);
+    clickOsc.stop(now + 0.018);
+
+    // ── 2. Primary Bouncy Digital Bloop (Juicy bubble curve 480Hz -> 1240Hz -> 720Hz) ──
+    const bloopOsc = ctx.createOscillator();
+    const bloopGain = ctx.createGain();
+    const bloopFilter = ctx.createBiquadFilter();
+
+    bloopFilter.type = "lowpass";
+    bloopFilter.frequency.setValueAtTime(1400, now);
+    bloopFilter.frequency.exponentialRampToValueAtTime(4600, now + 0.035);
+    bloopFilter.frequency.exponentialRampToValueAtTime(900, now + 0.2);
+
+    bloopOsc.type = "sine";
+    bloopOsc.frequency.setValueAtTime(480, now);
+    bloopOsc.frequency.exponentialRampToValueAtTime(1240, now + 0.032); // upward bloop peak
+    bloopOsc.frequency.exponentialRampToValueAtTime(720, now + 0.15);   // soft bubble drop
+
+    bloopGain.gain.setValueAtTime(0.0001, now);
+    bloopGain.gain.linearRampToValueAtTime(0.38, now + 0.022);
+    bloopGain.gain.exponentialRampToValueAtTime(0.00001, now + 0.22);
+
+    bloopOsc.connect(bloopFilter);
+    bloopFilter.connect(bloopGain);
+    bloopGain.connect(ctx.destination);
+
+    bloopOsc.start(now);
+    bloopOsc.stop(now + 0.24);
+
+    // ── 3. Tactile Sub-Plump Body (Round 120Hz -> 50Hz punch) ──────────────────
+    const subOsc = ctx.createOscillator();
+    const subGain = ctx.createGain();
+
+    subOsc.type = "sine";
+    subOsc.frequency.setValueAtTime(120, now);
+    subOsc.frequency.exponentialRampToValueAtTime(50, now + 0.07);
+
+    subGain.gain.setValueAtTime(0.001, now);
+    subGain.gain.linearRampToValueAtTime(0.26, now + 0.006);
+    subGain.gain.exponentialRampToValueAtTime(0.00001, now + 0.11);
+
+    subOsc.connect(subGain);
+    subGain.connect(ctx.destination);
+
+    subOsc.start(now);
+    subOsc.stop(now + 0.12);
+
+    // ── 4. Quick Subtle Bouncy Echoes (2 delicate bubble reflections) ───────────
+    const echoes = [
+      { delay: 0.10, startFreq: 720, peakFreq: 1480, endFreq: 960, gain: 0.13, dur: 0.15 }, // Echo 1
+      { delay: 0.22, startFreq: 1080, peakFreq: 1760, endFreq: 1320, gain: 0.05, dur: 0.16 }, // Echo 2
+    ];
+
+    echoes.forEach(({ delay, startFreq, peakFreq, endFreq, gain: echoVol, dur }) => {
+      const echoTime = now + delay;
+
+      const echoOsc = ctx.createOscillator();
+      const echoGain = ctx.createGain();
+      const echoFilter = ctx.createBiquadFilter();
+
+      echoFilter.type = "lowpass";
+      echoFilter.frequency.setValueAtTime(2800, echoTime);
+      echoFilter.frequency.exponentialRampToValueAtTime(1000, echoTime + dur);
+
+      echoOsc.type = "sine";
+      echoOsc.frequency.setValueAtTime(startFreq, echoTime);
+      echoOsc.frequency.exponentialRampToValueAtTime(peakFreq, echoTime + 0.028);
+      echoOsc.frequency.exponentialRampToValueAtTime(endFreq, echoTime + dur * 0.65);
+
+      echoGain.gain.setValueAtTime(0.0001, echoTime);
+      echoGain.gain.linearRampToValueAtTime(echoVol, echoTime + 0.012);
+      echoGain.gain.exponentialRampToValueAtTime(0.00001, echoTime + dur);
+
+      echoOsc.connect(echoFilter);
+      echoFilter.connect(echoGain);
+      echoGain.connect(ctx.destination);
+
+      echoOsc.start(echoTime);
+      echoOsc.stop(echoTime + dur + 0.02);
+    });
+
+    // ── 5. Clean Ear Candy Shimmer Decay (Crystal harmonic bloom ~0.95s tail) ───
+    const shimmerNotes = [1046.50, 1318.51, 1567.98, 2093.00]; // C6, E6, G6, C7
+    shimmerNotes.forEach((freq, idx) => {
+      const shimmerOsc = ctx.createOscillator();
+      const shimmerGain = ctx.createGain();
+
+      shimmerOsc.type = "sine";
+      shimmerOsc.frequency.setValueAtTime(freq, now + 0.015);
+
+      const noteVol = 0.038 / (1 + idx * 0.28);
+      shimmerGain.gain.setValueAtTime(0.0001, now + 0.015);
+      shimmerGain.gain.linearRampToValueAtTime(noteVol, now + 0.05);
+      shimmerGain.gain.exponentialRampToValueAtTime(0.00001, now + 0.95);
+
+      shimmerOsc.connect(shimmerGain);
+      shimmerGain.connect(ctx.destination);
+
+      shimmerOsc.start(now + 0.015);
+      shimmerOsc.stop(now + 0.98);
+    });
+  } catch {}
+}
+
+/**
  * Play an energetic, triumphant celebration fanfare & confetti pop
  * when user passes a difficult challenge (e.g. Modul 7 "Kamu berhasil melewati pertanyaan sulit!")
  */
@@ -576,4 +708,56 @@ export function initGlobalSoundEffects() {
   };
 
   window.addEventListener("pointerdown", handlePointerDown, { passive: true });
+}
+
+/**
+ * Play a sparkling crystal score reveal chime when entering the analysis screen
+ */
+export function playScoreRevealSound() {
+  try {
+    const ctx = getAudioContext();
+    if (!ctx) return;
+
+    const now = ctx.currentTime;
+
+    // 1. Soft ascending chime flourish (D5, G5, C6)
+    const notes = [587.33, 783.99, 1046.50];
+    notes.forEach((freq, idx) => {
+      const noteTime = now + 0.12 + idx * 0.1;
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+
+      osc.type = "sine";
+      osc.frequency.setValueAtTime(freq * 1.05, noteTime);
+      osc.frequency.exponentialRampToValueAtTime(freq, noteTime + 0.015);
+
+      gain.gain.setValueAtTime(0.0001, noteTime);
+      gain.gain.linearRampToValueAtTime(0.14, noteTime + 0.01);
+      gain.gain.exponentialRampToValueAtTime(0.00001, noteTime + 0.65);
+
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+
+      osc.start(noteTime);
+      osc.stop(noteTime + 0.7);
+
+      // Shimmer overtone on the final crystal high note
+      if (idx === 2) {
+        const shimmer = ctx.createOscillator();
+        const sGain = ctx.createGain();
+        shimmer.type = "triangle";
+        shimmer.frequency.setValueAtTime(freq * 2, noteTime + 0.02);
+
+        sGain.gain.setValueAtTime(0.0001, noteTime + 0.02);
+        sGain.gain.linearRampToValueAtTime(0.05, noteTime + 0.03);
+        sGain.gain.exponentialRampToValueAtTime(0.00001, noteTime + 0.45);
+
+        shimmer.connect(sGain);
+        sGain.connect(ctx.destination);
+
+        shimmer.start(noteTime + 0.02);
+        shimmer.stop(noteTime + 0.5);
+      }
+    });
+  } catch {}
 }

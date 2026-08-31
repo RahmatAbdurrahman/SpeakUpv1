@@ -186,12 +186,7 @@ export default function SettingsScreen({ onBack, onNavigateHome, onNavigatePract
             <section className="settings-section">
               <h2 className="settings-section-title">Notifikasi</h2>
               <div className="settings-toggle-row">
-                <div className="settings-toggle-text">
-                  <span className="settings-toggle-label">Pengingat Streak</span>
-                  <span className="settings-toggle-caption">
-                    Diingatkan kalau kamu belum latihan hari ini dan streak-mu bisa putus.
-                  </span>
-                </div>
+                <span className="settings-toggle-label">Pengingat Streak</span>
                 <button
                   type="button"
                   role="switch"

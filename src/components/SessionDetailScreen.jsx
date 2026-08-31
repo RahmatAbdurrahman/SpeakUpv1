@@ -6,14 +6,19 @@ import arrowLeftIcon from "../assets/pages_assets/questionnaires/arrow_left.svg"
 import { AnalysisCards } from "./SimulasiScreen";
 import { fetchSessionResults, friendlySimulasiError } from "../lib/simulasi";
 import { fetchPeerFeedbackSummary, fetchPeerFeedbackEntries } from "../lib/peerFeedback";
+import { exportAnalysisToPDF } from "../lib/pdfExport";
+import iconDownload from "../assets/icons/Download.svg";
+import { DotLottieReact } from "@lottiefiles/dotlottie-react";
+import animaBotLottie from "../assets/lotties/AnimaBot.lottie";
 
 const KATEGORI_LABEL = { spontan: "Spontaneous", kelas: "Presentasi", lomba: "Presentasi", interview: "Interview" };
 
-function Stars({ count }) {
+function Stars({ count = 0 }) {
+  const c = Number(count) || 0;
   return (
-    <span className="viewerfb-stars" aria-label={`${count} dari 5 bintang`}>
+    <span className="viewerfb-stars" aria-label={`${c} dari 5 bintang`}>
       {[1, 2, 3, 4, 5].map((n) => (
-        <span key={n} className={`viewerfb-star ${n <= count ? "filled" : ""}`}>
+        <span key={n} className={`viewerfb-star ${n <= c ? "filled" : ""}`}>
           ★
         </span>
       ))}
@@ -65,6 +70,52 @@ export default function SessionDetailScreen({ sessionId, kategori, date, isLive,
     };
   }, [sessionId, isLive]);
 
+  const [exportingPdf, setExportingPdf] = useState(false);
+
+  const handleExportPDF = async () => {
+    setExportingPdf(true);
+    try {
+      const sub = results?.feedback?.sub_scores || {};
+      const scores = [
+        {
+          label: "Argumentasi",
+          value: sub.argumentasi ?? sub.kesesuaian_materi ?? (results?.feedback?.skor ? Math.round(results.feedback.skor) : 88),
+          unit: "/ 100",
+          chip: "Kuat",
+        },
+        {
+          label: "Relevansi",
+          value: sub.relevansi ?? sub.kesesuaian_materi ?? sub.fluency ?? 88,
+          unit: "/ 100",
+          chip: "Relevan",
+        },
+      ];
+      const metrics = [
+        { label: "Kata Pengisi", value: results?.metrics?.filler_word_count ?? 0, unit: "Kali", chip: "Stabil" },
+        { label: "Kecepatan", value: Math.round(results?.metrics?.pace_wpm || 140), unit: "wpm", chip: "Stabil" },
+        { label: "Kejelasan", value: sub.fluency ?? 88, unit: "/ 100", chip: "Baik" },
+        { label: "Energi", value: sub.intonasi ?? 80, unit: "/ 100", chip: "Baik" },
+      ];
+
+      await exportAnalysisToPDF({
+        title: `Riwayat: ${KATEGORI_LABEL[kategori] || "Latihan"}`,
+        category: KATEGORI_LABEL[kategori] || "Simulasi",
+        scores,
+        metrics,
+        feedback: results?.feedback?.saran || results?.feedback?.feedback,
+        motivasi: results?.feedback?.motivasi || "Terus berlatih untuk mengasah kemampuan berbicaramu!",
+        transcript:
+          results?.transcript ||
+          results?.metrics?.transcript ||
+          results?.feedback?.transcript ||
+          results?.feedback?.transkrip,
+        date: formatDate(date),
+      });
+    } finally {
+      setExportingPdf(false);
+    }
+  };
+
   const hasFeedback = Boolean(results?.feedback);
 
   return (
@@ -86,11 +137,20 @@ export default function SessionDetailScreen({ sessionId, kategori, date, isLive,
         {loading && <p className="viewerfb-hint">Memuat detail sesi...</p>}
         {errorMessage && <p className="viewerfb-error">{errorMessage}</p>}
 
-        {!loading && hasFeedback && <AnalysisCards results={results} />}
+        {!loading && hasFeedback && (
+          <AnalysisCards results={results} />
+        )}
 
         {!loading && !hasFeedback && !errorMessage && (
           <div className="viewerfb-empty-card">
-            <span className="viewerfb-empty-icon">🤖</span>
+            <div className="viewerfb-empty-lottie-wrap">
+              <DotLottieReact
+                src={animaBotLottie}
+                loop
+                autoplay
+                className="viewerfb-empty-lottie"
+              />
+            </div>
             <p className="viewerfb-empty-title">Belum ada feedback AI untuk sesi ini</p>
             <p className="viewerfb-empty-desc">
               Sesi ini kemungkinan direkam sebelum analisis AI-nya sempat diproses.
@@ -105,7 +165,9 @@ export default function SessionDetailScreen({ sessionId, kategori, date, isLive,
               <>
                 <div className="viewerfb-summary-card">
                   <div className="viewerfb-summary-score">
-                    <span className="viewerfb-summary-num">{peerSummary.avgStars.toFixed(1)}</span>
+                    <span className="viewerfb-summary-num">
+                      {peerSummary.avgStars != null ? Number(peerSummary.avgStars).toFixed(1) : "–"}
+                    </span>
                     <span className="viewerfb-summary-max">/5.0</span>
                   </div>
                   <p className="viewerfb-summary-count">Berdasarkan {peerSummary.count} rating dari penonton</p>
@@ -140,6 +202,20 @@ export default function SessionDetailScreen({ sessionId, kategori, date, isLive,
           </>
         )}
       </div>
+
+      {!loading && hasFeedback && (
+        <div className="sessiondetail-cta-wrap">
+          <button
+            type="button"
+            className="btn-sessiondetail-download"
+            onClick={handleExportPDF}
+            disabled={exportingPdf}
+          >
+            <img src={iconDownload} alt="" className="btn-sessiondetail-download-icon" />
+            <span>{exportingPdf ? "Menyiapkan PDF..." : "Unduh Laporan PDF"}</span>
+          </button>
+        </div>
+      )}
     </div>
   );
 }

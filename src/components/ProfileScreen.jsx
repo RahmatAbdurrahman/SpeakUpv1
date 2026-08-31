@@ -8,6 +8,7 @@ import iconFlash from "../assets/pages_assets/ai_analysis/Icons/Flash-Icon.svg";
 import iconMouth from "../assets/pages_assets/ai_analysis/Icons/Mouth-Icon.svg";
 import iconSpeed from "../assets/pages_assets/ai_analysis/Icons/Speed-Icon.svg";
 import iconArgument from "../assets/pages_assets/ai_analysis/Icons/Argument-Icon.svg";
+import iconSettings from "../assets/icons/Settings.svg";
 import { supabase } from "../lib/supabaseClient";
 import { fetchProfile } from "../lib/profile";
 import { fetchProgressSummary } from "../lib/progress";
@@ -32,6 +33,104 @@ const KATEGORI_CLASS = {
 function formatDate(iso) {
   if (!iso) return "";
   return new Date(iso).toLocaleDateString("id-ID", { day: "numeric", month: "short", year: "numeric" });
+}
+
+function SpeakingDnaGauge({ score }) {
+  const clampedScore = Math.max(0, Math.min(100, score != null ? Math.round(score) : 0));
+
+  const size = 160;
+  const strokeWidth = 16;
+  const radius = (size - strokeWidth) / 2;
+  const circumference = 2 * Math.PI * radius;
+
+  const [displayScore, setDisplayScore] = useState(0);
+  const [dashOffset, setDashOffset] = useState(circumference);
+  const [isLoaded, setIsLoaded] = useState(false);
+
+  useEffect(() => {
+    const targetOffset = circumference - (clampedScore / 100) * circumference;
+    const strokeTimer = setTimeout(() => {
+      setDashOffset(targetOffset);
+      setIsLoaded(true);
+    }, 80);
+
+    const duration = 1100;
+    const startTime = performance.now();
+    let animId = null;
+
+    const animateNumber = (now) => {
+      const elapsed = now - startTime;
+      const progress = Math.min(1, elapsed / duration);
+      const eased = 1 - Math.pow(1 - progress, 3);
+      setDisplayScore(Math.round(eased * clampedScore));
+
+      if (progress < 1) {
+        animId = requestAnimationFrame(animateNumber);
+      }
+    };
+
+    animId = requestAnimationFrame(animateNumber);
+
+    return () => {
+      clearTimeout(strokeTimer);
+      if (animId) cancelAnimationFrame(animId);
+    };
+  }, [clampedScore, circumference]);
+
+  return (
+    <div className={`profile-dna-gauge-container ${isLoaded ? "profile-dna-gauge--ready" : ""}`}>
+      <svg
+        className="profile-dna-gauge-svg"
+        width={size}
+        height={size}
+        viewBox={`0 0 ${size} ${size}`}
+        aria-hidden="true"
+      >
+        <defs>
+          <linearGradient id="dnaScoreGaugeGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stopColor="#FFA767" />
+            <stop offset="100%" stopColor="#E8753D" />
+          </linearGradient>
+        </defs>
+
+        {/* Inner filled background disc */}
+        <circle
+          className="profile-dna-gauge-inner-disc"
+          cx={size / 2}
+          cy={size / 2}
+          r={radius - strokeWidth / 2 + 1}
+        />
+
+        {/* Background track circle */}
+        <circle
+          className="profile-dna-gauge-track"
+          cx={size / 2}
+          cy={size / 2}
+          r={radius}
+          strokeWidth={strokeWidth}
+        />
+
+        {/* Active progress arc */}
+        <circle
+          className="profile-dna-gauge-progress"
+          cx={size / 2}
+          cy={size / 2}
+          r={radius}
+          strokeWidth={strokeWidth}
+          strokeDasharray={circumference}
+          strokeDashoffset={dashOffset}
+          strokeLinecap="round"
+          transform={`rotate(-90 ${size / 2} ${size / 2})`}
+        />
+      </svg>
+
+      {/* Center Number & /100 */}
+      <div className="profile-dna-gauge-center">
+        <span className="profile-dna-score-num">{displayScore}</span>
+        <span className="profile-dna-score-max">dari 100</span>
+      </div>
+    </div>
+  );
 }
 
 export default function ProfileScreen({ onNavigateHome, onNavigatePractice, onNavigateSosial, onOpenSettings, onOpenSessionDetail }) {
@@ -107,29 +206,13 @@ export default function ProfileScreen({ onNavigateHome, onNavigatePractice, onNa
       <div className="profile-topbar">
         <h1 className="profile-topbar-title">Progress</h1>
         <div className="profile-topbar-actions">
-          <div className="profile-xp-badge">
-            <span className="profile-xp-text">{xp.toLocaleString("id-ID")} XP</span>
-          </div>
           <button
             type="button"
             className="btn-profile-settings"
             onClick={onOpenSettings}
             aria-label="Pengaturan"
           >
-            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <path
-                d="M12 15a3 3 0 100-6 3 3 0 000 6z"
-                stroke="#243238"
-                strokeWidth="1.8"
-              />
-              <path
-                d="M19.4 13a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 11-2.83 2.83l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V19a2 2 0 11-4 0v-.09a1.65 1.65 0 00-1-1.51 1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 11-2.83-2.83l.06-.06a1.65 1.65 0 00.33-1.82 1.65 1.65 0 00-1.51-1H4a2 2 0 110-4h.09a1.65 1.65 0 001.51-1 1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 112.83-2.83l.06.06a1.65 1.65 0 001.82.33H10a1.65 1.65 0 001-1.51V4a2 2 0 114 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 112.83 2.83l-.06.06a1.65 1.65 0 00-.33 1.82V10a1.65 1.65 0 001.51 1H20a2 2 0 110 4h-.09a1.65 1.65 0 00-1.51 1z"
-                stroke="#243238"
-                strokeWidth="1.8"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              />
-            </svg>
+            <img src={iconSettings} alt="" className="profile-settings-icon" />
           </button>
         </div>
       </div>
@@ -156,22 +239,17 @@ export default function ProfileScreen({ onNavigateHome, onNavigatePractice, onNa
               </div>
             </div>
 
-            {/* ── Speaking DNA Card ────────────────────────────────── */}
-            <div className="profile-dna-card">
-              <div className="profile-dna-badge">
-                <span className="profile-dna-badge-dot" />
-                <span>Speaking DNA</span>
-              </div>
+            {/* ── Speaking DNA ────────────────────────────────────── */}
+            <div className="profile-dna-section">
+              <h2 className="profile-dna-title">Speaking DNA</h2>
 
               {dnaScore != null ? (
                 <>
-                  <div className="profile-dna-score-wrap">
-                    <span className="profile-dna-score">{dnaScore}</span>
-                    <span className="profile-dna-max">/100</span>
-                  </div>
-                  <span className="profile-dna-status-pill">
+                  <SpeakingDnaGauge score={dnaScore} />
+
+                  <p className="profile-dna-status-text">
                     {dnaScore >= 80 ? "✨ Pembicara Percaya Diri" : dnaScore >= 60 ? "🔥 Performa Solid" : "🌱 Sedang Berkembang"}
-                  </span>
+                  </p>
                   <p className="profile-dna-desc">
                     Indeks profil kemampuan public speaking kamu berdasarkan rata-rata 4 pilar utama.
                   </p>
@@ -341,7 +419,9 @@ export default function ProfileScreen({ onNavigateHome, onNavigatePractice, onNa
                   <div className="profile-peer-header">
                     <div className="profile-peer-stars-wrap">
                       <span className="profile-peer-star-icon">⭐</span>
-                      <span className="profile-peer-score-val">{peerRating.avgStars.toFixed(1)}</span>
+                      <span className="profile-peer-score-val">
+                        {peerRating.avgStars != null ? peerRating.avgStars.toFixed(1) : "0.0"}
+                      </span>
                       <span className="profile-peer-score-max">/5.0</span>
                     </div>
                     <span className="profile-peer-rating-count">Berdasarkan {peerRating.count} rating latihan</span>
@@ -414,7 +494,7 @@ export default function ProfileScreen({ onNavigateHome, onNavigatePractice, onNa
                             </div>
                             <span className="profile-history-desc">
                               {s.isLive ? "Sesi Live Presentasi" : "Sesi Latihan Simulasi"}
-                              {s.isLive && s.peerRatingCount > 0 && (
+                              {s.isLive && s.peerRatingCount > 0 && s.peerAvgStars != null && (
                                 <> · ⭐ {s.peerAvgStars.toFixed(1)} ({s.peerRatingCount})</>
                               )}
                             </span>

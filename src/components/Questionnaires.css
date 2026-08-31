@@ -52,7 +52,7 @@
   overflow: hidden;
 }
 .progress-segment.filled {
-  background-color: var(--color-primary, #24A981);
+  background-color: var(--color-secondary, #24A981);
 }
 
 /* Nav Row */
@@ -76,7 +76,6 @@
   transition: opacity 0.2s ease, transform 0.15s ease;
 }
 .btn-nav-back:hover { transform: translateX(-2px); }
-.btn-nav-back.is-first-step { opacity: 0; pointer-events: none; }
 .nav-back-icon { width: 24px; height: 24px; display: block; }
 .step-counter-text {
   font-family: var(--font-family-base, 'Space Grotesk', sans-serif);
@@ -98,6 +97,51 @@
   padding: 12px 18px 36px 18px;
   box-sizing: border-box;
   width: 100%;
+}
+
+.questionnaire-content-wrap {
+  flex: 1;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.questionnaire-slide-forward {
+  animation: qSlideInForward 0.32s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.questionnaire-slide-backward {
+  animation: qSlideInBackward 0.32s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+@keyframes qSlideInForward {
+  0% {
+    opacity: 0.2;
+    transform: translate3d(40px, 0, 0);
+  }
+  100% {
+    opacity: 1;
+    transform: translate3d(0, 0, 0);
+  }
+}
+
+@keyframes qSlideInBackward {
+  0% {
+    opacity: 0.2;
+    transform: translate3d(-40px, 0, 0);
+  }
+  100% {
+    opacity: 1;
+    transform: translate3d(0, 0, 0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .questionnaire-slide-forward,
+  .questionnaire-slide-backward {
+    animation: none;
+  }
 }
 
 /* ── Question Header (Title + Illustration) ───────────────────────────────── */
@@ -163,10 +207,10 @@
   user-select: none;
   -webkit-tap-highlight-color: transparent;
 }
-.tag-chip:hover { border-color: var(--color-secondary, #E8753D); }
+.tag-chip:hover { border-color: var(--color-primary, #E8753D); }
 .tag-chip.active {
   background-color: rgba(232, 117, 61, 0.12);
-  border: 2px solid var(--color-secondary, #E8753D);
+  border: 2px solid var(--color-primary, #E8753D);
   padding: 7px 11px;
   color: var(--color-text-secondary, #DA5000);
 }
@@ -194,10 +238,10 @@
   box-sizing: border-box;
   -webkit-tap-highlight-color: transparent;
 }
-.radio-card:hover { border-color: var(--color-secondary, #E8753D); }
+.radio-card:hover { border-color: var(--color-primary, #E8753D); }
 .radio-card.active {
   background-color: rgba(232, 117, 61, 0.12);
-  border: 2px solid var(--color-secondary, #E8753D);
+  border: 2px solid var(--color-primary, #E8753D);
   padding: 15px 19px;
 }
 .radio-indicator {
@@ -212,7 +256,7 @@
   transition: border-color 0.15s ease;
 }
 .radio-card.active .radio-indicator {
-  border-color: var(--color-secondary, #E8753D);
+  border-color: var(--color-primary, #E8753D);
 }
 .radio-dot {
   width: 10px;
@@ -222,7 +266,7 @@
   transition: background-color 0.15s ease;
 }
 .radio-card.active .radio-dot {
-  background-color: var(--color-secondary, #E8753D);
+  background-color: var(--color-primary, #E8753D);
 }
 .radio-label {
   font-size: 14px;
@@ -389,7 +433,7 @@
   font-weight: 700;
 }
 .slider-bottom-min {
-  color: var(--color-primary, #24A981);
+  color: var(--color-secondary, #24A981);
 }
 .slider-bottom-max {
   color: var(--color-text-secondary, #DA5000);
@@ -461,7 +505,7 @@
   width: 32px;
   height: 32px;
   border: 3px solid rgba(255, 255, 255, 0.2);
-  border-top-color: var(--color-secondary, #E8753D);
+  border-top-color: var(--color-primary, #E8753D);
   border-radius: 50%;
   animation: spin-camera 0.8s linear infinite;
 }
@@ -614,7 +658,7 @@
   width: 100%;
   max-width: 366px;
   height: 46px;
-  background-color: var(--color-secondary, #E8753D);
+  background-color: var(--color-primary, #E8753D);
   color: #FFFFFF;
   border: 1px solid #8B4827;
   border-radius: var(--buttons, 100px);

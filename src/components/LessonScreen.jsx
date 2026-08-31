@@ -4,7 +4,7 @@ import LessonModul7Screen from "./LessonModul7Screen";
 import LessonExitModal from "./LessonExitModal";
 import { useAssetPreloader, useGainXpPreloader, getPreloadedVideoSrc } from "../lib/assetPreloader";
 import { useUserProgress } from "../context/UserProgressContext";
-import { playXpTickSound, playXpCompleteSound, playGainXpIntroSound, playBreathingCompleteSound, playBreathingStartSound } from "../lib/soundEffects";
+import { playXpTickSound, playXpCompleteSound, playGainXpIntroSound, playBreathingCompleteSound, playBreathingStartSound, playLessonEnterPortalSound } from "../lib/soundEffects";
 import "./LessonScreen.css";
 
 // ─── Assets ──────────────────────────────────────────────────────────────────
@@ -78,13 +78,13 @@ function LessonTopBar({ currentStep, totalSteps, onBack }) {
 }
 
 // ─── Page 1: Gugup vs Tenang (node 228:257) ──────────────────────────────────
-function LessonPage1({ onNext, onBack }) {
+function LessonPage1({ onNext, onBack, direction = "forward" }) {
   return (
     <div className="lesson-page lesson-page-1" data-node-id="228:257" data-name="Lesson-TarikNapas">
       <LessonTopBar currentStep={1} totalSteps={5} onBack={onBack} />
 
       {/* Main Content Area */}
-      <div className="lesson-p1-content" data-node-id="256:825">
+      <div className={`lesson-p1-content lesson-slide-${direction}`} data-node-id="256:825">
         <h2 className="lesson-p1-title" data-node-id="266:854">
           Saat gugup, napas jadi berantakan
         </h2>
@@ -135,7 +135,7 @@ function LessonPage1({ onNext, onBack }) {
 }
 
 // ─── Page 2: Teknik 4-7-8 (node 268:876) ────────────────────────────────────
-function LessonPage2({ onNext, onBack }) {
+function LessonPage2({ onNext, onBack, direction = "forward" }) {
   const steps = [
     {
       key: "tarik",
@@ -168,7 +168,7 @@ function LessonPage2({ onNext, onBack }) {
       <LessonTopBar currentStep={2} totalSteps={5} onBack={onBack} />
 
       {/* Main Content Area */}
-      <div className="lesson-p2-content" data-node-id="268:885">
+      <div className={`lesson-p2-content lesson-slide-${direction}`} data-node-id="268:885">
         <h2 className="lesson-p2-title" data-node-id="268:886">
           Kenalan sama Teknik 4-7-8
         </h2>
@@ -209,7 +209,7 @@ function LessonPage2({ onNext, onBack }) {
 }
 
 // ─── Page 3: Seberapa Gugup Kamu? (node 279:258) ───────────────────────────
-function LessonPage3({ onNext, onBack }) {
+function LessonPage3({ onNext, onBack, direction = "forward" }) {
   // Slider value from -5 (Santai Aja) to +5 (Gugup Banget), center is 0
   const [sliderValue, setSliderValue] = useState(0);
   const min = -5;
@@ -230,7 +230,7 @@ function LessonPage3({ onNext, onBack }) {
       <LessonTopBar currentStep={3} totalSteps={5} onBack={onBack} />
 
       {/* Main Content Area */}
-      <div className="lesson-p3-content" data-node-id="279:267">
+      <div className={`lesson-p3-content lesson-slide-${direction}`} data-node-id="279:267">
         <h2 className="lesson-p3-title" data-node-id="279:268">
           Sebelum mulai,
           <br />
@@ -322,9 +322,10 @@ function LessonPage3({ onNext, onBack }) {
 }
 
 // ─── Page 4: Video Animasi Ritme Napas (node 279:407) ─────────────────────────
-function LessonPage4({ onNext, onBack }) {
+function LessonPage4({ onNext, onBack, direction = "forward" }) {
   const [cycle, setCycle] = useState(1);
   const [isCompleted, setIsCompleted] = useState(false);
+  const [countdown, setCountdown] = useState(3);
   const videoRef = useRef(null);
 
   // Each time the video ends, increment cycle until 4, then dissolve video and show "Selesai"
@@ -343,6 +344,7 @@ function LessonPage4({ onNext, onBack }) {
   // Jump immediately to 4th loop at second 22.5
   const handleSkip = () => {
     if (!isCompleted) {
+      setCountdown(0);
       setCycle(4);
       if (videoRef.current) {
         videoRef.current.currentTime = 22.5;
@@ -351,12 +353,24 @@ function LessonPage4({ onNext, onBack }) {
     }
   };
 
+  // 3-second countdown on initial mount
   useEffect(() => {
-    playBreathingStartSound();
-  }, []);
+    if (countdown > 0) {
+      const timer = setTimeout(() => {
+        setCountdown((c) => c - 1);
+      }, 1000);
+      return () => clearTimeout(timer);
+    } else if (countdown === 0 && !isCompleted) {
+      // Countdown finished: play tranquil 432Hz Gong and start breathing video
+      playBreathingStartSound();
+      if (videoRef.current) {
+        videoRef.current.play().catch(() => {});
+      }
+    }
+  }, [countdown, isCompleted]);
 
   useEffect(() => {
-    if (videoRef.current && !isCompleted) {
+    if (cycle > 1 && videoRef.current && !isCompleted) {
       videoRef.current.play().catch(() => {});
     }
   }, [cycle, isCompleted]);
@@ -405,7 +419,7 @@ function LessonPage4({ onNext, onBack }) {
       </div>
 
       {/* Main Content Area (Dark) */}
-      <div className="lesson-p4-content" data-node-id="279:416">
+      <div className={`lesson-p4-content lesson-slide-${direction}`} data-node-id="279:416">
         {/* Top 4-7-8 Tutorial SVG Banner */}
         <img
           src={tutorialBanner}
@@ -424,13 +438,21 @@ function LessonPage4({ onNext, onBack }) {
               ref={videoRef}
               src={videoHaleAnimation}
               className="lesson-p4-anim-video"
-              autoPlay
               muted
               playsInline
               onEnded={handleVideoEnded}
               aria-label="Animasi Ritme Napas"
             />
           </div>
+
+          {/* 3-2-1 Countdown Overlay in center before starting */}
+          {countdown > 0 && !isCompleted && (
+            <div className="lesson-p4-countdown-overlay" aria-label={`Mulai dalam ${countdown}`}>
+              <div key={countdown} className="lesson-p4-countdown-badge">
+                <span className="lesson-p4-countdown-number">{countdown}</span>
+              </div>
+            </div>
+          )}
 
           {/* Selesai text in center when finished */}
           {isCompleted && (
@@ -464,33 +486,36 @@ function LessonPage4({ onNext, onBack }) {
 }
 
 // ─── Page 5: Conclusion (node 281:849) ──────────────────────────────────────
-function LessonPage5({ onNext, onBack }) {
+function LessonPage5({ onNext, onBack, direction = "forward" }) {
   const { isReady: isXpReady } = useGainXpPreloader(videoGainXP);
 
   return (
     <div className="lesson-page lesson-page-5" data-node-id="281:849">
       <LessonTopBar currentStep={5} totalSteps={5} onBack={onBack} />
 
-      {/* Full-width hero image with relax cloud (no gradient overlay) */}
-      <div className="lesson-p5-hero" data-node-id="281:910">
-        <img
-          src={relaxCloud}
-          alt="Makin tenang"
-          className="lesson-p5-hero-img"
-          data-node-id="281:850"
-        />
-      </div>
+      {/* Sliding Content Container */}
+      <div className={`lesson-p5-scroll-content lesson-slide-${direction}`}>
+        {/* Full-width hero image with relax cloud (no gradient overlay) */}
+        <div className="lesson-p5-hero" data-node-id="281:910">
+          <img
+            src={relaxCloud}
+            alt="Makin tenang"
+            className="lesson-p5-hero-img"
+            data-node-id="281:850"
+          />
+        </div>
 
-      {/* Result section */}
-      <div className="lesson-p5-result" data-node-id="281:851">
-        <div className="lesson-p5-text-wrapper" data-node-id="281:852">
-          <div className="lesson-p5-title-group" data-node-id="281:853">
-            <p className="lesson-p5-question" data-node-id="281:854">Gimana?</p>
-            <h3 className="lesson-p5-headline" data-node-id="281:855">Jauh lebih lega, kan?</h3>
+        {/* Result section */}
+        <div className="lesson-p5-result" data-node-id="281:851">
+          <div className="lesson-p5-text-wrapper" data-node-id="281:852">
+            <div className="lesson-p5-title-group" data-node-id="281:853">
+              <p className="lesson-p5-question" data-node-id="281:854">Gimana?</p>
+              <h3 className="lesson-p5-headline" data-node-id="281:855">Jauh lebih lega, kan?</h3>
+            </div>
+            <p className="lesson-p5-caption" data-node-id="281:856">
+              Teknik ini bisa kamu pakai kapan saja—sebelum presentasi, interview, atau momen mendebarkan lainnya.
+            </p>
           </div>
-          <p className="lesson-p5-caption" data-node-id="281:856">
-            Teknik ini bisa kamu pakai kapan saja—sebelum presentasi, interview, atau momen mendebarkan lainnya.
-          </p>
         </div>
       </div>
 
@@ -637,10 +662,15 @@ export default function LessonScreen({ lessonData, onBack, onFinish }) {
 
   // step: "affirmation" | 1 | 2 | 3 | 4 | 5 | "completed"
   const [step, setStep] = useState("affirmation");
+  const [direction, setDirection] = useState("forward");
   const [showExitModal, setShowExitModal] = useState(false);
 
   // Asset preloading: ensure >= 50% assets are ready before leaving affirmation
   const { isThresholdMet } = useAssetPreloader(LESSON1_ASSETS, 0.5);
+
+  useEffect(() => {
+    playLessonEnterPortalSound();
+  }, []);
 
   if (isModul7) {
     return (
@@ -652,6 +682,7 @@ export default function LessonScreen({ lessonData, onBack, onFinish }) {
   }
 
   const goNext = () => {
+    setDirection("forward");
     setStep((prev) => {
       if (prev === "affirmation") return 1;
       if (prev === 1) return 2;
@@ -664,6 +695,7 @@ export default function LessonScreen({ lessonData, onBack, onFinish }) {
   };
 
   const goBack = () => {
+    setDirection("backward");
     setStep((prev) => {
       if (prev === 5) return 4;
       if (prev === 4) return 3;
@@ -680,19 +712,21 @@ export default function LessonScreen({ lessonData, onBack, onFinish }) {
 
   return (
     <div className="lesson-screen">
-      {step === "affirmation" && (
-        <LessonAffirmation
-          quote={lessonData?.affirmationQuote}
-          isReady={isThresholdMet}
-          onComplete={goNext}
-        />
-      )}
-      {step === 1 && <LessonPage1 onNext={goNext} onBack={handleRequestExit} />}
-      {step === 2 && <LessonPage2 onNext={goNext} onBack={goBack} />}
-      {step === 3 && <LessonPage3 onNext={goNext} onBack={goBack} />}
-      {step === 4 && <LessonPage4 onNext={goNext} onBack={goBack} />}
-      {step === 5 && <LessonPage5 onNext={goNext} onBack={goBack} />}
-      {step === "completed" && <CompletedLesson onFinish={onFinish} />}
+      <div key={step} className="lesson-step-wrapper">
+        {step === "affirmation" && (
+          <LessonAffirmation
+            quote={lessonData?.affirmationQuote}
+            isReady={isThresholdMet}
+            onComplete={goNext}
+          />
+        )}
+        {step === 1 && <LessonPage1 onNext={goNext} onBack={handleRequestExit} direction={direction} />}
+        {step === 2 && <LessonPage2 onNext={goNext} onBack={handleRequestExit} direction={direction} />}
+        {step === 3 && <LessonPage3 onNext={goNext} onBack={handleRequestExit} direction={direction} />}
+        {step === 4 && <LessonPage4 onNext={goNext} onBack={handleRequestExit} direction={direction} />}
+        {step === 5 && <LessonPage5 onNext={goNext} onBack={handleRequestExit} direction={direction} />}
+        {step === "completed" && <CompletedLesson onFinish={onFinish} />}
+      </div>
 
       {showExitModal && (
         <LessonExitModal

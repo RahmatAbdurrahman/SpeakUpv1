@@ -39,3 +39,65 @@
   color: var(--color-text-primary, #243238);
   margin: 4px 0 0;
 }
+
+/* ── Fixed/Sticky Bottom CTA ─────────────────────────────────────── */
+.sessiondetail-cta-wrap {
+  position: sticky;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  padding: 14px 16px 32px 16px;
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(180deg, rgba(250, 248, 243, 0) 0%, rgba(250, 248, 243, 0.96) 25%, #FAF8F3 100%);
+  z-index: 10;
+  margin-top: auto;
+  width: 100%;
+}
+
+.btn-sessiondetail-download {
+  width: 100%;
+  max-width: 366px;
+  height: 46px;
+  background-color: var(--color-primary, #E8753D);
+  border: 1px solid #8B4827;
+  border-radius: 34px;
+  box-shadow: 0px 4px 0px 0px #8B4827;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  cursor: pointer;
+  font-family: var(--font-family-base, 'Space Grotesk', sans-serif);
+  font-size: 14px;
+  font-weight: 700;
+  color: #FFFFFF;
+  transition: transform 0.12s ease, box-shadow 0.12s ease, filter 0.15s ease;
+  -webkit-tap-highlight-color: transparent;
+  margin: 0 auto;
+}
+
+.btn-sessiondetail-download:hover {
+  filter: brightness(1.05);
+}
+
+.btn-sessiondetail-download:active {
+  transform: translateY(2px);
+  box-shadow: 0px 2px 0px 0px #8B4827;
+}
+
+.btn-sessiondetail-download:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.btn-sessiondetail-download-icon {
+  width: 18px;
+  height: 18px;
+  display: block;
+  filter: brightness(0) invert(1);
+}
+

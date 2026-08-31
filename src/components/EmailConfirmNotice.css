@@ -52,7 +52,7 @@
   font-family: var(--font-family-base, 'Space Grotesk', sans-serif);
   font-size: 12px;
   font-weight: 600;
-  color: var(--color-primary, #24A981);
+  color: var(--color-secondary, #24A981);
   margin: 0;
 }
 
@@ -66,7 +66,7 @@
 .btn-confirm-login {
   width: 100%;
   height: 46px;
-  background-color: var(--color-secondary, #E8753D);
+  background-color: var(--color-primary, #E8753D);
   color: #FFFFFF;
   border: 1px solid #8B4827;
   border-radius: var(--buttons, 100px);

@@ -31,6 +31,24 @@ import iconNavMic from "../assets/pages_assets/bottom-nav-icons/Mic.svg";
 import iconNavUser from "../assets/pages_assets/bottom-nav-icons/User.svg";
 import iconNavGroup from "../assets/pages_assets/practice/icon_group.svg";
 
+// ─── Inline icon for checkmark on completed timeline bullet ─────────────────
+const IconCheckmark = () => (
+  <svg width="12" height="12" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path d="M2.5 6.2L4.8 8.5L9.5 3.5" stroke="#FFFFFF" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+  </svg>
+);
+
+const isModuleCompleted = (mod) => {
+  if (!mod?.progress) return false;
+  const parts = mod.progress.split("/");
+  if (parts.length === 2) {
+    const current = parseInt(parts[0], 10);
+    const total = parseInt(parts[1], 10);
+    return current > 0 && current >= total;
+  }
+  return false;
+};
+
 // ─── Inline icon for progress (no asset provided) ────────────────────────────
 const IconProgress = () => (
   <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -52,7 +70,7 @@ const EMPTY_STREAK_DAYS = [
 
 const MODULES = [
   { id: 1, module: "Modul 1", title: "Kenali Suaramu", lessons: 4, progress: "4/4", image: imgModul1, active: false, highlight: false, tag: null },
-  { id: 2, module: "Modul 2", title: "Fondasi Suara dan Tubuh", lessons: 6, progress: "1/6", image: imgModul2, active: false, highlight: false, tag: "Testing available" },
+  { id: 2, module: "Modul 2", title: "Fondasi Suara dan Tubuh", lessons: 6, progress: "6/6", image: imgModul2, active: false, highlight: false, tag: "Testing available" },
   { id: 3, module: "Modul 3", title: "Berani di Ruang Kelas", lessons: 6, progress: "6/6", image: imgModul3, active: false, highlight: false, tag: null },
   { id: 4, module: "Modul 4", title: "Percaya Diri di Depan Kamera", lessons: 6, progress: "6/6", image: imgModul4, active: false, highlight: false, tag: null },
   { id: 5, module: "Modul 5", title: "Bicara dengan Wibawa", lessons: 6, progress: "6/6", image: imgModul5, active: false, highlight: false, tag: null },
@@ -176,39 +194,73 @@ export default function HomeScreen({ userName, onSelectModule, onNavigatePractic
             <div className="home-course-list" data-node-id="75:851">
               {MODULES.map((mod, i) => {
                 const isAvailable = Boolean(mod.active || (mod.tag && mod.tag.toLowerCase().includes("testing")));
+                const isCompleted = isModuleCompleted(mod);
+                const isActive = Boolean(mod.active || mod.highlight);
+                const isFirst = i === 0;
+                const isLast = i === MODULES.length - 1;
+
+                // Determine bullet state
+                let bulletStatus = "upcoming";
+                if (isCompleted) {
+                  bulletStatus = "completed";
+                } else if (isActive || isAvailable) {
+                  bulletStatus = "active";
+                }
+
+                // Connecting line states: unbroken continuous track
+                const prevMod = i > 0 ? MODULES[i - 1] : null;
+                const isTopCompleted = Boolean(prevMod && isModuleCompleted(prevMod));
+                const isBottomCompleted = isCompleted;
+
                 return (
-                  <div
-                    key={mod.id}
-                    className={`home-module-item ${mod.active || mod.highlight ? "home-module-item--active home-module-item--highlight" : ""} ${mod.inactive ? "home-module-item--inactive" : ""} ${isAvailable ? "home-module-item--available" : "home-module-item--disabled"}`}
-                    style={{ "--module-color": mod.inactive ? "#F3F4F6" : mod.active ? "rgba(232, 117, 61, 0.08)" : MODULE_COLORS[i] }}
-                    onClick={() => handleModuleClick(mod)}
-                    data-node-id={`module-${mod.id}`}
-                  >
-                    <div className="home-module-content">
-                      <div className="home-module-text">
-                        <span className="home-module-label">{mod.module}</span>
-                        <span className="home-module-title">{mod.title}</span>
-                        {mod.tag && (
-                          <span className="home-module-tag">{mod.tag}</span>
-                        )}
-                      </div>
-                      <div className="home-module-meta">
-                        <div className="home-module-meta-item">
-                          <img src={iconBook} alt="" className="home-module-meta-icon" />
-                          <span>{mod.lessons} Pelajaran</span>
-                        </div>
-                        <div className="home-module-meta-item">
-                          <IconProgress />
-                          <span>{mod.progress} Selesai</span>
-                        </div>
-                      </div>
-                    </div>
-                    <div className="home-module-illus">
-                      <img
-                        src={mod.image}
-                        alt={mod.title}
-                        className="home-module-illus-img"
+                  <div key={mod.id} className="home-timeline-row">
+                    {/* Left Timeline Stepper Track */}
+                    <div className="home-timeline-track" aria-hidden="true">
+                      <div
+                        className={`home-timeline-line home-timeline-line--top ${isFirst ? "home-timeline-line--hidden" : ""} ${isTopCompleted ? "home-timeline-line--completed" : ""}`}
                       />
+                      <div className={`home-timeline-bullet home-timeline-bullet--${bulletStatus}`}>
+                        {bulletStatus === "completed" && <IconCheckmark />}
+                        {bulletStatus === "active" && <div className="home-timeline-inner-dot" />}
+                      </div>
+                      <div
+                        className={`home-timeline-line home-timeline-line--bottom ${isLast ? "home-timeline-line--hidden" : ""} ${isBottomCompleted ? "home-timeline-line--completed" : ""}`}
+                      />
+                    </div>
+
+                    {/* Right Module Card */}
+                    <div
+                      className={`home-module-item ${mod.active || mod.highlight ? "home-module-item--active home-module-item--highlight" : ""} ${mod.inactive ? "home-module-item--inactive" : ""} ${isAvailable ? "home-module-item--available" : "home-module-item--disabled"}`}
+                      style={{ "--module-color": mod.inactive ? "#F3F4F6" : mod.active ? "rgba(232, 117, 61, 0.08)" : MODULE_COLORS[i] }}
+                      onClick={() => handleModuleClick(mod)}
+                      data-node-id={`module-${mod.id}`}
+                    >
+                      <div className="home-module-content">
+                        <div className="home-module-text">
+                          <span className="home-module-label">{mod.module}</span>
+                          <span className="home-module-title">{mod.title}</span>
+                          {mod.tag && (
+                            <span className="home-module-tag">{mod.tag}</span>
+                          )}
+                        </div>
+                        <div className="home-module-meta">
+                          <div className="home-module-meta-item">
+                            <img src={iconBook} alt="" className="home-module-meta-icon" />
+                            <span>{mod.lessons} Pelajaran</span>
+                          </div>
+                          <div className="home-module-meta-item">
+                            <IconProgress />
+                            <span>{mod.progress} Selesai</span>
+                          </div>
+                        </div>
+                      </div>
+                      <div className="home-module-illus">
+                        <img
+                          src={mod.image}
+                          alt={mod.title}
+                          className="home-module-illus-img"
+                        />
+                      </div>
                     </div>
                   </div>
                 );

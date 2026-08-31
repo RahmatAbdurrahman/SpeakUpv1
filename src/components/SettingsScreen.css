@@ -160,16 +160,16 @@
   outline: none;
 }
 .settings-input:focus {
-  border-color: var(--color-secondary, #E8753D);
+  border-color: var(--color-primary, #E8753D);
 }
 
 .btn-settings-save {
   margin-top: 8px;
   height: 44px;
-  background-color: var(--color-primary, #24A981);
+  background-color: var(--color-secondary, #24A981);
   color: #FFFFFF;
-  border: 1px solid var(--color-primary-dark, #17674F);
-  box-shadow: 0px 4px 0px 0px var(--color-primary-dark, #17674F);
+  border: 1px solid var(--color-secondary-dark, #17674F);
+  box-shadow: 0px 4px 0px 0px var(--color-secondary-dark, #17674F);
   border-radius: var(--radius-full, 9999px);
   font-family: var(--font-family-base, 'Space Grotesk', sans-serif);
   font-size: 14px;
@@ -179,7 +179,7 @@
 }
 .btn-settings-save:active {
   transform: translateY(2px);
-  box-shadow: 0px 2px 0px 0px var(--color-primary-dark, #17674F);
+  box-shadow: 0px 2px 0px 0px var(--color-secondary-dark, #17674F);
 }
 .btn-settings-save:disabled {
   opacity: 0.6;
@@ -193,15 +193,13 @@
   justify-content: space-between;
   gap: 16px;
   background-color: var(--color-surface, #FFFFFF);
-  border: 1px solid var(--color-border, rgba(20, 60, 63, 0.12));
-  border-radius: var(--radius-md, 16px);
-  padding: 14px 16px;
+  border-radius: 12px;
+  padding: 14px;
 }
-.settings-toggle-text {
+.settings-toggle-info {
   display: flex;
   flex-direction: column;
   gap: 2px;
-  min-width: 0;
 }
 .settings-toggle-label {
   font-family: var(--font-family-base, 'Space Grotesk', sans-serif);
@@ -209,12 +207,10 @@
   font-weight: 700;
   color: var(--color-text-primary, #243238);
 }
-.settings-toggle-caption {
+.settings-toggle-desc {
   font-family: var(--font-family-base, 'Space Grotesk', sans-serif);
-  font-size: 11px;
-  font-weight: 500;
+  font-size: 12px;
   color: var(--color-text-caption, #8199A3);
-  line-height: 1.4;
 }
 .settings-switch {
   flex-shrink: 0;
@@ -231,7 +227,7 @@
   transition: background-color 0.15s ease;
 }
 .settings-switch--on {
-  background-color: var(--color-primary, #24A981);
+  background-color: var(--color-secondary, #24A981);
   justify-content: flex-end;
 }
 .settings-switch:disabled {

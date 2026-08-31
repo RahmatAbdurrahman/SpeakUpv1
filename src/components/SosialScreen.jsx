@@ -5,6 +5,8 @@ import iconNavMic from "../assets/pages_assets/bottom-nav-icons/Mic.svg";
 import iconNavUser from "../assets/pages_assets/bottom-nav-icons/User.svg";
 import iconGroup from "../assets/pages_assets/practice/icon_group.svg";
 import imgLive from "../assets/pages_assets/sosial/Image-Live.png";
+import imgMatchmakingDuet from "../assets/pages_assets/sosial/Image-Card-MatchmakingDuet.png";
+import cardBgDecor from "../assets/pages_assets/home/Card-bg-decor.svg";
 import { supabase } from "../lib/supabaseClient";
 import {
   fetchLeaderboard,
@@ -212,39 +214,23 @@ export default function SosialScreen({ onNavigateHome, onNavigateSimulasi, onNav
         {/* ── Match Partner Card ─────────────────────────────────── */}
         <section className="sosial-section">
           <div className="sosial-match-card">
-            <div className="sosial-match-badge">
-              <span className="sosial-match-badge-dot"></span>
-              <span>Matchmaking Duet</span>
+            {/* Left side: Transparent Character Illustration */}
+            <div className="sosial-match-illus-side">
+              <img src={imgMatchmakingDuet} alt="Cari Partner Latihan" className="sosial-match-duet-img" />
             </div>
-            <div className="sosial-match-text">
-              <h3>Cari Partner Latihan</h3>
-              <p>Dipasangkan otomatis dengan pengguna lain untuk latihan bareng & saling beri masukan secara live.</p>
-            </div>
-            {queueState === "idle" && (
+
+            {/* Right side: Content */}
+            <div className="sosial-match-content-side">
+              <span className="sosial-match-badge-orange">MATCHMAKING DUET</span>
+              <h3 className="sosial-match-title">Cari Partner Latihan</h3>
+              <p className="sosial-match-desc">
+                Dipasangkan otomatis dengan pengguna lain untuk latihan bareng & saling beri masukan secara live.
+              </p>
+
               <button type="button" className="btn-sosial-match" onClick={handleFindPartner}>
                 Cari Partner Sekarang
               </button>
-            )}
-            {queueState === "matching" && (
-              <button type="button" className="btn-sosial-match btn-sosial-match--searching" disabled>
-                <span className="sosial-btn-spinner" />
-                Mencari Partner...
-              </button>
-            )}
-            {queueState === "waiting" && (
-              <div className="sosial-waiting-box">
-                <div className="sosial-waiting-left">
-                  <span className="sosial-waiting-spinner" />
-                  <div className="sosial-waiting-info">
-                    <span className="sosial-waiting-title">Menunggu partner bergabung...</span>
-                    <span className="sosial-waiting-sub">Kamu bisa tetap di halaman ini</span>
-                  </div>
-                </div>
-                <button type="button" className="btn-sosial-cancel-match" onClick={handleCancelQueue}>
-                  Batal
-                </button>
-              </div>
-            )}
+            </div>
           </div>
         </section>
 
@@ -522,6 +508,39 @@ export default function SosialScreen({ onNavigateHome, onNavigateSimulasi, onNav
           <img src={iconNavUser} alt="Profile" className="home-nav-icon" />
         </button>
       </div>
+
+      {/* ── Matchmaking Search AlertDialog Popup ────────────────────── */}
+      {queueState !== "idle" && (
+        <div className="sosial-dialog-backdrop" onClick={handleCancelQueue}>
+          <div className="sosial-dialog-card" onClick={(e) => e.stopPropagation()} role="dialog" aria-modal="true">
+            {/* Animated Radar Pulse Waves */}
+            <div className="sosial-dialog-radar-wrap">
+              <div className="sosial-dialog-radar-ring ring-1" />
+              <div className="sosial-dialog-radar-ring ring-2" />
+              <div className="sosial-dialog-radar-ring ring-3" />
+              <div className="sosial-dialog-avatar-center">
+                <img src={imgMatchmakingDuet} alt="Mencari Partner" className="sosial-dialog-avatar-img" />
+              </div>
+            </div>
+
+            <div className="sosial-dialog-text">
+              <h2 className="sosial-dialog-title">Mencari Partner...</h2>
+              <p className="sosial-dialog-desc">
+                Sedang mencocokkanmu dengan pengguna lain yang aktif untuk latihan duet secara live.
+              </p>
+            </div>
+
+            <div className="sosial-dialog-status-pill">
+              <span className="sosial-dialog-pulse-dot" />
+              <span>{queueState === "matching" ? "Menghubungkan..." : "Menunggu partner bergabung..."}</span>
+            </div>
+
+            <button type="button" className="btn-sosial-dialog-cancel" onClick={handleCancelQueue}>
+              Batal Mencari
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

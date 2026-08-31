@@ -6,6 +6,9 @@ import iconNavMic from "../assets/pages_assets/bottom-nav-icons/Mic.svg";
 import iconNavUser from "../assets/pages_assets/bottom-nav-icons/User.svg";
 import iconNavGroup from "../assets/pages_assets/practice/icon_group.svg";
 import imgAnalysisHero from "../assets/pages_assets/ai_analysis/analysis_hero.png";
+import imgSpontan from "../assets/pages_assets/simulasi/Image-Spontan.png";
+import imgPresentasi from "../assets/pages_assets/simulasi/Image-Presentasi.png";
+import imgInterview from "../assets/pages_assets/simulasi/Image-Interview.png";
 import iconArgument from "../assets/pages_assets/ai_analysis/Icons/Argument-Icon.svg";
 import iconRelevance from "../assets/pages_assets/ai_analysis/Icons/Relevance-Icon.svg";
 import iconSpeed from "../assets/pages_assets/ai_analysis/Icons/Speed-Icon.svg";
@@ -13,12 +16,16 @@ import iconQuote from "../assets/pages_assets/ai_analysis/Icons/Quote-Icon.svg";
 import iconMouth from "../assets/pages_assets/ai_analysis/Icons/Mouth-Icon.svg";
 import iconFlash from "../assets/pages_assets/ai_analysis/Icons/Flash-Icon.svg";
 import iconAI from "../assets/pages_assets/ai_analysis/Icons/AI.svg";
+import iconDice from "../assets/icons/dice.svg";
+import iconDownload from "../assets/icons/Download.svg";
 import videoGainXP from "../assets/pages_assets/gain_xp/Video-Gain-XP.webm";
 import { useGainXpPreloader, getPreloadedVideoSrc } from "../lib/assetPreloader";
-import { playXpTickSound, playXpCompleteSound, playGainXpIntroSound } from "../lib/soundEffects";
+import { playXpTickSound, playXpCompleteSound, playGainXpIntroSound, playScoreRevealSound } from "../lib/soundEffects";
 import { DotLottieReact } from "@lottiefiles/dotlottie-react";
 import animaBotLottie from "../assets/lotties/AnimaBot.lottie";
 import SessionLoadingScreen from "./SessionLoadingScreen";
+import TranscriptCard from "./TranscriptCard";
+import { exportAnalysisToPDF } from "../lib/pdfExport";
 import { supabase } from "../lib/supabaseClient";
 import {
   SCENARIOS,
@@ -41,35 +48,20 @@ import {
 import { useUserProgress } from "../context/UserProgressContext";
 import { SimulasiSkeleton } from "./SkeletonLoader";
 
-// ─── Simple category icons (placeholder — real Figma illustrations weren't
-// exportable this round; swap for real assets when available) ─────────────
+const SCENARIO_IMAGES = {
+  spontan: imgSpontan,
+  presentasi: imgPresentasi,
+  interview: imgInterview,
+};
+
 function ScenarioIcon({ id }) {
-  if (id === "spontan") {
-    return (
-      <svg width="28" height="28" viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <circle cx="14" cy="14" r="13" fill="#FFF3E0" />
-        <path d="M15.5 6L9 15.5H13.5L12.5 22L19 12H14.5L15.5 6Z" fill="#E8753D" />
-      </svg>
-    );
-  }
-  if (id === "presentasi") {
-    return (
-      <svg width="28" height="28" viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <circle cx="14" cy="14" r="13" fill="#EFF8FF" />
-        <rect x="6" y="8" width="16" height="10" rx="1.5" stroke="#2E7FE8" strokeWidth="1.6" />
-        <path d="M10 22L14 18L18 22" stroke="#2E7FE8" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
-        <path d="M9.5 15L12 12.5L14.2 14.5L18.5 10.5" stroke="#2E7FE8" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" />
-      </svg>
-    );
-  }
+  const imgSrc = SCENARIO_IMAGES[id] || imgSpontan;
   return (
-    <svg width="28" height="28" viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <circle cx="14" cy="14" r="13" fill="#F0FBF8" />
-      <circle cx="10.5" cy="12" r="2.6" stroke="#24A981" strokeWidth="1.6" />
-      <circle cx="17.5" cy="12" r="2.6" stroke="#17674F" strokeWidth="1.6" />
-      <path d="M6 21c0.5-2.5 2.2-4 4.5-4s4 1.5 4.5 4" stroke="#24A981" strokeWidth="1.6" strokeLinecap="round" />
-      <path d="M13.5 21c0.5-2.5 2.2-4 4.5-4s4 1.5 4.5 4" stroke="#17674F" strokeWidth="1.6" strokeLinecap="round" />
-    </svg>
+    <img
+      src={imgSrc}
+      alt=""
+      className="simulasi-scenario-img"
+    />
   );
 }
 
@@ -127,7 +119,8 @@ function TopicStep({ topics, loading, error, onBack, onStart, onShuffle, shuffli
               onClick={onShuffle}
               disabled={shuffling}
             >
-              {shuffling ? "⏳ Mengacak..." : "🎲 Ganti Topik Lain"}
+              <img src={iconDice} alt="" className="simulasi-topic-shuffle-icon" />
+              <span>{shuffling ? "Mengacak..." : "Ganti Topik Lain"}</span>
             </button>
           </div>
         )}
@@ -698,22 +691,165 @@ function SimulasiAnalysisChip({ label, tone }) {
   return <span className={`simulasi-analysis-chip simulasi-analysis-chip--${tone}`}>{label}</span>;
 }
 
+// ─── Accumulation Score Hero (Circular Gauge Donut Progress Style) ───
+export function AccumulationScoreHero({ score }) {
+  const [showTooltip, setShowTooltip] = useState(false);
+  const clampedScore = Math.max(0, Math.min(100, score != null ? Math.round(score) : 80));
+
+  const size = 160;
+  const strokeWidth = 16;
+  const radius = (size - strokeWidth) / 2;
+  const circumference = 2 * Math.PI * radius;
+
+  // Animated states for entrance
+  const [displayScore, setDisplayScore] = useState(0);
+  const [dashOffset, setDashOffset] = useState(circumference);
+  const [isLoaded, setIsLoaded] = useState(false);
+
+  useEffect(() => {
+    // Play crystal score reveal chime sound
+    playScoreRevealSound();
+
+    // Trigger stroke sweep animation
+    const targetOffset = circumference - (clampedScore / 100) * circumference;
+    const strokeTimer = setTimeout(() => {
+      setDashOffset(targetOffset);
+      setIsLoaded(true);
+    }, 80);
+
+    // Smooth number count-up animation over 1100ms
+    const duration = 1100;
+    const startTime = performance.now();
+    let animId = null;
+
+    const animateNumber = (now) => {
+      const elapsed = now - startTime;
+      const progress = Math.min(1, elapsed / duration);
+      // Cubic ease-out
+      const eased = 1 - Math.pow(1 - progress, 3);
+      setDisplayScore(Math.round(eased * clampedScore));
+
+      if (progress < 1) {
+        animId = requestAnimationFrame(animateNumber);
+      }
+    };
+
+    animId = requestAnimationFrame(animateNumber);
+
+    return () => {
+      clearTimeout(strokeTimer);
+      if (animId) cancelAnimationFrame(animId);
+    };
+  }, [clampedScore, circumference]);
+
+  return (
+    <div className={`simulasi-accumulation-hero simulasi-accumulation-hero--gauge ${isLoaded ? "simulasi-gauge--ready" : ""}`}>
+      <div className="simulasi-gauge-container">
+        <svg
+          className="simulasi-gauge-svg"
+          width={size}
+          height={size}
+          viewBox={`0 0 ${size} ${size}`}
+        >
+          <defs>
+            <linearGradient id="scoreGaugeGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" stopColor="#FFA767" />
+              <stop offset="100%" stopColor="#E8753D" />
+            </linearGradient>
+          </defs>
+
+          {/* Inner filled background disc */}
+          <circle
+            className="simulasi-gauge-inner-disc"
+            cx={size / 2}
+            cy={size / 2}
+            r={radius - strokeWidth / 2 + 1}
+          />
+          {/* Background track circle */}
+          <circle
+            className="simulasi-gauge-track"
+            cx={size / 2}
+            cy={size / 2}
+            r={radius}
+            strokeWidth={strokeWidth}
+          />
+          {/* Active progress arc */}
+          <circle
+            className="simulasi-gauge-progress"
+            cx={size / 2}
+            cy={size / 2}
+            r={radius}
+            strokeWidth={strokeWidth}
+            strokeDasharray={circumference}
+            strokeDashoffset={dashOffset}
+            strokeLinecap="round"
+            transform={`rotate(-90 ${size / 2} ${size / 2})`}
+          />
+        </svg>
+
+        {/* Center score content */}
+        <div className="simulasi-gauge-center">
+          <div className="simulasi-accumulation-number-wrap">
+            <h2 className="simulasi-gauge-number">{displayScore}</h2>
+            <button
+              type="button"
+              className="simulasi-accumulation-info-btn simulasi-gauge-info-btn"
+              onClick={() => setShowTooltip((prev) => !prev)}
+              aria-label="Info akumulasi skor"
+              title="Info akumulasi skor"
+            >
+              i
+            </button>
+          </div>
+          <p className="simulasi-gauge-sub">dari 100</p>
+        </div>
+      </div>
+
+      {showTooltip && (
+        <div className="simulasi-accumulation-tooltip">
+          Skor total dihitung dari akumulasi penilaian argumentasi, relevansi konteks, kestabilan tempo bicara, dan artikulasi intonasi.
+        </div>
+      )}
+    </div>
+  );
+}
+
 // Exported: SessionDetailScreen (Riwayat Sesi drill-down) reuses this exact
 // scoring/metrics rendering — same fallback-default logic, so a history
 // detail view can never silently drift out of sync with the live results
 // screen. Deliberately excludes the hero/headline and the CTA (XP-gated
 // "Lanjut" doesn't mean anything when just looking back at old history).
-export function AnalysisCards({ results }) {
+export function AnalysisCards({ results, showAccumulationScore = true }) {
   const metrics = results?.metrics;
   const feedback = results?.feedback;
-  const sub = feedback?.sub_scores || {};
+  const sub = (() => {
+    if (feedback?.sub_scores && typeof feedback.sub_scores === "object") return feedback.sub_scores;
+    if (typeof feedback?.sub_scores === "string") {
+      try {
+        const parsed = JSON.parse(feedback.sub_scores);
+        if (parsed && typeof parsed === "object") return parsed;
+      } catch {}
+    }
+    return {};
+  })();
 
-  const argScore = sub.argumentasi ?? sub.kesesuaian_materi ?? (feedback?.skor ? Math.round(feedback.skor) : 88);
-  const relScore = sub.relevansi ?? sub.kesesuaian_materi ?? sub.fluency ?? 88;
+  const totalScore =
+    feedback?.skor != null
+      ? Math.round(feedback.skor)
+      : Math.round(
+          ((sub?.argumentasi ?? sub?.kesesuaian_materi ?? 88) +
+            (sub?.relevansi ?? sub?.kesesuaian_materi ?? sub?.fluency ?? 88) +
+            (sub?.fluency ?? 88) +
+            (sub?.intonasi ?? 80)) /
+            4
+        );
+
+  const argScore = sub?.argumentasi ?? sub?.kesesuaian_materi ?? totalScore;
+  const relScore = sub?.relevansi ?? sub?.kesesuaian_materi ?? sub?.fluency ?? totalScore;
   const fillerCount = metrics?.filler_word_count != null ? metrics.filler_word_count : 0;
   const paceWpm = metrics?.pace_wpm != null ? Math.round(metrics.pace_wpm) : 140;
-  const clarityScore = sub.fluency ?? 88;
-  const energyScore = sub.intonasi ?? 80;
+  const clarityScore = sub?.fluency ?? 88;
+  const energyScore = sub?.intonasi ?? 80;
 
   const scores = [
     {
@@ -781,8 +917,23 @@ export function AnalysisCards({ results }) {
     },
   ];
 
+  const saranList = (() => {
+    if (Array.isArray(feedback?.saran)) return feedback.saran;
+    if (typeof feedback?.saran === "string" && feedback.saran.trim()) {
+      try {
+        const parsed = JSON.parse(feedback.saran);
+        if (Array.isArray(parsed)) return parsed;
+      } catch {
+        return [feedback.saran];
+      }
+    }
+    return [];
+  })();
+
   return (
     <>
+      {showAccumulationScore && <AccumulationScoreHero score={totalScore} />}
+
       {scores.map((score) => (
         <div className="simulasi-analysis-card" key={score.id}>
           <div className="simulasi-analysis-card-top">
@@ -823,9 +974,9 @@ export function AnalysisCards({ results }) {
           <img src={iconAI} alt="" className="simulasi-analysis-icon" />
           <p className="simulasi-analysis-card-label">Feedback AI</p>
         </div>
-        {feedback?.saran?.length > 0 ? (
+        {saranList.length > 0 ? (
           <div className="simulasi-analysis-feedback">
-            {feedback.saran.map((item, i) => (
+            {saranList.map((item, i) => (
               <p key={i} className="simulasi-analysis-feedback-item">
                 • {item}
               </p>
@@ -834,10 +985,21 @@ export function AnalysisCards({ results }) {
         ) : (
           <p className="simulasi-analysis-feedback">
             {feedback?.feedback ||
+              feedback?.motivasi ||
               "Kamu sudah menyelesaikan sesi simulasi dengan baik! Pertahankan artikulasi dan kurangi kata pengisi di sesi berikutnya."}
           </p>
         )}
       </div>
+
+      <TranscriptCard
+        rawTranscript={
+          results?.transcript ||
+          results?.metrics?.transcript ||
+          results?.feedback?.transcript ||
+          results?.feedback?.transkrip
+        }
+        title="Transkrip Suara"
+      />
     </>
   );
 }
@@ -846,6 +1008,50 @@ export function AnalysisCards({ results }) {
 // feedback card — same shape (results, onDone), same visual language.
 export function ResultsStep({ results, onDone }) {
   const { isReady: isXpReady } = useGainXpPreloader(videoGainXP);
+  const [exportingPdf, setExportingPdf] = useState(false);
+
+  const handleExportPDF = async () => {
+    setExportingPdf(true);
+    try {
+      const sub = results?.feedback?.sub_scores || {};
+      const scores = [
+        {
+          label: "Argumentasi",
+          value: sub.argumentasi ?? sub.kesesuaian_materi ?? (results?.feedback?.skor ? Math.round(results.feedback.skor) : 88),
+          unit: "/ 100",
+          chip: "Kuat",
+        },
+        {
+          label: "Relevansi",
+          value: sub.relevansi ?? sub.kesesuaian_materi ?? sub.fluency ?? 88,
+          unit: "/ 100",
+          chip: "Relevan",
+        },
+      ];
+      const metrics = [
+        { label: "Kata Pengisi", value: results?.metrics?.filler_word_count ?? 0, unit: "Kali", chip: "Stabil" },
+        { label: "Kecepatan", value: Math.round(results?.metrics?.pace_wpm || 140), unit: "wpm", chip: "Stabil" },
+        { label: "Kejelasan", value: sub.fluency ?? 88, unit: "/ 100", chip: "Baik" },
+        { label: "Energi", value: sub.intonasi ?? 80, unit: "/ 100", chip: "Baik" },
+      ];
+
+      await exportAnalysisToPDF({
+        title: "Hasil Simulasi Berbicara",
+        category: "Simulasi AI",
+        scores,
+        metrics,
+        feedback: results?.feedback?.saran || results?.feedback?.feedback,
+        motivasi: results?.feedback?.motivasi || "Dengan latihan yang konsisten, kamu akan semakin mahir dan percaya diri!",
+        transcript:
+          results?.transcript ||
+          results?.metrics?.transcript ||
+          results?.feedback?.transcript ||
+          results?.feedback?.transkrip,
+      });
+    } finally {
+      setExportingPdf(false);
+    }
+  };
 
   return (
     <div className="simulasi-results-screen">
@@ -865,11 +1071,21 @@ export function ResultsStep({ results, onDone }) {
 
         <AnalysisCards results={results} />
       </div>
-
+      
       <div className="simulasi-results-cta">
         <button
           type="button"
-          className="btn-simulasi-lanjut"
+          className="btn-analysis-download"
+          onClick={handleExportPDF}
+          disabled={exportingPdf}
+          aria-label="Unduh Laporan PDF"
+          title="Unduh Laporan PDF"
+        >
+          <img src={iconDownload} alt="" className="btn-analysis-download-icon" />
+        </button>
+        <button
+          type="button"
+          className="btn-simulasi-lanjut btn-simulasi-lanjut--flex"
           onClick={onDone}
           disabled={!isXpReady}
           style={!isXpReady ? { opacity: 0.75, cursor: "not-allowed" } : undefined}
@@ -1135,10 +1351,10 @@ export default function SimulasiScreen({ onNavigateHome, onNavigateSosial, onNav
       refreshProgress();
 
       setResults(data);
-      setStep("results");
+      setStep((curr) => (curr === "processing" ? "results" : curr));
     } catch (err) {
       setErrorMessage(friendlySimulasiError(err));
-      resetToPicker();
+      setStep((curr) => (curr === "processing" ? "picker" : curr));
     }
   };
 

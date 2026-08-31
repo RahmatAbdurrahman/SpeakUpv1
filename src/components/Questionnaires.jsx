@@ -283,6 +283,7 @@ export default function Questionnaires({
   onFinish,
 }) {
   const [currentStepIndex, setCurrentStepIndex] = useState(0);
+  const [direction, setDirection] = useState("forward");
   // Seed answers with each question's defaultValue (e.g. the slider) so an
   // untouched control still records what it visually shows.
   const [answers, setAnswers] = useState(() => {
@@ -303,6 +304,7 @@ export default function Questionnaires({
     setAnswers((prev) => ({ ...prev, [qId]: val }));
 
   const handleNext = () => {
+    setDirection("forward");
     if (isLastStep) {
       if (onFinish) onFinish(answers);
     } else {
@@ -311,6 +313,7 @@ export default function Questionnaires({
   };
 
   const handleBack = () => {
+    setDirection("backward");
     if (isFirstStep) {
       if (onBackToOnboarding) onBackToOnboarding();
     } else {
@@ -371,18 +374,6 @@ export default function Questionnaires({
             />
           )}
         </div>
-
-        {/* Bottom CTA */}
-        <div className="questionnaire-footer" data-node-id="207:3174">
-          <button
-            type="button"
-            className="btn-questionnaire-submit"
-            onClick={handleNext}
-            data-node-id="207:3175"
-          >
-            {isLastStep ? "Selesai" : "Lanjut"}
-          </button>
-        </div>
       </>
     );
   };
@@ -407,7 +398,7 @@ export default function Questionnaires({
         <div className="topbar-nav-row" data-node-id="207:3159">
           <button
             type="button"
-            className={`btn-nav-back ${isFirstStep ? "is-first-step" : ""}`}
+            className="btn-nav-back"
             onClick={handleBack}
             aria-label="Kembali"
           >
@@ -421,7 +412,24 @@ export default function Questionnaires({
 
       {/* ── Main Form Section ─────────────────────────────────── */}
       <main className="questionnaire-form-section" data-node-id="207:3165">
-        {renderBody()}
+        <div
+          key={currentStepIndex}
+          className={`questionnaire-content-wrap questionnaire-slide-${direction}`}
+        >
+          {renderBody()}
+        </div>
+
+        {/* Bottom CTA - Fixed / Non-sliding */}
+        <div className="questionnaire-footer" data-node-id="207:3174">
+          <button
+            type="button"
+            className="btn-questionnaire-submit"
+            onClick={handleNext}
+            data-node-id="207:3175"
+          >
+            {isLastStep ? "Selesai" : "Lanjut"}
+          </button>
+        </div>
       </main>
     </div>
   );

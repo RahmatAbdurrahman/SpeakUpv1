@@ -334,17 +334,109 @@
 .home-course-list {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 0;
+}
+
+/* ── Stepper / Timeline Layout ────────────────────────────────────────────── */
+.home-timeline-row {
+  display: flex;
+  align-items: stretch;
+  gap: 10px;
+  width: 100%;
+  position: relative;
+}
+
+.home-timeline-track {
+  width: 20px;
+  min-width: 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  position: relative;
+  flex-shrink: 0;
+}
+
+.home-timeline-line {
+  width: 2px;
+  background-color: #E2E8F0;
+  transition: background-color 0.25s ease;
+}
+
+.home-timeline-line--top {
+  height: 20px;
+  flex: none;
+}
+
+.home-timeline-line--bottom {
+  flex: 1;
+  min-height: 20px;
+}
+
+.home-timeline-line--completed {
+  background-color: #24A981;
+}
+
+.home-timeline-line--hidden {
+  opacity: 0;
+  visibility: hidden;
+}
+
+.home-timeline-bullet {
+  width: 20px;
+  height: 20px;
+  min-width: 20px;
+  min-height: 20px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  z-index: 2;
+  box-sizing: border-box;
+  transition: all 0.25s ease;
+}
+
+/* Completed: Solid Emerald Green with crisp White Checkmark */
+.home-timeline-bullet--completed {
+  background-color: #24A981;
+  border: 1.5px solid #24A981;
+  box-shadow: 0 0 0 2.5px rgba(36, 169, 129, 0.15);
+}
+
+/* Active / In-progress: White circle with Orange border and inner dot */
+.home-timeline-bullet--active {
+  background-color: #FAF8F3;
+  border: 2px solid #E8753D;
+  box-shadow: 0 0 0 3px rgba(232, 117, 61, 0.18);
+}
+
+.home-timeline-inner-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background-color: #E8753D;
+}
+
+/* Upcoming / Inactive: Clean subtle gray circle */
+.home-timeline-bullet--upcoming {
+  background-color: #FAF8F3;
+  border: 1.5px solid #CBD5E1;
 }
 
 /* ── Module Item ──────────────────────────────────────────────────────────── */
+.home-timeline-row .home-module-item {
+  flex: 1;
+  min-width: 0;
+  margin-bottom: 12px;
+}
+
 .home-module-item {
   position: relative;
   background: #FFFFFF;
   border: 1px solid rgba(20, 60, 63, 0.12);
   border-radius: 12px;
   box-shadow: 0px 3px 0px 0px #E3E8E8;
-  height: 123px;
+  min-height: 126px;
   overflow: hidden;
   display: flex;
   align-items: stretch;
@@ -411,25 +503,25 @@
 
 .home-module-content {
   flex: 1;
-  padding: 12px;
+  padding: 12px 6px 12px 12px;
   display: flex;
   flex-direction: column;
-  justify-content: center;
-  gap: 16px;
+  justify-content: space-between;
+  gap: 8px;
   min-width: 0;
-  max-width: calc(100% - 102px);
+  max-width: calc(100% - 94px);
   box-sizing: border-box;
 }
 
 .home-module-text {
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 3px;
 }
 
 .home-module-label {
   font-family: var(--font-family-base, 'Space Grotesk', sans-serif);
-  font-size: 12px;
+  font-size: 11.5px;
   font-weight: 700;
   color: #243238;
   white-space: nowrap;
@@ -437,11 +529,11 @@
 
 .home-module-title {
   font-family: var(--font-family-base, 'Space Grotesk', sans-serif);
-  font-size: 18px;
+  font-size: 15.5px;
   font-weight: 700;
   color: #243238;
-  letter-spacing: -0.522px;
-  line-height: 1.2;
+  letter-spacing: -0.4px;
+  line-height: 1.22;
   overflow: hidden;
   text-overflow: ellipsis;
   display: -webkit-box;
@@ -454,18 +546,19 @@
   background: #243238;
   color: #FFFFFF;
   font-family: var(--font-family-base, 'Space Grotesk', sans-serif);
-  font-size: 10px;
+  font-size: 9.5px;
   font-weight: 500;
-  padding: 4px 12px;
-  border-radius: 30px;
+  padding: 2px 8px;
+  border-radius: 20px;
   align-self: flex-start;
-  line-height: 13px;
+  line-height: 14px;
   white-space: nowrap;
+  margin-top: 2px;
 }
 
 .home-module-meta {
   display: flex;
-  gap: 12px;
+  gap: 8px;
   align-items: center;
   flex-wrap: wrap;
 }
@@ -478,7 +571,7 @@
 
 .home-module-meta-item span {
   font-family: var(--font-family-base, 'Space Grotesk', sans-serif);
-  font-size: 12px;
+  font-size: 11.5px;
   font-weight: 400;
   color: var(--color-text-secondary, #DA5000);
   white-space: nowrap;
@@ -490,8 +583,8 @@
   right: 0;
   top: 0;
   bottom: 0;
-  width: 102px;
-  height: 123px;
+  width: 94px;
+  height: 100%;
   overflow: hidden;
   flex-shrink: 0;
   display: flex;

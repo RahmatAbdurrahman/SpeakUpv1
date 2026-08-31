@@ -316,13 +316,17 @@ export async function runAnalysis({ sessionId, audioPath, durationSeconds }) {
 }
 
 export async function fetchSessionResults(sessionId) {
+  if (!sessionId) return { metrics: null, feedback: null };
   const [{ data: metrics, error: metricsErr }, { data: feedback, error: feedbackErr }] = await Promise.all([
     supabase.from("simulation_metrics").select("*").eq("session_id", sessionId).maybeSingle(),
     supabase.from("simulation_feedback").select("*").eq("session_id", sessionId).maybeSingle(),
   ]);
   if (metricsErr) throw metricsErr;
   if (feedbackErr) throw feedbackErr;
-  return { metrics, feedback };
+  return {
+    metrics: Array.isArray(metrics) ? metrics[0] : metrics,
+    feedback: Array.isArray(feedback) ? feedback[0] : feedback,
+  };
 }
 
 export function friendlySimulasiError(error) {

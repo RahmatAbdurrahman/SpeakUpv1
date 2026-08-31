@@ -111,7 +111,7 @@
 }
 
 .simulasi-scenario-card--selected {
-  border-color: var(--color-primary, #24A981);
+  border-color: var(--color-secondary, #24A981);
   background-color: rgba(36, 169, 129, 0.05);
   transform: translateY(2px);
   box-shadow: 0 1px 0 0 #1B8565;
@@ -134,7 +134,7 @@
   width: 100%;
   max-width: 366px;
   height: 46px;
-  background-color: var(--color-secondary, #E8753D);
+  background-color: var(--color-primary, #E8753D);
   color: #FFFFFF;
   border: 1px solid #8B4827;
   border-radius: var(--buttons, 100px);
@@ -215,11 +215,24 @@
 
 .simulasi-scenario-icon {
   flex-shrink: 0;
-  width: 48px;
-  height: 48px;
+  width: 52px;
+  height: 52px;
+  border-radius: 6px;
+  border: 0.6px solid rgba(20, 60, 63, 0.12);
+  overflow: hidden;
   display: flex;
   align-items: center;
   justify-content: center;
+  background-color: #FAF8F3;
+  box-sizing: border-box;
+}
+
+.simulasi-scenario-img {
+  width: 100%;
+  height: 100%;
+  border-radius: 6px;
+  object-fit: cover;
+  display: block;
 }
 
 .simulasi-scenario-text {
@@ -358,7 +371,7 @@
   height: 64px;
   border-radius: 50%;
   background-color: #FFFFFF;
-  border: 4px solid var(--color-secondary, #E8753D);
+  border: 4px solid var(--color-primary, #E8753D);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -370,13 +383,13 @@
   width: 44px;
   height: 44px;
   border-radius: 50%;
-  background-color: var(--color-secondary, #E8753D);
+  background-color: var(--color-primary, #E8753D);
 }
 .simulasi-record-stop {
   width: 26px;
   height: 26px;
   border-radius: 6px;
-  background-color: var(--color-secondary, #E8753D);
+  background-color: var(--color-primary, #E8753D);
 }
 
 /* ==========================================================================
@@ -411,7 +424,7 @@
   height: 40px;
   border-radius: 50%;
   border: 4px solid rgba(36, 169, 129, 0.18);
-  border-top-color: var(--color-primary, #24A981);
+  border-top-color: var(--color-secondary, #24A981);
   animation: simulasi-spin 0.8s linear infinite;
 }
 .simulasi-processing-title {
@@ -506,6 +519,160 @@
   text-align: center;
   max-width: 300px;
   margin: 0;
+}
+
+/* ── Accumulation Score Hero (Aura Halo Style) ─────────────────────── */
+.simulasi-accumulation-hero {
+  position: relative;
+  width: 100%;
+  padding: 16px 16px 10px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  box-sizing: border-box;
+  overflow: visible;
+  margin: 0 auto 4px;
+}
+
+/* ── Circular Gauge Meter (Donut Progress Ring Style) ── */
+.simulasi-gauge-container {
+  position: relative;
+  width: 160px;
+  height: 160px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 4px auto 8px;
+  animation: gaugeEntrance 0.7s cubic-bezier(0.34, 1.4, 0.64, 1) both;
+}
+
+@keyframes gaugeEntrance {
+  0% {
+    opacity: 0;
+    transform: scale(0.78);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.simulasi-gauge-svg {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 160px;
+  height: 160px;
+  overflow: visible;
+  filter: drop-shadow(0 6px 16px rgba(20, 60, 63, 0.08));
+}
+
+.simulasi-gauge-inner-disc {
+  fill: #FFFFFF;
+  stroke: rgba(20, 60, 63, 0.08);
+  stroke-width: 1.5px;
+  transition: fill 0.3s ease;
+}
+
+.simulasi-gauge-track {
+  fill: none;
+  stroke: #EAE6DF;
+  transition: stroke 0.3s ease;
+}
+
+.simulasi-gauge-progress {
+  fill: none;
+  stroke: url(#scoreGaugeGrad);
+  filter: drop-shadow(0 2px 6px rgba(232, 117, 61, 0.25));
+  transition: stroke-dashoffset 1.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.simulasi-gauge-center {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  user-select: none;
+}
+
+.simulasi-gauge-number {
+  font-family: var(--font-family-base, 'Space Grotesk', sans-serif);
+  font-size: 52px;
+  font-weight: 800;
+  color: var(--color-text-primary, #243238);
+  line-height: 1;
+  letter-spacing: -1.5px;
+  margin: 0;
+}
+
+.simulasi-accumulation-number-wrap {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.simulasi-accumulation-info-btn {
+  position: absolute;
+  top: -2px;
+  right: -20px;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  border: 1.5px solid rgba(36, 50, 56, 0.3);
+  background: #FFFFFF;
+  color: var(--color-text-primary, #243238);
+  font-size: 10.5px;
+  font-weight: 700;
+  font-family: var(--font-family-base, 'Space Grotesk', sans-serif);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  padding: 0;
+  line-height: 1;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+  transition: background 0.15s ease, border-color 0.15s ease;
+}
+
+.simulasi-accumulation-info-btn:hover {
+  background: var(--color-text-primary, #243238);
+  color: #FFFFFF;
+  border-color: var(--color-text-primary, #243238);
+}
+
+.simulasi-gauge-sub {
+  font-family: var(--font-family-base, 'Space Grotesk', sans-serif);
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--color-text-caption, #8199A3);
+  margin: 3px 0 0;
+  letter-spacing: 0.2px;
+}
+
+.simulasi-accumulation-tooltip {
+  margin-top: 8px;
+  padding: 8px 14px;
+  background: #243238;
+  border: 1px solid rgba(232, 117, 61, 0.35);
+  color: #FFFFFF;
+  border-radius: 10px;
+  font-family: var(--font-family-base, 'Space Grotesk', sans-serif);
+  font-size: 11.5px;
+  font-weight: 500;
+  max-width: 260px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  animation: fadeInTooltip 0.18s ease-out;
+}
+
+@keyframes fadeInTooltip {
+  from { opacity: 0; transform: translateY(-4px); }
+  to { opacity: 1; transform: translateY(0); }
 }
 
 .simulasi-analysis-card {
@@ -659,25 +826,22 @@
   bottom: 0;
   left: 0;
   right: 0;
-  padding: 12px 16px 24px 16px;
-  background: linear-gradient(
-    180deg,
-    rgba(250, 248, 243, 0) 0%,
-    rgba(250, 248, 243, 0.95) 25%,
-    #FAF8F3 100%
-  );
+  padding: 14px 16px 32px 16px;
   box-sizing: border-box;
   display: flex;
-  flex-direction: column;
-  gap: 10px;
+  align-items: center;
+  gap: 12px;
+  background: linear-gradient(180deg, rgba(250, 248, 243, 0) 0%, rgba(250, 248, 243, 0.96) 25%, #FAF8F3 100%);
   z-index: 10;
+  margin-top: auto;
+  width: 100%;
 }
 
 .btn-simulasi-lanjut {
   width: 100%;
   max-width: 366px;
   height: 46px;
-  background-color: var(--color-secondary, #E8753D);
+  background-color: var(--color-primary, #E8753D);
   border: 1px solid #8B4827;
   border-radius: 34px;
   box-shadow: 0px 4px 0px 0px #8B4827;
@@ -692,6 +856,11 @@
   transition: transform 0.12s ease, box-shadow 0.12s ease, filter 0.15s ease;
   -webkit-tap-highlight-color: transparent;
   margin: 0 auto;
+}
+.btn-simulasi-lanjut--flex {
+  flex: 1;
+  max-width: none;
+  margin: 0;
 }
 .btn-simulasi-lanjut:hover {
   filter: brightness(1.05);
@@ -761,7 +930,7 @@
   font-family: var(--font-family-base, 'Space Grotesk', sans-serif);
   font-size: 13px;
   font-weight: 700;
-  color: var(--color-primary, #24A981);
+  color: var(--color-secondary, #24A981);
   text-transform: uppercase;
   letter-spacing: 0.04em;
   margin: 0;
@@ -776,10 +945,10 @@
 }
 .simulasi-topic-shuffle-btn {
   background-color: #FFFFFF;
-  color: var(--color-primary, #24A981);
-  border: 1.5px solid var(--color-primary, #24A981);
+  color: var(--color-secondary, #24A981);
+  border: 1.5px solid var(--color-secondary, #24A981);
   border-radius: var(--radius-full, 9999px);
-  box-shadow: 0px 3px 0px 0px var(--color-primary-dark, #17674F);
+  box-shadow: 0px 3px 0px 0px var(--color-secondary-dark, #17674F);
   font-family: var(--font-family-base, 'Space Grotesk', sans-serif);
   font-size: 13px;
   font-weight: 700;
@@ -788,10 +957,17 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 6px;
+  gap: 8px;
   transition: transform 0.12s ease, box-shadow 0.12s ease, filter 0.15s ease, background-color 0.15s ease;
   margin-top: 6px;
   -webkit-tap-highlight-color: transparent;
+}
+.simulasi-topic-shuffle-icon {
+  width: 15px;
+  height: 15px;
+  display: block;
+  flex-shrink: 0;
+  filter: invert(53%) sepia(85%) saturate(395%) hue-rotate(117deg) brightness(92%) contrast(87%);
 }
 .simulasi-topic-shuffle-btn:hover {
   background-color: #F0FAF6;
@@ -799,13 +975,13 @@
 }
 .simulasi-topic-shuffle-btn:active {
   transform: translateY(2px);
-  box-shadow: 0px 1px 0px 0px var(--color-primary-dark, #17674F);
+  box-shadow: 0px 1px 0px 0px var(--color-secondary-dark, #17674F);
 }
 .simulasi-topic-shuffle-btn:disabled {
   opacity: 0.6;
   cursor: not-allowed;
   transform: none;
-  box-shadow: 0px 3px 0px 0px var(--color-primary-dark, #17674F);
+  box-shadow: 0px 3px 0px 0px var(--color-secondary-dark, #17674F);
 }
 
 .simulasi-prep-cta {
@@ -873,7 +1049,7 @@
   resize: vertical;
 }
 .simulasi-manual-textarea:focus {
-  border-color: var(--color-secondary, #E8753D);
+  border-color: var(--color-primary, #E8753D);
 }
 
 /* ==========================================================================
@@ -913,7 +1089,7 @@
   font-family: var(--font-family-base, 'Space Grotesk', sans-serif);
   font-size: 12px;
   font-weight: 700;
-  color: var(--color-primary, #24A981);
+  color: var(--color-secondary, #24A981);
   margin: 0;
 }
 .simulasi-notes-toggle-label {
@@ -994,7 +1170,7 @@
   font-family: var(--font-family-base, 'Space Grotesk', sans-serif);
   font-size: 12px;
   font-weight: 700;
-  color: var(--color-primary, #24A981);
+  color: var(--color-secondary, #24A981);
   letter-spacing: 0.4px;
   margin: 0;
 }
