@@ -545,6 +545,18 @@
   align-items: center;
   justify-content: center;
   margin: 4px auto 8px;
+  animation: gaugeEntrance 0.7s cubic-bezier(0.34, 1.4, 0.64, 1) both;
+}
+
+@keyframes gaugeEntrance {
+  0% {
+    opacity: 0;
+    transform: scale(0.78);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
 }
 
 .simulasi-gauge-svg {

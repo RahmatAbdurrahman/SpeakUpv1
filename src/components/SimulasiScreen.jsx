@@ -20,7 +20,7 @@ import iconDice from "../assets/icons/dice.svg";
 import iconDownload from "../assets/icons/Download.svg";
 import videoGainXP from "../assets/pages_assets/gain_xp/Video-Gain-XP.webm";
 import { useGainXpPreloader, getPreloadedVideoSrc } from "../lib/assetPreloader";
-import { playXpTickSound, playXpCompleteSound, playGainXpIntroSound } from "../lib/soundEffects";
+import { playXpTickSound, playXpCompleteSound, playGainXpIntroSound, playScoreRevealSound } from "../lib/soundEffects";
 import { DotLottieReact } from "@lottiefiles/dotlottie-react";
 import animaBotLottie from "../assets/lotties/AnimaBot.lottie";
 import SessionLoadingScreen from "./SessionLoadingScreen";
@@ -700,10 +700,50 @@ export function AccumulationScoreHero({ score }) {
   const strokeWidth = 16;
   const radius = (size - strokeWidth) / 2;
   const circumference = 2 * Math.PI * radius;
-  const strokeDashoffset = circumference - (clampedScore / 100) * circumference;
+
+  // Animated states for entrance
+  const [displayScore, setDisplayScore] = useState(0);
+  const [dashOffset, setDashOffset] = useState(circumference);
+  const [isLoaded, setIsLoaded] = useState(false);
+
+  useEffect(() => {
+    // Play crystal score reveal chime sound
+    playScoreRevealSound();
+
+    // Trigger stroke sweep animation
+    const targetOffset = circumference - (clampedScore / 100) * circumference;
+    const strokeTimer = setTimeout(() => {
+      setDashOffset(targetOffset);
+      setIsLoaded(true);
+    }, 80);
+
+    // Smooth number count-up animation over 1100ms
+    const duration = 1100;
+    const startTime = performance.now();
+    let animId = null;
+
+    const animateNumber = (now) => {
+      const elapsed = now - startTime;
+      const progress = Math.min(1, elapsed / duration);
+      // Cubic ease-out
+      const eased = 1 - Math.pow(1 - progress, 3);
+      setDisplayScore(Math.round(eased * clampedScore));
+
+      if (progress < 1) {
+        animId = requestAnimationFrame(animateNumber);
+      }
+    };
+
+    animId = requestAnimationFrame(animateNumber);
+
+    return () => {
+      clearTimeout(strokeTimer);
+      if (animId) cancelAnimationFrame(animId);
+    };
+  }, [clampedScore, circumference]);
 
   return (
-    <div className="simulasi-accumulation-hero simulasi-accumulation-hero--gauge">
+    <div className={`simulasi-accumulation-hero simulasi-accumulation-hero--gauge ${isLoaded ? "simulasi-gauge--ready" : ""}`}>
       <div className="simulasi-gauge-container">
         <svg
           className="simulasi-gauge-svg"
@@ -741,7 +781,7 @@ export function AccumulationScoreHero({ score }) {
             r={radius}
             strokeWidth={strokeWidth}
             strokeDasharray={circumference}
-            strokeDashoffset={strokeDashoffset}
+            strokeDashoffset={dashOffset}
             strokeLinecap="round"
             transform={`rotate(-90 ${size / 2} ${size / 2})`}
           />
@@ -750,7 +790,7 @@ export function AccumulationScoreHero({ score }) {
         {/* Center score content */}
         <div className="simulasi-gauge-center">
           <div className="simulasi-accumulation-number-wrap">
-            <h2 className="simulasi-gauge-number">{clampedScore}</h2>
+            <h2 className="simulasi-gauge-number">{displayScore}</h2>
             <button
               type="button"
               className="simulasi-accumulation-info-btn simulasi-gauge-info-btn"

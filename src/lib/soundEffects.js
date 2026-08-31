@@ -577,3 +577,55 @@ export function initGlobalSoundEffects() {
 
   window.addEventListener("pointerdown", handlePointerDown, { passive: true });
 }
+
+/**
+ * Play a sparkling crystal score reveal chime when entering the analysis screen
+ */
+export function playScoreRevealSound() {
+  try {
+    const ctx = getAudioContext();
+    if (!ctx) return;
+
+    const now = ctx.currentTime;
+
+    // 1. Soft ascending chime flourish (D5, G5, C6)
+    const notes = [587.33, 783.99, 1046.50];
+    notes.forEach((freq, idx) => {
+      const noteTime = now + 0.12 + idx * 0.1;
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+
+      osc.type = "sine";
+      osc.frequency.setValueAtTime(freq * 1.05, noteTime);
+      osc.frequency.exponentialRampToValueAtTime(freq, noteTime + 0.015);
+
+      gain.gain.setValueAtTime(0.0001, noteTime);
+      gain.gain.linearRampToValueAtTime(0.14, noteTime + 0.01);
+      gain.gain.exponentialRampToValueAtTime(0.00001, noteTime + 0.65);
+
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+
+      osc.start(noteTime);
+      osc.stop(noteTime + 0.7);
+
+      // Shimmer overtone on the final crystal high note
+      if (idx === 2) {
+        const shimmer = ctx.createOscillator();
+        const sGain = ctx.createGain();
+        shimmer.type = "triangle";
+        shimmer.frequency.setValueAtTime(freq * 2, noteTime + 0.02);
+
+        sGain.gain.setValueAtTime(0.0001, noteTime + 0.02);
+        sGain.gain.linearRampToValueAtTime(0.05, noteTime + 0.03);
+        sGain.gain.exponentialRampToValueAtTime(0.00001, noteTime + 0.45);
+
+        shimmer.connect(sGain);
+        sGain.connect(ctx.destination);
+
+        shimmer.start(noteTime + 0.02);
+        shimmer.stop(noteTime + 0.5);
+      }
+    });
+  } catch {}
+}
