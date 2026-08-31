@@ -116,6 +116,8 @@ export default function SessionDetailScreen({ sessionId, kategori, date, isLive,
     }
   };
 
+  const hasFeedback = Boolean(results?.feedback);
+
   return (
     <div className="sessiondetail-screen">
       <header className="viewerfb-topbar">
