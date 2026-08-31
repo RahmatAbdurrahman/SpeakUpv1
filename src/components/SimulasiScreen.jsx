@@ -701,8 +701,8 @@ export function AccumulationScoreHero({ score }) {
       {/* Outer ambient radiant gradient */}
       <div className="simulasi-accumulation-aura" />
 
-      {/* Inner focused circular disc surrounding the score */}
-      <div className="simulasi-accumulation-inner-circle" />
+      {/* Inner focused core glow without hard borders */}
+      <div className="simulasi-accumulation-core-glow" />
 
       {/* Floating sprinkle circular dots */}
       <div className="simulasi-accumulation-sparkles">
