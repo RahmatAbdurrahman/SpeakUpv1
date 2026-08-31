@@ -1072,6 +1072,68 @@
   margin: 0 0 42px 0;
 }
 
+.modul7-speaking-dial-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto;
+}
+
+.modul7-speaking-countdown-overlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 15;
+  pointer-events: none;
+}
+
+.modul7-speaking-countdown-badge {
+  width: 160px;
+  height: 160px;
+  border-radius: 50%;
+  background: rgba(18, 26, 29, 0.88);
+  border: 2px solid rgba(36, 169, 129, 0.85);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 0 35px rgba(36, 169, 129, 0.5);
+  animation: countdownPulse 0.96s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.modul7-speaking-countdown-number {
+  font-family: var(--font-family-base, 'Space Grotesk', sans-serif);
+  font-size: 64px;
+  font-weight: 700;
+  color: #24A981;
+  letter-spacing: -1.5px;
+  line-height: 1;
+  text-shadow: 0 0 25px rgba(36, 169, 129, 0.8);
+}
+
+@keyframes countdownPulse {
+  0% {
+    opacity: 0;
+    transform: scale(0.6);
+  }
+  25% {
+    opacity: 1;
+    transform: scale(1.08);
+  }
+  75% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  100% {
+    opacity: 0.1;
+    transform: scale(0.9);
+  }
+}
+
 .modul7-practice-dial {
   width: 160px;
   height: 160px;

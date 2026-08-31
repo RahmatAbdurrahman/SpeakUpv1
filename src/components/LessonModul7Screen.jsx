@@ -4,7 +4,7 @@ import LessonExitModal from "./LessonExitModal";
 import LessonAffirmation from "./LessonAffirmation";
 import { useAssetPreloader, useGainXpPreloader, getPreloadedVideoSrc } from "../lib/assetPreloader";
 import { useUserProgress } from "../context/UserProgressContext";
-import { playXpTickSound, playXpCompleteSound, playGainXpIntroSound, playChallengePassedSound } from "../lib/soundEffects";
+import { playXpTickSound, playXpCompleteSound, playGainXpIntroSound, playChallengePassedSound, playBreathingStartSound } from "../lib/soundEffects";
 import { supabase } from "../lib/supabaseClient";
 import {
   createSimulation,
@@ -267,7 +267,7 @@ const IconArrowLeft = ({ color = "#243238" }) => (
 );
 
 // ─── Countdown helper — ticks once a second, fires onComplete at zero ────────
-function useCountdown(seconds, onComplete) {
+function useCountdown(seconds, onComplete, enabled = true) {
   const [remaining, setRemaining] = useState(seconds);
   const onCompleteRef = useRef(onComplete);
 
@@ -276,6 +276,10 @@ function useCountdown(seconds, onComplete) {
   }, [onComplete]);
 
   useEffect(() => {
+    if (!enabled) {
+      setRemaining(seconds);
+      return;
+    }
     const startedAt = Date.now();
     const timer = setInterval(() => {
       const left = seconds - Math.floor((Date.now() - startedAt) / 1000);
@@ -288,7 +292,7 @@ function useCountdown(seconds, onComplete) {
       }
     }, 250);
     return () => clearInterval(timer);
-  }, [seconds]);
+  }, [seconds, enabled]);
 
   return remaining;
 }
@@ -1107,7 +1111,10 @@ function PracticeSpeak({ onNext, onBack, direction = "forward" }) {
 }
 
 function PracticeSpeakRecording({ onDone, onRestart, onBack, direction = "forward" }) {
-  const { detectedRef, audioLevels } = useSpeechCapture(true);
+  const [prepCountdown, setPrepCountdown] = useState(3);
+  const isStarted = prepCountdown === 0;
+
+  const { detectedRef, audioLevels } = useSpeechCapture(isStarted);
   const [gate, setGate] = useState(null); // null | "incomplete"
   // Populated from an effect (not during render) each time `remaining`
   // ticks, so attemptFinish() — a click handler / countdown callback, never
@@ -1126,10 +1133,24 @@ function PracticeSpeakRecording({ onDone, onRestart, onBack, direction = "forwar
     onDone(true);
   };
 
-  const remaining = useCountdown(120, attemptFinish);
+  // 3-second initial countdown before speaking begins
   useEffect(() => {
-    elapsedRef.current = 120 - remaining;
-  }, [remaining]);
+    if (prepCountdown > 0) {
+      const timer = setTimeout(() => {
+        setPrepCountdown((c) => c - 1);
+      }, 1000);
+      return () => clearTimeout(timer);
+    } else if (prepCountdown === 0) {
+      playBreathingStartSound();
+    }
+  }, [prepCountdown]);
+
+  const remaining = useCountdown(120, attemptFinish, isStarted);
+  useEffect(() => {
+    if (isStarted) {
+      elapsedRef.current = 120 - remaining;
+    }
+  }, [remaining, isStarted]);
 
   return (
     <div className="modul7-lesson-page modul7-dark-page" data-name="Practice-Sampaikan Pendapat">
@@ -1137,14 +1158,27 @@ function PracticeSpeakRecording({ onDone, onRestart, onBack, direction = "forwar
 
       <div className={`modul7-lesson-content modul7-practice-centered modul7-slide-${direction}`}>
         <h2 className="modul7-practice-speak-title">Sampaikan pendapatmu</h2>
-        <div className="modul7-practice-dial">{formatClock(remaining)}</div>
+        
+        <div className="modul7-speaking-dial-wrapper">
+          <div className="modul7-practice-dial">{formatClock(remaining)}</div>
+
+          {/* 3-2-1 Countdown Overlay */}
+          {prepCountdown > 0 && (
+            <div className="modul7-speaking-countdown-overlay" aria-label={`Mulai dalam ${prepCountdown}`}>
+              <div key={prepCountdown} className="modul7-speaking-countdown-badge">
+                <span className="modul7-speaking-countdown-number">{prepCountdown}</span>
+              </div>
+            </div>
+          )}
+        </div>
+
         <div className="modul7-practice-wave-wrap">
-          <VoiceWave levels={audioLevels} />
+          <VoiceWave levels={isStarted ? audioLevels : [0.18, 0.18, 0.18, 0.18, 0.18]} />
         </div>
       </div>
 
       <div className="modul7-lesson-cta-wrapper modul7-lesson-cta-wrapper--dark">
-        <button type="button" className="btn-modul7-stop" onClick={attemptFinish}>
+        <button type="button" className="btn-modul7-stop" onClick={attemptFinish} disabled={!isStarted}>
           Selesai Bicara
         </button>
       </div>
@@ -1256,7 +1290,10 @@ function PracticeAnswer({ step, questionIndex, onNext, onBack, direction = "forw
 }
 
 function PracticeAnswerRecording({ step, questionIndex, onDone, onRestart, onBack, direction = "forward" }) {
-  const { detectedRef, audioLevels } = useSpeechCapture(true);
+  const [prepCountdown, setPrepCountdown] = useState(3);
+  const isStarted = prepCountdown === 0;
+
+  const { detectedRef, audioLevels } = useSpeechCapture(isStarted);
   const [gate, setGate] = useState(null); // null | "incomplete"
   // Populated from an effect (not during render) each time `remaining`
   // ticks, so attemptFinish() — a click handler / countdown callback, never
@@ -1275,10 +1312,24 @@ function PracticeAnswerRecording({ step, questionIndex, onDone, onRestart, onBac
     onDone(true);
   };
 
-  const remaining = useCountdown(60, attemptFinish);
+  // 3-second initial countdown before answering begins
   useEffect(() => {
-    elapsedRef.current = 60 - remaining;
-  }, [remaining]);
+    if (prepCountdown > 0) {
+      const timer = setTimeout(() => {
+        setPrepCountdown((c) => c - 1);
+      }, 1000);
+      return () => clearTimeout(timer);
+    } else if (prepCountdown === 0) {
+      playBreathingStartSound();
+    }
+  }, [prepCountdown]);
+
+  const remaining = useCountdown(60, attemptFinish, isStarted);
+  useEffect(() => {
+    if (isStarted) {
+      elapsedRef.current = 60 - remaining;
+    }
+  }, [remaining, isStarted]);
 
   return (
     <div className="modul7-lesson-page modul7-dark-page" data-name="Practice-Jawab Pertanyaan">
@@ -1294,15 +1345,26 @@ function PracticeAnswerRecording({ step, questionIndex, onDone, onRestart, onBac
           <p className="modul7-practice-question-sm">{PRACTICE_QUESTIONS[questionIndex]}</p>
         </div>
 
-        <div className="modul7-practice-dial">{formatClock(remaining)}</div>
+        <div className="modul7-speaking-dial-wrapper">
+          <div className="modul7-practice-dial">{formatClock(remaining)}</div>
+
+          {/* 3-2-1 Countdown Overlay */}
+          {prepCountdown > 0 && (
+            <div className="modul7-speaking-countdown-overlay" aria-label={`Mulai dalam ${prepCountdown}`}>
+              <div key={prepCountdown} className="modul7-speaking-countdown-badge">
+                <span className="modul7-speaking-countdown-number">{prepCountdown}</span>
+              </div>
+            </div>
+          )}
+        </div>
 
         <div className="modul7-practice-wave-wrap">
-          <VoiceWave levels={audioLevels} />
+          <VoiceWave levels={isStarted ? audioLevels : [0.18, 0.18, 0.18, 0.18, 0.18]} />
         </div>
       </div>
 
       <div className="modul7-lesson-cta-wrapper modul7-lesson-cta-wrapper--dark">
-        <button type="button" className="btn-modul7-stop" onClick={attemptFinish}>
+        <button type="button" className="btn-modul7-stop" onClick={attemptFinish} disabled={!isStarted}>
           Selesai Bicara
         </button>
       </div>
