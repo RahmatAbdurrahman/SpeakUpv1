@@ -698,7 +698,13 @@ export function AccumulationScoreHero({ score }) {
 
   return (
     <div className="simulasi-accumulation-hero">
+      {/* Outer ambient radiant gradient */}
       <div className="simulasi-accumulation-aura" />
+
+      {/* Inner focused circular disc surrounding the score */}
+      <div className="simulasi-accumulation-inner-circle" />
+
+      {/* Floating sprinkle circular dots */}
       <div className="simulasi-accumulation-sparkles">
         <span className="simulasi-sparkle-dot simulasi-sparkle-dot--1" />
         <span className="simulasi-sparkle-dot simulasi-sparkle-dot--2" />
@@ -706,6 +712,10 @@ export function AccumulationScoreHero({ score }) {
         <span className="simulasi-sparkle-dot simulasi-sparkle-dot--4" />
         <span className="simulasi-sparkle-dot simulasi-sparkle-dot--5" />
         <span className="simulasi-sparkle-dot simulasi-sparkle-dot--6" />
+        <span className="simulasi-sparkle-dot simulasi-sparkle-dot--7" />
+        <span className="simulasi-sparkle-dot simulasi-sparkle-dot--8" />
+        <span className="simulasi-sparkle-dot simulasi-sparkle-dot--9" />
+        <span className="simulasi-sparkle-dot simulasi-sparkle-dot--10" />
       </div>
 
       <div className="simulasi-accumulation-center">
