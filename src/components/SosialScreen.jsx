@@ -6,6 +6,7 @@ import iconNavUser from "../assets/pages_assets/bottom-nav-icons/User.svg";
 import iconGroup from "../assets/pages_assets/practice/icon_group.svg";
 import imgLive from "../assets/pages_assets/sosial/Image-Live.png";
 import imgMatchmakingDuet from "../assets/pages_assets/sosial/Image-Card-MatchmakingDuet.png";
+import cardBgDecor from "../assets/pages_assets/home/Card-bg-decor.svg";
 import { supabase } from "../lib/supabaseClient";
 import {
   fetchLeaderboard,
@@ -213,6 +214,14 @@ export default function SosialScreen({ onNavigateHome, onNavigateSimulasi, onNav
         {/* ── Match Partner Card ─────────────────────────────────── */}
         <section className="sosial-section">
           <div className="sosial-match-card">
+            {/* Background Texture Decor */}
+            <div className="sosial-match-bg-decor" aria-hidden="true">
+              <img src={cardBgDecor} alt="" className="sosial-match-bg-img" />
+            </div>
+
+            {/* Glowing Aura behind illustration */}
+            <div className="sosial-match-aura" aria-hidden="true" />
+
             <div className="sosial-match-badge">
               <span className="sosial-match-badge-dot"></span>
               <span>Matchmaking Duet</span>
