@@ -36,57 +36,98 @@ function formatDate(iso) {
 }
 
 function SpeakingDnaGauge({ score }) {
-  // 260° circular gauge arc
-  // Radius R = 72, Center (100, 96)
-  // Total arc length = (260/360) * 2 * PI * 72 = 326.726
-  const arcLength = 326.726;
-  const clampedScore = score != null ? Math.min(100, Math.max(0, score)) : 0;
-  const dashOffset = arcLength * (1 - clampedScore / 100);
+  const clampedScore = Math.max(0, Math.min(100, score != null ? Math.round(score) : 0));
+
+  const size = 160;
+  const strokeWidth = 16;
+  const radius = (size - strokeWidth) / 2;
+  const circumference = 2 * Math.PI * radius;
+
+  const [displayScore, setDisplayScore] = useState(0);
+  const [dashOffset, setDashOffset] = useState(circumference);
+  const [isLoaded, setIsLoaded] = useState(false);
+
+  useEffect(() => {
+    const targetOffset = circumference - (clampedScore / 100) * circumference;
+    const strokeTimer = setTimeout(() => {
+      setDashOffset(targetOffset);
+      setIsLoaded(true);
+    }, 80);
+
+    const duration = 1100;
+    const startTime = performance.now();
+    let animId = null;
+
+    const animateNumber = (now) => {
+      const elapsed = now - startTime;
+      const progress = Math.min(1, elapsed / duration);
+      const eased = 1 - Math.pow(1 - progress, 3);
+      setDisplayScore(Math.round(eased * clampedScore));
+
+      if (progress < 1) {
+        animId = requestAnimationFrame(animateNumber);
+      }
+    };
+
+    animId = requestAnimationFrame(animateNumber);
+
+    return () => {
+      clearTimeout(strokeTimer);
+      if (animId) cancelAnimationFrame(animId);
+    };
+  }, [clampedScore, circumference]);
 
   return (
-    <div className="profile-dna-gauge-container">
+    <div className={`profile-dna-gauge-container ${isLoaded ? "profile-dna-gauge--ready" : ""}`}>
       <svg
         className="profile-dna-gauge-svg"
-        viewBox="0 0 200 180"
-        width="200"
-        height="180"
+        width={size}
+        height={size}
+        viewBox={`0 0 ${size} ${size}`}
         aria-hidden="true"
       >
         <defs>
-          <linearGradient id="dnaGaugeGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-            <stop offset="0%" stopColor="#24A981" />
-            <stop offset="100%" stopColor="#10B981" />
+          <linearGradient id="dnaScoreGaugeGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stopColor="#FFA767" />
+            <stop offset="100%" stopColor="#E8753D" />
           </linearGradient>
         </defs>
 
-        {/* Background Track Arc (260° sweep) */}
-        <path
-          d="M 44.85 142.28 A 72 72 0 1 1 155.15 142.28"
-          fill="none"
-          stroke="#E2E8F0"
-          strokeWidth="16"
-          strokeLinecap="round"
+        {/* Inner filled background disc */}
+        <circle
+          className="profile-dna-gauge-inner-disc"
+          cx={size / 2}
+          cy={size / 2}
+          r={radius - strokeWidth / 2 + 1}
         />
 
-        {/* Active Progress Arc */}
-        {score != null && (
-          <path
-            d="M 44.85 142.28 A 72 72 0 1 1 155.15 142.28"
-            fill="none"
-            stroke="url(#dnaGaugeGrad)"
-            strokeWidth="16"
-            strokeLinecap="round"
-            strokeDasharray={arcLength}
-            strokeDashoffset={dashOffset}
-            className="profile-dna-gauge-progress"
-          />
-        )}
+        {/* Background track circle */}
+        <circle
+          className="profile-dna-gauge-track"
+          cx={size / 2}
+          cy={size / 2}
+          r={radius}
+          strokeWidth={strokeWidth}
+        />
+
+        {/* Active progress arc */}
+        <circle
+          className="profile-dna-gauge-progress"
+          cx={size / 2}
+          cy={size / 2}
+          r={radius}
+          strokeWidth={strokeWidth}
+          strokeDasharray={circumference}
+          strokeDashoffset={dashOffset}
+          strokeLinecap="round"
+          transform={`rotate(-90 ${size / 2} ${size / 2})`}
+        />
       </svg>
 
       {/* Center Number & /100 */}
       <div className="profile-dna-gauge-center">
-        <span className="profile-dna-score-num">{score != null ? score : "--"}</span>
-        <span className="profile-dna-score-max">/100</span>
+        <span className="profile-dna-score-num">{displayScore}</span>
+        <span className="profile-dna-score-max">dari 100</span>
       </div>
     </div>
   );

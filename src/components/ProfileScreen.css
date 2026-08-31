@@ -286,52 +286,87 @@
   border-radius: 50%;
 }
 
-/* ── Arc Gauge ────────────────────────────────────────────────────────────── */
+/* ── Speaking DNA Circular Gauge Meter (Matching Analysis Bar) ── */
 .profile-dna-gauge-container {
   position: relative;
-  width: 200px;
-  height: 180px;
+  width: 160px;
+  height: 160px;
   display: flex;
   align-items: center;
   justify-content: center;
-  margin: 0;
+  margin: 12px auto 6px;
+  animation: gaugeEntrance 0.7s cubic-bezier(0.34, 1.4, 0.64, 1) both;
+}
+
+@keyframes gaugeEntrance {
+  0% {
+    opacity: 0;
+    transform: scale(0.78);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
 }
 
 .profile-dna-gauge-svg {
-  width: 100%;
-  height: 100%;
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 160px;
+  height: 160px;
   overflow: visible;
+  filter: drop-shadow(0 6px 16px rgba(20, 60, 63, 0.08));
+}
+
+.profile-dna-gauge-inner-disc {
+  fill: #FFFFFF;
+  stroke: rgba(20, 60, 63, 0.08);
+  stroke-width: 1.5px;
+  transition: fill 0.3s ease;
+}
+
+.profile-dna-gauge-track {
+  fill: none;
+  stroke: #EAE6DF;
+  transition: stroke 0.3s ease;
 }
 
 .profile-dna-gauge-progress {
+  fill: none;
+  stroke: url(#dnaScoreGaugeGrad);
+  filter: drop-shadow(0 2px 6px rgba(232, 117, 61, 0.25));
   transition: stroke-dashoffset 1.2s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .profile-dna-gauge-center {
-  position: absolute;
-  inset: 0;
+  position: relative;
+  z-index: 2;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  margin-top: 10px;
+  text-align: center;
+  user-select: none;
 }
 
 .profile-dna-score-num {
   font-family: var(--font-family-base, 'Space Grotesk', sans-serif);
   font-size: 52px;
-  font-weight: 700;
+  font-weight: 800;
   color: var(--color-text-primary, #243238);
   line-height: 1;
-  letter-spacing: -2px;
+  letter-spacing: -1.5px;
+  margin: 0;
 }
 
 .profile-dna-score-max {
   font-family: var(--font-family-base, 'Space Grotesk', sans-serif);
-  font-size: 14px;
+  font-size: 12px;
   font-weight: 700;
   color: var(--color-text-caption, #8199A3);
-  margin-top: 2px;
+  margin-top: 3px;
+  letter-spacing: 0.2px;
 }
 
 .profile-dna-status-pill {
