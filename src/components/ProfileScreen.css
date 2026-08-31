@@ -655,19 +655,16 @@
 .profile-cat--spontan {
   background: #FFF3E0;
   color: #DA5000;
-  border: 1px solid rgba(218, 80, 0, 0.2);
 }
 
 .profile-cat--presentasi {
   background: #E8F7F2;
   color: #17674F;
-  border: 1px solid rgba(36, 169, 129, 0.2);
 }
 
 .profile-cat--interview {
   background: #EFF8FF;
   color: #0958D9;
-  border: 1px solid rgba(24, 144, 255, 0.2);
 }
 
 .profile-history-date {
