@@ -282,6 +282,8 @@
   flex: 1;
   display: flex;
   flex-direction: column;
+  justify-content: space-between;
+  align-items: center;
   width: 100%;
   height: 100%;
   position: relative;
@@ -293,7 +295,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 24px 24px 100px 24px;
+  padding: 20px 24px 8px 24px;
   position: relative;
   z-index: 5;
   box-sizing: border-box;
@@ -301,44 +303,30 @@
 
 .modul7-page2-quote {
   font-family: var(--font-family-base, 'Space Grotesk', sans-serif);
-  font-size: 18px;
+  font-size: 16px;
   font-weight: 700;
   color: var(--color-text-primary, #243238);
-  letter-spacing: -0.522px;
-  line-height: 1.6;
+  letter-spacing: -0.4px;
+  line-height: 1.55;
   text-align: center;
-  max-width: 310px;
+  max-width: 320px;
   margin: 0 auto;
-}
-
-.modul7-typing-cursor {
-  display: inline-block;
-  margin-left: 2px;
-  color: var(--color-secondary, #24A981);
-  font-weight: 700;
-  animation: typing-blink 0.7s infinite;
-}
-
-@keyframes typing-blink {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0; }
 }
 
 /* Mascot Illustration at bottom */
 .modul7-page2-mascot-wrapper {
-  position: absolute;
-  bottom: 0;
-  left: 50%;
-  transform: translateX(-50%);
+  position: relative;
   width: 100%;
-  max-width: 390px;
-  height: 320px;
+  max-width: 320px;
+  height: 230px;
+  max-height: 33vh;
   pointer-events: none;
   z-index: 2;
   display: flex;
   align-items: flex-end;
   justify-content: center;
   overflow: hidden;
+  margin-top: auto;
 }
 
 .modul7-page2-mascot-img {
