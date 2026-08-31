@@ -573,6 +573,444 @@
 }
 
 /* ==========================================================================
+   Interview Call View (Interactive Avatar & Siri-Orb Call UI)
+   ========================================================================== */
+.simulasi-interview-wrapper {
+  position: relative;
+  width: 100%;
+  height: 100%;
+}
+
+.simulasi-interview-screen {
+  width: 100%;
+  height: 100%;
+  background-color: var(--color-bg-app, #FAF8F3);
+  display: flex;
+  flex-direction: column;
+  box-sizing: border-box;
+  padding: 16px 20px 20px 20px;
+  position: relative;
+  overflow: hidden;
+  justify-content: space-between;
+}
+
+.simulasi-interview-topbar {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 8px;
+  flex-shrink: 0;
+}
+
+.simulasi-interview-topbar-left {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.simulasi-interview-title {
+  font-family: var(--font-family-base, 'Space Grotesk', sans-serif);
+  font-size: 17px;
+  font-weight: 700;
+  color: var(--color-text-primary, #243238);
+}
+
+.simulasi-interview-timer {
+  font-family: var(--font-family-base, 'Space Grotesk', sans-serif);
+  font-size: 14px;
+  font-weight: 600;
+  color: #475569;
+  letter-spacing: 0.5px;
+}
+
+/* Interviewer Video Card */
+.simulasi-interview-video-card {
+  position: relative;
+  width: 100%;
+  height: 440px;
+  max-height: 58vh;
+  border-radius: 24px;
+  overflow: hidden;
+  background-color: #1a2332;
+  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.12), 0 4px 10px rgba(0, 0, 0, 0.05);
+  flex-shrink: 0;
+}
+
+.simulasi-avatar-video {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center top;
+  transition: opacity 0.25s ease-in-out;
+}
+
+.simulasi-avatar-video.is-active {
+  opacity: 1;
+  z-index: 2;
+  pointer-events: auto;
+}
+
+.simulasi-avatar-video.is-hidden {
+  opacity: 0;
+  z-index: 1;
+  pointer-events: none;
+}
+
+/* Audio wave badge top-left */
+.simulasi-avatar-audio-badge {
+  position: absolute;
+  top: 14px;
+  left: 14px;
+  z-index: 5;
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.72);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.simulasi-wave-bars {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  height: 16px;
+}
+
+.wave-bar {
+  width: 3px;
+  background-color: #475569;
+  border-radius: 2px;
+  transition: height 0.2s ease;
+}
+
+.bar-1 { height: 6px; }
+.bar-2 { height: 14px; }
+.bar-3 { height: 10px; }
+.bar-4 { height: 7px; }
+
+.simulasi-avatar-audio-badge.is-active .wave-bar {
+  background: linear-gradient(180deg, #8B5CF6 0%, #3B82F6 100%);
+  animation: simulasi-wave-dance 0.75s ease-in-out infinite alternate;
+}
+
+.simulasi-avatar-audio-badge.is-active .bar-1 { animation-delay: 0.1s; }
+.simulasi-avatar-audio-badge.is-active .bar-2 { animation-delay: 0.3s; }
+.simulasi-avatar-audio-badge.is-active .bar-3 { animation-delay: 0.2s; }
+.simulasi-avatar-audio-badge.is-active .bar-4 { animation-delay: 0.4s; }
+
+@keyframes simulasi-wave-dance {
+  0% { height: 4px; }
+  100% { height: 15px; }
+}
+
+/* Bottom Subtitle Pill with Expand Button */
+.simulasi-avatar-subtitle-pill {
+  position: absolute;
+  bottom: 12px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 5;
+  background: rgba(20, 24, 38, 0.88);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  padding: 6px 10px 6px 14px;
+  border-radius: 20px;
+  max-width: 90%;
+  width: max-content;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.3);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.simulasi-avatar-subtitle-text {
+  font-family: var(--font-family-base, 'Space Grotesk', sans-serif);
+  font-size: 11.5px;
+  font-weight: 500;
+  color: #FFFFFF;
+  line-height: 1.3;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 200px;
+}
+
+.simulasi-subtitle-expand-btn {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.18);
+  border: none;
+  color: #FFFFFF;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  padding: 0;
+  flex-shrink: 0;
+  transition: background 0.15s ease, transform 0.15s ease;
+}
+
+.simulasi-subtitle-expand-btn:hover {
+  background: rgba(255, 255, 255, 0.35);
+  transform: scale(1.1);
+}
+
+/* Center Section */
+.simulasi-interview-center {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 70px;
+  padding: 2px 0 8px 0;
+  margin-top: -14px;
+  gap: 10px;
+}
+
+/* Real-time Voice Wave (Lesson 6 Modul 7 style) */
+.simulasi-interview-wave {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  height: 46px;
+}
+
+.simulasi-interview-wave-bar {
+  width: 6px;
+  border-radius: 3px;
+  background-color: var(--color-secondary, #24A981);
+  transition: height 0.08s cubic-bezier(0.2, 0.8, 0.4, 1);
+  min-height: 10px;
+}
+
+/* Turn-Taking Answer Action Button */
+.simulasi-answer-action-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 10px 22px;
+  border-radius: 30px;
+  font-family: var(--font-family-base, 'Space Grotesk', sans-serif);
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  border: none;
+  margin-top: 4px;
+  transition: transform 0.12s ease, filter 0.15s ease, box-shadow 0.2s ease;
+}
+
+.btn--start-answering {
+  background-color: var(--color-primary, #E8753D);
+  color: #FFFFFF;
+  border: 1px solid #8B4827;
+  box-shadow: 0 4px 0 0 #8B4827, 0 6px 16px rgba(232, 117, 61, 0.28);
+}
+
+.btn--start-answering:hover {
+  filter: brightness(1.06);
+}
+
+.btn--start-answering:active {
+  transform: translateY(2px);
+  box-shadow: 0 2px 0 0 #8B4827;
+}
+
+.btn--finish-answering {
+  background-color: var(--color-secondary, #24A981);
+  color: #FFFFFF;
+  border: 1px solid #166A51;
+  box-shadow: 0 4px 0 0 #166A51, 0 6px 16px rgba(36, 169, 129, 0.28);
+  animation: simulasi-pulse-green 1.8s ease-in-out infinite;
+}
+
+.btn--finish-answering:hover {
+  filter: brightness(1.06);
+}
+
+.btn--finish-answering:active {
+  transform: translateY(2px);
+  box-shadow: 0 2px 0 0 #166A51;
+}
+
+@keyframes simulasi-pulse-green {
+  0%, 100% { box-shadow: 0 4px 0 0 #166A51, 0 0 0 0 rgba(36, 169, 129, 0.45); }
+  50% { box-shadow: 0 4px 0 0 #166A51, 0 0 0 8px rgba(36, 169, 129, 0); }
+}
+
+/* Full Question Modal Bottom Sheet */
+.simulasi-question-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.55);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  z-index: 100;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  animation: simulasi-fade-in 0.2s ease;
+}
+
+.simulasi-question-modal-sheet {
+  width: 100%;
+  max-width: 420px;
+  background: #FFFFFF;
+  border-radius: 24px 24px 0 0;
+  padding: 20px 24px 28px 24px;
+  box-sizing: border-box;
+  box-shadow: 0 -8px 30px rgba(0, 0, 0, 0.2);
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  animation: simulasi-slide-up 0.25s cubic-bezier(0.2, 0.9, 0.3, 1);
+}
+
+.simulasi-question-modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.simulasi-question-modal-badge {
+  font-family: var(--font-family-base, 'Space Grotesk', sans-serif);
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--color-primary, #E8753D);
+  background: #FFF3EB;
+  padding: 4px 10px;
+  border-radius: 12px;
+}
+
+.simulasi-question-modal-close {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  background: #F1F5F9;
+  border: none;
+  font-size: 14px;
+  color: #64748B;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
+.simulasi-question-modal-text {
+  font-family: var(--font-family-base, 'Space Grotesk', sans-serif);
+  font-size: 15px;
+  font-weight: 500;
+  color: #1E293B;
+  line-height: 1.5;
+  margin: 0;
+}
+
+.simulasi-question-modal-btn {
+  margin-top: 4px;
+  width: 100%;
+}
+
+@keyframes simulasi-slide-up {
+  from { transform: translateY(100%); }
+  to { transform: translateY(0); }
+}
+
+@keyframes simulasi-fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+/* Bottom Call Action Dock */
+.simulasi-call-dock {
+  width: auto;
+  align-self: center;
+  background: #141724;
+  border-radius: 40px;
+  padding: 8px 14px;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.28), 0 4px 10px rgba(0, 0, 0, 0.12);
+  margin-top: 4px;
+  flex-shrink: 0;
+}
+
+.simulasi-call-btn {
+  width: 46px;
+  height: 46px;
+  border-radius: 50%;
+  background-color: #FFFFFF;
+  border: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  position: relative;
+  transition: transform 0.15s ease, background-color 0.2s ease;
+  padding: 0;
+}
+
+.simulasi-call-btn:hover {
+  transform: scale(1.06);
+}
+
+.simulasi-call-btn:active {
+  transform: scale(0.94);
+}
+
+.simulasi-call-btn-icon {
+  width: 22px;
+  height: 22px;
+  object-fit: contain;
+}
+
+.simulasi-call-btn.is-muted {
+  background-color: #E2E8F0;
+  opacity: 0.75;
+}
+
+.simulasi-call-btn-slash {
+  position: absolute;
+  width: 24px;
+  height: 2px;
+  background-color: #EF4444;
+  transform: rotate(45deg);
+  border-radius: 1px;
+}
+
+.simulasi-call-btn.is-active {
+  background-color: #EDE9FE;
+  box-shadow: 0 0 0 2px #8B5CF6;
+}
+
+.simulasi-call-btn--hangup {
+  background-color: #EB4D4B;
+}
+
+.simulasi-call-btn--hangup:hover {
+  background-color: #DC2626;
+}
+
+.simulasi-call-hangup-icon {
+  width: 20px;
+  height: 20px;
+  filter: brightness(0) invert(1);
+  transform: rotate(135deg);
+}
+
+/* ==========================================================================
    Processing step
    ========================================================================== */
 .simulasi-processing-screen {

@@ -9,6 +9,12 @@ import imgAnalysisHero from "../assets/pages_assets/ai_analysis/analysis_hero.pn
 import imgSpontan from "../assets/pages_assets/simulasi/Image-Spontan.png";
 import imgPresentasi from "../assets/pages_assets/simulasi/Image-Presentasi.png";
 import imgInterview from "../assets/pages_assets/simulasi/Image-Interview.png";
+import videoBlinking from "../assets/pages_assets/simulasi/Blinking.webm";
+import videoSpeaking from "../assets/pages_assets/simulasi/Speaking.webm";
+import iconMic from "../assets/icons/Mic-Icon.svg";
+import iconCam from "../assets/icons/Camcorder-Icon.svg";
+import iconPhone from "../assets/icons/Phone-Icon.svg";
+import iconRepeat from "../assets/icons/Repeat-Icon.svg";
 import iconArgument from "../assets/pages_assets/ai_analysis/Icons/Argument-Icon.svg";
 import iconRelevance from "../assets/pages_assets/ai_analysis/Icons/Relevance-Icon.svg";
 import iconSpeed from "../assets/pages_assets/ai_analysis/Icons/Speed-Icon.svg";
@@ -26,6 +32,7 @@ import animaBotLottie from "../assets/lotties/AnimaBot.lottie";
 import SessionLoadingScreen from "./SessionLoadingScreen";
 import SlideViewer from "./SlideViewer";
 import TranscriptCard from "./TranscriptCard";
+import LessonExitModal from "./LessonExitModal";
 import { exportAnalysisToPDF } from "../lib/pdfExport";
 import { supabase } from "../lib/supabaseClient";
 import {
@@ -45,10 +52,18 @@ import {
   uploadSessionAudio,
   runAnalysis,
   fetchSessionResults,
+  fetchGeneratedQuestions,
   friendlySimulasiError,
 } from "../lib/simulasi";
 import { useUserProgress } from "../context/UserProgressContext";
 import { SimulasiSkeleton } from "./SkeletonLoader";
+
+const DEFAULT_INTERVIEW_QUESTIONS = [
+  "Can you tell about future goal?",
+  "What is your greatest strength and how will it help in this role?",
+  "Tell me about a challenging situation you faced and how you overcame it.",
+  "Why are you interested in joining our team and this position?",
+];
 
 const SCENARIO_IMAGES = {
   spontan: imgSpontan,
@@ -389,6 +404,462 @@ function RecordingGateModal({ variant, secondsElapsed, onResume, onRestart, onAb
   );
 }
 
+// ─── Real-time Audio-Reactive Voice Bars driven by Microphone ─────────────────
+function InterviewVoiceWave({ levels = [0.18, 0.18, 0.18, 0.18, 0.18] }) {
+  const baseHeights = [24, 38, 48, 38, 24];
+  return (
+    <div className="simulasi-interview-wave" aria-hidden="true">
+      {levels.map((level, i) => (
+        <span
+          key={i}
+          className="simulasi-interview-wave-bar"
+          style={{
+            height: `${Math.max(8, Math.round(baseHeights[i] * level))}px`,
+          }}
+        />
+      ))}
+    </div>
+  );
+}
+
+// ─── Interview Call View (Interactive Avatar & Audio Wave UI) ────────────────
+function InterviewCallView({
+  scenario,
+  questions = [],
+  qIndex,
+  setQIndex,
+  seconds,
+  formatTime,
+  isRecording,
+  onFinish,
+  onBack,
+  stream,
+  camError,
+  analyserNode,
+}) {
+  const videoBlinkingRef = useRef(null);
+  const videoSpeakingRef = useRef(null);
+  const blinkTimeoutRef = useRef(null);
+  const ttsTimeoutRef = useRef(null);
+
+  const [isInterviewerSpeaking, setIsInterviewerSpeaking] = useState(false);
+  const [subtitle, setSubtitle] = useState("");
+  const [isMuted, setIsMuted] = useState(false);
+  const [micLevel, setMicLevel] = useState(0);
+  const [audioLevels, setAudioLevels] = useState([0.18, 0.18, 0.18, 0.18, 0.18]);
+  const [videoAspect, setVideoAspect] = useState(null);
+  const [showFullQuestion, setShowFullQuestion] = useState(false);
+  const [showExitModal, setShowExitModal] = useState(false);
+  const [isAnswering, setIsAnswering] = useState(false);
+
+  const activeQuestions = questions.length > 0 ? questions : DEFAULT_INTERVIEW_QUESTIONS;
+  const currentQuestion = activeQuestions[qIndex] || activeQuestions[0] || "Can you tell about future goal?";
+  const isLastQuestion = qIndex >= activeQuestions.length - 1;
+
+  // Audio level & 5-band frequency monitoring for reactive VoiceWave
+  useEffect(() => {
+    if (!analyserNode) return undefined;
+    let rafId;
+    const data = new Uint8Array(analyserNode.frequencyBinCount);
+    let lastUpdate = 0;
+
+    const checkLevel = (now) => {
+      analyserNode.getByteFrequencyData(data);
+      let sum = 0;
+      for (let i = 0; i < data.length; i++) sum += data[i];
+      const avg = sum / data.length;
+      const normalized = Math.min(1, Math.max(0, (avg - 6) / 45));
+      setMicLevel(normalized);
+
+      // Smooth 30fps update for 5-band voice bars matching Lesson 6 Modul 7
+      if (now - lastUpdate > 30) {
+        lastUpdate = now;
+        const b1 = (data[2] || 0) / 255;
+        const b2 = (data[6] || 0) / 255;
+        const b3 = (data[12] || 0) / 255;
+        const b4 = (data[20] || 0) / 255;
+        const b5 = (data[30] || 0) / 255;
+        setAudioLevels([
+          Math.max(0.18, Math.min(1.0, b1 * 2.0 + 0.1)),
+          Math.max(0.18, Math.min(1.0, b2 * 2.2 + 0.1)),
+          Math.max(0.18, Math.min(1.0, b3 * 2.4 + 0.1)),
+          Math.max(0.18, Math.min(1.0, b4 * 2.2 + 0.1)),
+          Math.max(0.18, Math.min(1.0, b5 * 2.0 + 0.1)),
+        ]);
+      }
+
+      rafId = requestAnimationFrame(checkLevel);
+    };
+
+    rafId = requestAnimationFrame(checkLevel);
+    return () => {
+      if (rafId) cancelAnimationFrame(rafId);
+    };
+  }, [analyserNode]);
+
+  const handleLoadedMetadata = (e) => {
+    if (e.target.videoWidth && e.target.videoHeight) {
+      setVideoAspect(e.target.videoWidth / e.target.videoHeight);
+    }
+  };
+
+  // Toggle mic mute
+  const toggleMute = () => {
+    if (!stream) return;
+    const audioTracks = stream.getAudioTracks();
+    const nextMuted = !isMuted;
+    audioTracks.forEach((track) => {
+      track.enabled = !nextMuted;
+    });
+    setIsMuted(nextMuted);
+  };
+
+  // Schedule natural random blinking
+  const scheduleNextBlink = () => {
+    if (blinkTimeoutRef.current) clearTimeout(blinkTimeoutRef.current);
+    // Random delay between 2000ms (2s) and 5200ms (5.2s)
+    const randomDelay = 2000 + Math.random() * 3200;
+    blinkTimeoutRef.current = setTimeout(() => {
+      const vid = videoBlinkingRef.current;
+      if (vid) {
+        vid.currentTime = 0;
+        vid.play().catch(() => {});
+      }
+    }, randomDelay);
+  };
+
+  // Handle when 1 cycle of blinking video ends
+  const handleBlinkEnded = () => {
+    scheduleNextBlink();
+  };
+
+  const endSpeaking = () => {
+    if (ttsTimeoutRef.current) clearTimeout(ttsTimeoutRef.current);
+    if ("speechSynthesis" in window) {
+      window.speechSynthesis.cancel();
+    }
+    setIsInterviewerSpeaking(false);
+    if (videoSpeakingRef.current) {
+      videoSpeakingRef.current.pause();
+    }
+    if (videoBlinkingRef.current) {
+      videoBlinkingRef.current.currentTime = 0;
+      videoBlinkingRef.current.play().catch(() => {});
+      scheduleNextBlink();
+    }
+  };
+
+  // Helper to pick Indonesian voice and apply true male pitch
+  const getIndonesianVoiceAndPitch = (voices = []) => {
+    const idVoices = voices.filter(
+      (v) =>
+        v.lang &&
+        (v.lang.toLowerCase().startsWith("id") ||
+          v.lang.toLowerCase().includes("indonesia") ||
+          v.lang.toLowerCase() === "in_id" ||
+          v.lang.toLowerCase() === "in-id")
+    );
+
+    // If explicit male voice is found (e.g. Microsoft Ardi Neural / Indonesian Male)
+    const explicitMale = idVoices.find(
+      (v) =>
+        v.name.toLowerCase().includes("ardi") ||
+        v.name.toLowerCase().includes("male") ||
+        v.name.toLowerCase().includes("pria") ||
+        v.name.toLowerCase().includes("guy") ||
+        v.name.toLowerCase().includes("man")
+    );
+
+    if (explicitMale) {
+      return { voice: explicitMale, pitch: 0.85 };
+    }
+
+    // If available Indonesian voice is generic (Google Bahasa Indonesia / Damayanti),
+    // lower pitch to 0.68 - 0.70 to shift timbre distinctly into an authoritative male voice
+    const fallbackId = idVoices[0];
+    if (fallbackId) {
+      return { voice: fallbackId, pitch: 0.68 };
+    }
+
+    return { voice: null, pitch: 0.68 };
+  };
+
+  // Trigger question speech (Speaking.webm + TTS + Subtitle)
+  const speakQuestion = (text) => {
+    if (blinkTimeoutRef.current) clearTimeout(blinkTimeoutRef.current);
+    if (ttsTimeoutRef.current) clearTimeout(ttsTimeoutRef.current);
+
+    setIsInterviewerSpeaking(true);
+    setIsAnswering(false);
+    setSubtitle(text);
+
+    // Play speaking video
+    if (videoSpeakingRef.current) {
+      videoSpeakingRef.current.currentTime = 0;
+      videoSpeakingRef.current.play().catch(() => {});
+    }
+    if (videoBlinkingRef.current) {
+      videoBlinkingRef.current.pause();
+    }
+
+    // Web Speech API / TTS
+    if ("speechSynthesis" in window) {
+      try {
+        window.speechSynthesis.resume();
+        window.speechSynthesis.cancel();
+
+        const triggerUtterance = () => {
+          try {
+            window.speechSynthesis.resume();
+            const utterance = new SpeechSynthesisUtterance(text);
+            utterance.lang = "id-ID";
+            utterance.rate = 0.92;
+
+            const voices = window.speechSynthesis.getVoices?.() || [];
+            const { voice, pitch } = getIndonesianVoiceAndPitch(voices);
+            if (voice) utterance.voice = voice;
+            utterance.pitch = pitch;
+
+            utterance.onend = () => {
+              endSpeaking();
+            };
+            utterance.onerror = (err) => {
+              console.warn("TTS utterance error:", err);
+              endSpeaking();
+            };
+
+            window.speechSynthesis.speak(utterance);
+          } catch (e) {
+            console.warn("TTS speak failed inside trigger:", e);
+          }
+        };
+
+        // If voices are not yet loaded, wait for voiceschanged or fire with short timeout
+        const currentVoices = window.speechSynthesis.getVoices?.() || [];
+        if (!currentVoices || currentVoices.length === 0) {
+          window.speechSynthesis.onvoiceschanged = () => {
+            triggerUtterance();
+          };
+          setTimeout(triggerUtterance, 120);
+        } else {
+          setTimeout(triggerUtterance, 40);
+        }
+      } catch (e) {
+        console.warn("TTS speak setup failed:", e);
+      }
+    }
+
+    // Fallback duration based on sentence length (approx 100ms/char, min 5s, max 20s)
+    const fallbackDuration = Math.min(20000, Math.max(5000, text.length * 100));
+    ttsTimeoutRef.current = setTimeout(() => {
+      endSpeaking();
+    }, fallbackDuration);
+  };
+
+  // Trigger speak whenever question index or question changes
+  useEffect(() => {
+    // Delay 250ms on mount to ensure media streams and browser audio context are stable
+    const timer = setTimeout(() => {
+      speakQuestion(currentQuestion);
+    }, 250);
+
+    return () => {
+      clearTimeout(timer);
+      if (blinkTimeoutRef.current) clearTimeout(blinkTimeoutRef.current);
+      if (ttsTimeoutRef.current) clearTimeout(ttsTimeoutRef.current);
+      if ("speechSynthesis" in window) {
+        window.speechSynthesis.cancel();
+      }
+    };
+  }, [qIndex, currentQuestion]);
+
+  const handleStartAnswering = () => {
+    endSpeaking();
+    setIsAnswering(true);
+    if (stream) {
+      stream.getAudioTracks().forEach((track) => {
+        track.enabled = true;
+      });
+      setIsMuted(false);
+    }
+  };
+
+  const handleFinishAnswering = () => {
+    if (isLastQuestion) {
+      onFinish();
+    } else {
+      setIsAnswering(false);
+      setQIndex((prev) => prev + 1);
+    }
+  };
+
+  return (
+    <div className="simulasi-interview-screen">
+      {/* Top Bar: Title + Call Timer */}
+      <header className="simulasi-interview-topbar">
+        <div className="simulasi-interview-topbar-left">
+          <button
+            type="button"
+            className="simulasi-back-btn"
+            onClick={() => setShowExitModal(true)}
+            aria-label="Kembali"
+          >
+            <img src={arrowLeftIcon} alt="" className="simulasi-back-icon" />
+          </button>
+          <span className="simulasi-interview-title">Interview</span>
+        </div>
+        <span className="simulasi-interview-timer">{formatTime(seconds)}</span>
+      </header>
+
+      {/* Interviewer Video Card */}
+      <div className="simulasi-interview-video-card">
+        {/* Blinking video (idle / listening with natural random blink delay) */}
+        <video
+          ref={videoBlinkingRef}
+          src={videoBlinking}
+          playsInline
+          muted
+          className={`simulasi-avatar-video ${!isInterviewerSpeaking ? "is-active" : "is-hidden"}`}
+          onEnded={handleBlinkEnded}
+        />
+
+        {/* Speaking video (loops continuously while TTS is active) */}
+        <video
+          ref={videoSpeakingRef}
+          src={videoSpeaking}
+          loop
+          playsInline
+          muted
+          className={`simulasi-avatar-video ${isInterviewerSpeaking ? "is-active" : "is-hidden"}`}
+          onEnded={() => {
+            if (isInterviewerSpeaking && videoSpeakingRef.current) {
+              videoSpeakingRef.current.currentTime = 0;
+              videoSpeakingRef.current.play().catch(() => {});
+            }
+          }}
+        />
+
+        {/* Bottom Subtitle Badge with Expand Button */}
+        <div className="simulasi-avatar-subtitle-pill">
+          <span className="simulasi-avatar-subtitle-text">
+            {isInterviewerSpeaking ? subtitle : currentQuestion}
+          </span>
+          <button
+            type="button"
+            className="simulasi-subtitle-expand-btn"
+            onClick={() => setShowFullQuestion(true)}
+            title="Lihat Pertanyaan Lengkap"
+            aria-label="Lihat Pertanyaan Lengkap"
+          >
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M15 3H21V9M21 3L14 10M9 21H3V15M3 21L10 14" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" />
+            </svg>
+          </button>
+        </div>
+      </div>
+
+      {/* Center Section: Reactive Voice Wave & Turn-Taking Answer Button */}
+      <div className="simulasi-interview-center">
+        <InterviewVoiceWave levels={isAnswering ? audioLevels : [0.18, 0.18, 0.18, 0.18, 0.18]} />
+
+        {!isAnswering ? (
+          <button
+            type="button"
+            className="simulasi-answer-action-btn btn--start-answering"
+            onClick={handleStartAnswering}
+          >
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M12 2C10.34 2 9 3.34 9 5V11C9 12.66 10.34 14 12 14C13.66 14 15 12.66 15 11V5C15 3.34 13.66 2 12 2Z" fill="currentColor" />
+              <path d="M19 10V11C19 14.53 16.39 17.44 13 17.93V21H11V17.93C7.61 17.44 5 14.53 5 11V10H7V11C7 13.76 9.24 16 12 16C14.76 16 17 13.76 17 11V10H19Z" fill="currentColor" />
+            </svg>
+            <span>Jawab Pertanyaan</span>
+          </button>
+        ) : (
+          <button
+            type="button"
+            className="simulasi-answer-action-btn btn--finish-answering"
+            onClick={handleFinishAnswering}
+          >
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M5 13L9 17L19 7" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
+            </svg>
+            <span>{isLastQuestion ? "Selesaikan Wawancara" : "Selesai Menjawab"}</span>
+          </button>
+        )}
+      </div>
+
+      {/* Full Question Container / Bottom Sheet Modal */}
+      {showFullQuestion && (
+        <div className="simulasi-question-modal-backdrop" onClick={() => setShowFullQuestion(false)}>
+          <div className="simulasi-question-modal-sheet" onClick={(e) => e.stopPropagation()}>
+            <div className="simulasi-question-modal-header">
+              <span className="simulasi-question-modal-badge">
+                Pertanyaan {qIndex + 1} dari {activeQuestions.length}
+              </span>
+              <button
+                type="button"
+                className="simulasi-question-modal-close"
+                onClick={() => setShowFullQuestion(false)}
+                aria-label="Tutup"
+              >
+                ✕
+              </button>
+            </div>
+            <p className="simulasi-question-modal-text">{currentQuestion}</p>
+            <button
+              type="button"
+              className="btn-simulasi-lanjut simulasi-question-modal-btn"
+              onClick={() => setShowFullQuestion(false)}
+            >
+              Tutup
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Exit Confirmation Modal */}
+      {showExitModal && (
+        <LessonExitModal
+          title="Yakin ingin keluar?"
+          desc="Kemajuanmu pada sesi simulasi wawancara ini tidak akan tersimpan jika kamu keluar sekarang."
+          stayText="Lanjutkan Wawancara"
+          leaveText="Keluar Simulasi"
+          onCancel={() => setShowExitModal(false)}
+          onConfirm={() => {
+            setShowExitModal(false);
+            if (onBack) onBack();
+          }}
+        />
+      )}
+
+      {/* Bottom Floating Control Dock */}
+      <div className="simulasi-call-dock">
+        {/* Repeat Question button */}
+        <button
+          type="button"
+          className="simulasi-call-btn simulasi-call-btn--repeat"
+          onClick={() => speakQuestion(currentQuestion)}
+          title="Ulangi Pertanyaan"
+          aria-label="Ulangi Pertanyaan"
+        >
+          <img src={iconRepeat} alt="Ulangi Pertanyaan" className="simulasi-call-btn-icon" />
+        </button>
+
+        {/* End Call / Hangup button (Red) */}
+        <button
+          type="button"
+          className="simulasi-call-btn simulasi-call-btn--hangup"
+          onClick={onFinish}
+          title="Tutup & Selesaikan Sesi"
+          aria-label="Tutup & Selesaikan Sesi"
+        >
+          <img src={iconPhone} alt="Tutup Panggilan" className="simulasi-call-hangup-icon" />
+        </button>
+      </div>
+    </div>
+  );
+}
+
 // ─── Recording step ─────────────────────────────────────────────────────────
 // `questions` non-empty = mode wawancara: satu rekaman berjalan terus, tapi
 // pertanyaan berganti satu per satu di layar (tanya-jawab bergantian), dan
@@ -401,9 +872,6 @@ function RecordingStep({ scenario, cheatSheet, materialPdfPath, questions = [], 
   const [stream, setStream] = useState(null);
   const [camError, setCamError] = useState(null);
   const [isRecording, setIsRecording] = useState(false);
-  const [seconds, setSeconds] = useState(0);
-  const [showCheatSheet, setShowCheatSheet] = useState(false);
-  const [qIndex, setQIndex] = useState(0);
   // Presentasi (kelas/lomba) only — split-screen camera+materi below replaces
   // the overlay cheat-sheet other scenarios still use (see isPresentasi).
   const isPresentasi = scenario?.kategori === "kelas" || scenario?.kategori === "lomba";
@@ -413,9 +881,10 @@ function RecordingStep({ scenario, cheatSheet, materialPdfPath, questions = [], 
   const [materialView, setMaterialView] = useState("notes"); // "notes" | "slide"
   const [slideUrl, setSlideUrl] = useState(null);
   const [slideError, setSlideError] = useState("");
+  const [analyserNode, setAnalyserNode] = useState(null);
   // null | "silent" | "incomplete" — see attemptFinish() below.
   const [gate, setGate] = useState(null);
-  const isInterview = questions.length > 0;
+  const isInterview = scenario?.kategori === "interview" || questions.length > 0;
   const isLastQuestion = qIndex >= questions.length - 1;
   const mediaRecorderRef = useRef(null);
   const chunksRef = useRef([]);
@@ -429,9 +898,14 @@ function RecordingStep({ scenario, cheatSheet, materialPdfPath, questions = [], 
     let active = true;
     let currentStream = null;
 
+    const constraints =
+      scenario?.kategori === "interview"
+        ? { audio: true, video: false }
+        : { video: { facingMode: "user", width: { ideal: 1280 }, height: { ideal: 720 } }, audio: true };
+
     if (navigator.mediaDevices?.getUserMedia) {
       navigator.mediaDevices
-        .getUserMedia({ video: { facingMode: "user", width: { ideal: 1280 }, height: { ideal: 720 } }, audio: true })
+        .getUserMedia(constraints)
         .then((s) => {
           if (!active) {
             s.getTracks().forEach((t) => t.stop());
@@ -450,7 +924,7 @@ function RecordingStep({ scenario, cheatSheet, materialPdfPath, questions = [], 
       if (currentStream) currentStream.getTracks().forEach((t) => t.stop());
       clearInterval(timerRef.current);
     };
-  }, []);
+  }, [scenario?.kategori]);
 
   useEffect(() => {
     if (videoRef.current && stream) videoRef.current.srcObject = stream;
@@ -471,8 +945,9 @@ function RecordingStep({ scenario, cheatSheet, materialPdfPath, questions = [], 
     try {
       audioCtx = new (window.AudioContext || window.webkitAudioContext)();
       const analyser = audioCtx.createAnalyser();
-      analyser.fftSize = 512;
+      analyser.fftSize = 256;
       audioCtx.createMediaStreamSource(new MediaStream(audioTracks)).connect(analyser);
+      setAnalyserNode(analyser);
       const data = new Uint8Array(analyser.frequencyBinCount);
       const tick = () => {
         analyser.getByteFrequencyData(data);
@@ -550,6 +1025,13 @@ function RecordingStep({ scenario, cheatSheet, materialPdfPath, questions = [], 
     startTimer();
   };
 
+  // For interview scenario: auto start recording on mount once stream is ready
+  useEffect(() => {
+    if (scenario?.kategori === "interview" && stream && !isRecording && !gate) {
+      startRecording();
+    }
+  }, [scenario?.kategori, stream]);
+
   // Gate before finalizing a recording: silence -> nothing to analyse at
   // all; too short -> probably an accidental/rushed stop. Both PAUSE the
   // recorder (not stop it) so "Lanjutkan" can resume the same take.
@@ -586,6 +1068,20 @@ function RecordingStep({ scenario, cheatSheet, materialPdfPath, questions = [], 
     startTimer();
   };
 
+  const handleAbandon = () => {
+    const recorder = mediaRecorderRef.current;
+    if (recorder && recorder.state !== "inactive") {
+      recorder.onstop = null; // discard recording completely — do not fire onFinish / do not process
+      recorder.stop();
+    }
+    if (timerRef.current) clearInterval(timerRef.current);
+    if ("speechSynthesis" in window) window.speechSynthesis.cancel();
+    stream?.getTracks().forEach((t) => t.stop());
+    setGate(null);
+    if (onAbandon) onAbandon();
+    else if (onBack) onBack();
+  };
+
   const handleGateRestart = () => {
     const recorder = mediaRecorderRef.current;
     if (recorder && recorder.state !== "inactive") {
@@ -597,14 +1093,7 @@ function RecordingStep({ scenario, cheatSheet, materialPdfPath, questions = [], 
   };
 
   const handleGateAbandon = () => {
-    const recorder = mediaRecorderRef.current;
-    if (recorder && recorder.state !== "inactive") {
-      recorder.onstop = null;
-      recorder.stop();
-    }
-    stream?.getTracks().forEach((t) => t.stop());
-    setGate(null);
-    onAbandon?.();
+    handleAbandon();
   };
 
   const formatTime = (s) => {
@@ -612,6 +1101,37 @@ function RecordingStep({ scenario, cheatSheet, materialPdfPath, questions = [], 
     const sec = (s % 60).toString().padStart(2, "0");
     return `${m}:${sec}`;
   };
+
+  // Interview Scenario UI branch
+  if (scenario?.kategori === "interview") {
+    return (
+      <div className="simulasi-interview-wrapper">
+        {gate && (
+          <RecordingGateModal
+            variant={gate}
+            secondsElapsed={seconds}
+            onResume={handleGateResume}
+            onRestart={handleGateRestart}
+            onAbandon={handleGateAbandon}
+          />
+        )}
+        <InterviewCallView
+          scenario={scenario}
+          questions={questions.length > 0 ? questions : DEFAULT_INTERVIEW_QUESTIONS}
+          qIndex={qIndex}
+          setQIndex={setQIndex}
+          seconds={seconds}
+          formatTime={formatTime}
+          isRecording={isRecording}
+          onFinish={handleToggle}
+          onBack={handleAbandon}
+          stream={stream}
+          camError={camError}
+          analyserNode={analyserNode}
+        />
+      </div>
+    );
+  }
 
   return (
     <div className="simulasi-recording-screen">
@@ -758,39 +1278,20 @@ function RecordingStep({ scenario, cheatSheet, materialPdfPath, questions = [], 
       )}
 
       <p className="simulasi-recording-hint">
-        {isInterview
-          ? isRecording
-            ? isLastQuestion
-              ? "Pertanyaan terakhir — tekan selesai kalau jawabanmu sudah tuntas."
-              : "Jawab pertanyaan di atas, lalu lanjut ke pertanyaan berikutnya."
-            : "Pewawancara sudah siap. Tekan tombol rekam buat mulai wawancara."
-          : isRecording
-            ? "Lagi rekam — tekan tombol lagi kalau sudah selesai."
-            : "Tekan tombol rekam buat mulai latihan."}
+        {isRecording
+          ? "Lagi rekam — tekan tombol lagi kalau sudah selesai."
+          : "Tekan tombol rekam buat mulai latihan."}
       </p>
 
-      {/* Saat wawancara sedang berjalan, tombol utamanya jadi navigasi
-          pertanyaan — tombol bulat merah cuma dipakai untuk MEMULAI supaya
-          tidak ada dua kontrol berhenti yang membingungkan. */}
-      {isInterview && isRecording ? (
-        <button
-          type="button"
-          className="btn-simulasi-lanjut simulasi-question-cta"
-          onClick={() => (isLastQuestion ? handleToggle() : setQIndex((i) => i + 1))}
-        >
-          {isLastQuestion ? "Selesai Wawancara" : "Pertanyaan Berikutnya"}
-        </button>
-      ) : (
-        <button
-          type="button"
-          className={`simulasi-btn-record ${isRecording ? "is-recording" : ""}`}
-          onClick={handleToggle}
-          disabled={!stream}
-          aria-label={isRecording ? "Berhenti rekam" : "Mulai rekam"}
-        >
-          {isRecording ? <span className="simulasi-record-stop" /> : <span className="simulasi-record-dot-icon" />}
-        </button>
-      )}
+      <button
+        type="button"
+        className={`simulasi-btn-record ${isRecording ? "is-recording" : ""}`}
+        onClick={handleToggle}
+        disabled={!stream}
+        aria-label={isRecording ? "Berhenti rekam" : "Mulai rekam"}
+      >
+        {isRecording ? <span className="simulasi-record-stop" /> : <span className="simulasi-record-dot-icon" />}
+      </button>
     </div>
   );
 }
@@ -1431,26 +1932,23 @@ export default function SimulasiScreen({ onNavigateHome, onNavigateSosial, onNav
     const newSessionId = crypto.randomUUID();
     await createSessionRow({ id: newSessionId, simulationId });
     setSessionId(newSessionId);
-    setStep("prep");
 
-    // Interview butuh daftar pertanyaan sebelum sesi mulai. Diambil di
-    // BELAKANG layar prep (bukan ditambahkan ke loading upload) supaya
-    // waktu tunggunya tertutup sambil user mengecek kamera — tombol "Mulai
-    // Simulasi" yang menunggu hasilnya, bukan layar penuh.
+    // Interview langsung masuk ke sesi simulasi wawancara interaktif (tanpa layar cek kamera)
     if (scenario.kategori === "interview") {
       setQuestionsLoading(true);
       try {
         const generated = await fetchGeneratedQuestions(newSessionId, "interview");
-        setQuestions(generated);
+        setQuestions(generated && generated.length > 0 ? generated : DEFAULT_INTERVIEW_QUESTIONS);
       } catch {
-        // Bukan blocker: kalau gagal, sesi tetap jalan sebagai rekaman
-        // tunggal seperti kategori lain (lihat RecordingStep) daripada
-        // menggagalkan wawancara yang materinya sudah diproses.
-        setQuestions([]);
+        setQuestions(DEFAULT_INTERVIEW_QUESTIONS);
       } finally {
         setQuestionsLoading(false);
       }
+      setStep("recording");
+      return;
     }
+
+    setStep("prep");
   };
 
   const handleRecordingFinished = async (audioBlob, durationSeconds) => {
@@ -1563,7 +2061,7 @@ export default function SimulasiScreen({ onNavigateHome, onNavigateSosial, onNav
         cheatSheet={scenario.kategori === "spontan" ? topics.join(" / ") : scenario.kategori !== "interview" ? notes : ""}
         materialPdfPath={materialPdfPath}
         questions={scenario.kategori === "interview" ? questions : []}
-        onBack={() => setStep(scenario.needsUpload ? "prep" : "topic")}
+        onBack={() => setStep(scenario.kategori === "interview" ? "upload" : scenario.needsUpload ? "prep" : "topic")}
         onFinish={handleRecordingFinished}
         onAbandon={resetToPicker}
       />
