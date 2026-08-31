@@ -418,8 +418,9 @@ export function playBreathingStartSound() {
 }
 
 /**
- * Immersive session enter UI sound, smooth digital swoop with a soft bouncing sonar echo,
- * futuristic anti-gravity drop, crisp resonant reverb tail, pleasant and satisfying ear candy.
+ * Short satisfying UI button click, bouncy digital bloop,
+ * soft bubble pop with a quick subtle echo, tactile app interaction sound,
+ * clean ear candy, 1 second.
  * Triggered when entering any lesson session.
  */
 export function playLessonEnterPortalSound() {
@@ -429,131 +430,121 @@ export function playLessonEnterPortalSound() {
 
     const now = ctx.currentTime;
 
-    // ── 1. Smooth Digital Swoop (Liquid ascending curve 260Hz -> 840Hz) ─────────
-    const swoopOsc = ctx.createOscillator();
-    const swoopGain = ctx.createGain();
-    const swoopFilter = ctx.createBiquadFilter();
+    // ── 1. Tactile UI Click Transient (Crisp mechanical snap pop) ───────────────
+    const clickOsc = ctx.createOscillator();
+    const clickGain = ctx.createGain();
 
-    swoopFilter.type = "lowpass";
-    swoopFilter.frequency.setValueAtTime(800, now);
-    swoopFilter.frequency.exponentialRampToValueAtTime(3200, now + 0.14);
+    clickOsc.type = "sine";
+    clickOsc.frequency.setValueAtTime(1400, now);
+    clickOsc.frequency.exponentialRampToValueAtTime(120, now + 0.012);
 
-    swoopOsc.type = "sine";
-    swoopOsc.frequency.setValueAtTime(260, now);
-    swoopOsc.frequency.exponentialRampToValueAtTime(840, now + 0.14);
+    clickGain.gain.setValueAtTime(0.001, now);
+    clickGain.gain.linearRampToValueAtTime(0.28, now + 0.002);
+    clickGain.gain.exponentialRampToValueAtTime(0.0001, now + 0.018);
 
-    swoopGain.gain.setValueAtTime(0.0001, now);
-    swoopGain.gain.linearRampToValueAtTime(0.24, now + 0.08);
-    swoopGain.gain.exponentialRampToValueAtTime(0.001, now + 0.22);
+    clickOsc.connect(clickGain);
+    clickGain.connect(ctx.destination);
 
-    swoopOsc.connect(swoopFilter);
-    swoopFilter.connect(swoopGain);
-    swoopGain.connect(ctx.destination);
+    clickOsc.start(now);
+    clickOsc.stop(now + 0.02);
 
-    swoopOsc.start(now);
-    swoopOsc.stop(now + 0.25);
+    // ── 2. Primary Bouncy Digital Bloop (Glossy bubble curve 460Hz -> 1160Hz -> 680Hz) ──
+    const bloopOsc = ctx.createOscillator();
+    const bloopGain = ctx.createGain();
+    const bloopFilter = ctx.createBiquadFilter();
 
-    // ── 2. Futuristic Anti-Gravity Drop (Round, satisfying sub-bass glide 220Hz -> 50Hz) ──
+    bloopFilter.type = "lowpass";
+    bloopFilter.frequency.setValueAtTime(1200, now);
+    bloopFilter.frequency.exponentialRampToValueAtTime(4200, now + 0.04);
+    bloopFilter.frequency.exponentialRampToValueAtTime(800, now + 0.22);
+
+    bloopOsc.type = "sine";
+    bloopOsc.frequency.setValueAtTime(460, now);
+    bloopOsc.frequency.exponentialRampToValueAtTime(1160, now + 0.038); // upward bloop peak
+    bloopOsc.frequency.exponentialRampToValueAtTime(680, now + 0.16);  // soft bubble drop
+
+    bloopGain.gain.setValueAtTime(0.0001, now);
+    bloopGain.gain.linearRampToValueAtTime(0.36, now + 0.025);
+    bloopGain.gain.exponentialRampToValueAtTime(0.00001, now + 0.24);
+
+    bloopOsc.connect(bloopFilter);
+    bloopFilter.connect(bloopGain);
+    bloopGain.connect(ctx.destination);
+
+    bloopOsc.start(now);
+    bloopOsc.stop(now + 0.25);
+
+    // ── 3. Tactile Sub-Plump (Round 95Hz -> 48Hz bottom body) ───────────────────
     const subOsc = ctx.createOscillator();
     const subGain = ctx.createGain();
-    const subFilter = ctx.createBiquadFilter();
-
-    subFilter.type = "lowpass";
-    subFilter.frequency.setValueAtTime(350, now + 0.08);
-    subFilter.frequency.exponentialRampToValueAtTime(90, now + 1.2);
 
     subOsc.type = "sine";
-    subOsc.frequency.setValueAtTime(220, now + 0.08);
-    subOsc.frequency.exponentialRampToValueAtTime(50, now + 0.48);
-    subOsc.frequency.linearRampToValueAtTime(42, now + 2.0);
+    subOsc.frequency.setValueAtTime(110, now);
+    subOsc.frequency.exponentialRampToValueAtTime(48, now + 0.08);
 
-    subGain.gain.setValueAtTime(0.0001, now + 0.08);
-    subGain.gain.linearRampToValueAtTime(0.38, now + 0.18);
-    subGain.gain.exponentialRampToValueAtTime(0.12, now + 0.7);
-    subGain.gain.exponentialRampToValueAtTime(0.00001, now + 2.1);
+    subGain.gain.setValueAtTime(0.001, now);
+    subGain.gain.linearRampToValueAtTime(0.22, now + 0.008);
+    subGain.gain.exponentialRampToValueAtTime(0.00001, now + 0.12);
 
-    subOsc.connect(subFilter);
-    subFilter.connect(subGain);
+    subOsc.connect(subGain);
     subGain.connect(ctx.destination);
 
-    subOsc.start(now + 0.08);
-    subOsc.stop(now + 2.15);
+    subOsc.start(now);
+    subOsc.stop(now + 0.13);
 
-    // ── 3. Soft Bouncing Sonar Echoes (Rhythmic crystal droplet pings) ───────────
-    // Rhythmic pings: Main ping + 3 decaying bounces with subtle pitch shifts
-    const sonarPings = [
-      { delay: 0.12, freq: 1318.51, gain: 0.14, dur: 0.28 }, // E6 primary sonar
-      { delay: 0.32, freq: 1567.98, gain: 0.08, dur: 0.24 }, // G6 bounce 1
-      { delay: 0.54, freq: 1975.53, gain: 0.045, dur: 0.22 }, // B6 bounce 2
-      { delay: 0.78, freq: 2637.02, gain: 0.025, dur: 0.20 }, // E7 bounce 3
+    // ── 4. Quick Subtle Bouncy Echoes (2 delicate bubble reflections) ───────────
+    const echoes = [
+      { delay: 0.11, startFreq: 640, peakFreq: 1380, endFreq: 880, gain: 0.12, dur: 0.16 }, // Echo 1
+      { delay: 0.24, startFreq: 980, peakFreq: 1560, endFreq: 1180, gain: 0.045, dur: 0.18 }, // Echo 2
     ];
 
-    sonarPings.forEach(({ delay, freq, gain: pingVol, dur }) => {
-      const pingTime = now + delay;
+    echoes.forEach(({ delay, startFreq, peakFreq, endFreq, gain: echoVol, dur }) => {
+      const echoTime = now + delay;
 
-      // Pure crystal sine
-      const pingOsc = ctx.createOscillator();
-      const pingGain = ctx.createGain();
+      const echoOsc = ctx.createOscillator();
+      const echoGain = ctx.createGain();
+      const echoFilter = ctx.createBiquadFilter();
 
-      pingOsc.type = "sine";
-      pingOsc.frequency.setValueAtTime(freq * 1.02, pingTime);
-      pingOsc.frequency.exponentialRampToValueAtTime(freq, pingTime + 0.02);
+      echoFilter.type = "lowpass";
+      echoFilter.frequency.setValueAtTime(2400, echoTime);
+      echoFilter.frequency.exponentialRampToValueAtTime(900, echoTime + dur);
 
-      pingGain.gain.setValueAtTime(0.0001, pingTime);
-      pingGain.gain.linearRampToValueAtTime(pingVol, pingTime + 0.004);
-      pingGain.gain.exponentialRampToValueAtTime(0.00001, pingTime + dur);
+      echoOsc.type = "sine";
+      echoOsc.frequency.setValueAtTime(startFreq, echoTime);
+      echoOsc.frequency.exponentialRampToValueAtTime(peakFreq, echoTime + 0.03);
+      echoOsc.frequency.exponentialRampToValueAtTime(endFreq, echoTime + dur * 0.7);
 
-      pingOsc.connect(pingGain);
-      pingGain.connect(ctx.destination);
+      echoGain.gain.setValueAtTime(0.0001, echoTime);
+      echoGain.gain.linearRampToValueAtTime(echoVol, echoTime + 0.015);
+      echoGain.gain.exponentialRampToValueAtTime(0.00001, echoTime + dur);
 
-      pingOsc.start(pingTime);
-      pingOsc.stop(pingTime + dur + 0.02);
+      echoOsc.connect(echoFilter);
+      echoFilter.connect(echoGain);
+      echoGain.connect(ctx.destination);
 
-      // Delicate bell harmonic overtone (3x frequency) for glassy shimmer
-      const overtoneOsc = ctx.createOscillator();
-      const overtoneGain = ctx.createGain();
-
-      overtoneOsc.type = "triangle";
-      overtoneOsc.frequency.setValueAtTime(freq * 2.5, pingTime);
-
-      overtoneGain.gain.setValueAtTime(0.0001, pingTime);
-      overtoneGain.gain.linearRampToValueAtTime(pingVol * 0.25, pingTime + 0.003);
-      overtoneGain.gain.exponentialRampToValueAtTime(0.00001, pingTime + dur * 0.55);
-
-      overtoneOsc.connect(overtoneGain);
-      overtoneGain.connect(ctx.destination);
-
-      overtoneOsc.start(pingTime);
-      overtoneOsc.stop(pingTime + dur * 0.6);
+      echoOsc.start(echoTime);
+      echoOsc.stop(echoTime + dur + 0.02);
     });
 
-    // ── 4. Crisp Resonant Reverb Bloom & Ambient Tail (Luminous E-Major chord) ────
-    const ambientChord = [329.63, 493.88, 659.25, 830.61, 987.77, 1318.51];
-    ambientChord.forEach((freq, idx) => {
-      const padOsc = ctx.createOscillator();
-      const padGain = ctx.createGain();
-      const padFilter = ctx.createBiquadFilter();
+    // ── 5. Clean Ear Candy Shimmer Decay (Crystal harmonic bloom ~0.9s tail) ────
+    const shimmerNotes = [1046.50, 1318.51, 1567.98]; // C6, E6, G6
+    shimmerNotes.forEach((freq, idx) => {
+      const shimmerOsc = ctx.createOscillator();
+      const shimmerGain = ctx.createGain();
 
-      padFilter.type = "lowpass";
-      padFilter.frequency.setValueAtTime(500, now + 0.1);
-      padFilter.frequency.exponentialRampToValueAtTime(2400, now + 0.55);
-      padFilter.frequency.exponentialRampToValueAtTime(600, now + 2.4);
+      shimmerOsc.type = "sine";
+      shimmerOsc.frequency.setValueAtTime(freq, now + 0.02);
 
-      padOsc.type = idx % 2 === 0 ? "sine" : "triangle";
-      padOsc.frequency.setValueAtTime(freq, now + 0.1);
+      const noteVol = 0.035 / (1 + idx * 0.3);
+      shimmerGain.gain.setValueAtTime(0.0001, now + 0.02);
+      shimmerGain.gain.linearRampToValueAtTime(noteVol, now + 0.06);
+      shimmerGain.gain.exponentialRampToValueAtTime(0.00001, now + 0.92);
 
-      const maxGain = 0.065 / (1 + idx * 0.22);
-      padGain.gain.setValueAtTime(0.0001, now + 0.1);
-      padGain.gain.linearRampToValueAtTime(maxGain, now + 0.35 + idx * 0.03);
-      padGain.gain.exponentialRampToValueAtTime(maxGain * 0.35, now + 0.95);
-      padGain.gain.exponentialRampToValueAtTime(0.00001, now + 2.45);
+      shimmerOsc.connect(shimmerGain);
+      shimmerGain.connect(ctx.destination);
 
-      padOsc.connect(padFilter);
-      padFilter.connect(padGain);
-      padGain.connect(ctx.destination);
-
-      padOsc.start(now + 0.1);
-      padOsc.stop(now + 2.5);
+      shimmerOsc.start(now + 0.02);
+      shimmerOsc.stop(now + 0.95);
     });
   } catch {}
 }
