@@ -22,6 +22,7 @@ import SettingsScreen from "./components/SettingsScreen";
 import { UserProgressProvider } from "./context/UserProgressContext";
 import { supabase } from "./lib/supabaseClient";
 import { fetchProfile, updateProfile } from "./lib/profile";
+import { playLessonEnterPortalSound } from "./lib/soundEffects";
 import "./App.css";
 
 function App() {
@@ -157,6 +158,7 @@ function App() {
   };
 
   const handleStartLesson = (lessonNum, moduleData) => {
+    playLessonEnterPortalSound();
     setSelectedLesson({ lessonNum, moduleData });
     setCurrentScreen("lesson");
   };
