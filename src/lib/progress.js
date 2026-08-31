@@ -111,13 +111,16 @@ export async function fetchProgressSummary(userId) {
     supabase
       .from("simulation_sessions")
       .select(
-        // simulation_feedback dropped from !inner to a plain (optional) embed
-        // so Live Presentation sessions still show up even before/without AI
-        // feedback (e.g. the pre-Tahap-2 test rows that were never analysed
-        // at all — recorded in memory, real production rows). live_rooms and
-        // peer_feedback have no unique constraint on session_id, so Supabase
-        // treats both as one-to-many and returns arrays, not objects.
-        "id, started_at, simulations!inner(kategori, user_id), simulation_feedback(skor, sub_scores), live_rooms(id), peer_feedback(stars)",
+        // simulation_feedback stays !inner on purpose (per decision: Riwayat
+        // Sesi only shows sessions the user actually finished — i.e. got a
+        // real feedback row back). A session that was recorded but never
+        // analysed (Gemini 503, generate-feedback failed, or a pre-Tahap-2
+        // Live Presentation test row with no recording at all) simply never
+        // shows up here — it wasn't a "sesi berhasil". live_rooms/peer_feedback
+        // stay optional embeds purely for the Live badge + rating hint; they
+        // have no unique constraint on session_id, so Supabase treats both as
+        // one-to-many and returns arrays, not objects.
+        "id, started_at, simulations!inner(kategori, user_id), simulation_feedback!inner(skor, sub_scores), live_rooms(id), peer_feedback(stars)",
         { count: "exact" },
       )
       .eq("simulations.user_id", userId)
