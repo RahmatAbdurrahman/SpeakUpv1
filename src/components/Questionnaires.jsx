@@ -283,6 +283,7 @@ export default function Questionnaires({
   onFinish,
 }) {
   const [currentStepIndex, setCurrentStepIndex] = useState(0);
+  const [direction, setDirection] = useState("forward");
   // Seed answers with each question's defaultValue (e.g. the slider) so an
   // untouched control still records what it visually shows.
   const [answers, setAnswers] = useState(() => {
@@ -303,6 +304,7 @@ export default function Questionnaires({
     setAnswers((prev) => ({ ...prev, [qId]: val }));
 
   const handleNext = () => {
+    setDirection("forward");
     if (isLastStep) {
       if (onFinish) onFinish(answers);
     } else {
@@ -311,6 +313,7 @@ export default function Questionnaires({
   };
 
   const handleBack = () => {
+    setDirection("backward");
     if (isFirstStep) {
       if (onBackToOnboarding) onBackToOnboarding();
     } else {
@@ -420,7 +423,11 @@ export default function Questionnaires({
       </header>
 
       {/* ── Main Form Section ─────────────────────────────────── */}
-      <main className="questionnaire-form-section" data-node-id="207:3165">
+      <main
+        key={currentStepIndex}
+        className={`questionnaire-form-section questionnaire-slide-${direction}`}
+        data-node-id="207:3165"
+      >
         {renderBody()}
       </main>
     </div>

@@ -659,6 +659,7 @@ export default function LessonScreen({ lessonData, onBack, onFinish }) {
 
   // step: "affirmation" | 1 | 2 | 3 | 4 | 5 | "completed"
   const [step, setStep] = useState("affirmation");
+  const [direction, setDirection] = useState("forward");
   const [showExitModal, setShowExitModal] = useState(false);
 
   // Asset preloading: ensure >= 50% assets are ready before leaving affirmation
@@ -674,6 +675,7 @@ export default function LessonScreen({ lessonData, onBack, onFinish }) {
   }
 
   const goNext = () => {
+    setDirection("forward");
     setStep((prev) => {
       if (prev === "affirmation") return 1;
       if (prev === 1) return 2;
@@ -686,6 +688,7 @@ export default function LessonScreen({ lessonData, onBack, onFinish }) {
   };
 
   const goBack = () => {
+    setDirection("backward");
     setStep((prev) => {
       if (prev === 5) return 4;
       if (prev === 4) return 3;
@@ -702,19 +705,21 @@ export default function LessonScreen({ lessonData, onBack, onFinish }) {
 
   return (
     <div className="lesson-screen">
-      {step === "affirmation" && (
-        <LessonAffirmation
-          quote={lessonData?.affirmationQuote}
-          isReady={isThresholdMet}
-          onComplete={goNext}
-        />
-      )}
-      {step === 1 && <LessonPage1 onNext={goNext} onBack={handleRequestExit} />}
-      {step === 2 && <LessonPage2 onNext={goNext} onBack={handleRequestExit} />}
-      {step === 3 && <LessonPage3 onNext={goNext} onBack={handleRequestExit} />}
-      {step === 4 && <LessonPage4 onNext={goNext} onBack={handleRequestExit} />}
-      {step === 5 && <LessonPage5 onNext={goNext} onBack={handleRequestExit} />}
-      {step === "completed" && <CompletedLesson onFinish={onFinish} />}
+      <div key={step} className={`lesson-step-wrapper lesson-slide-${direction}`}>
+        {step === "affirmation" && (
+          <LessonAffirmation
+            quote={lessonData?.affirmationQuote}
+            isReady={isThresholdMet}
+            onComplete={goNext}
+          />
+        )}
+        {step === 1 && <LessonPage1 onNext={goNext} onBack={handleRequestExit} />}
+        {step === 2 && <LessonPage2 onNext={goNext} onBack={handleRequestExit} />}
+        {step === 3 && <LessonPage3 onNext={goNext} onBack={handleRequestExit} />}
+        {step === 4 && <LessonPage4 onNext={goNext} onBack={handleRequestExit} />}
+        {step === 5 && <LessonPage5 onNext={goNext} onBack={handleRequestExit} />}
+        {step === "completed" && <CompletedLesson onFinish={onFinish} />}
+      </div>
 
       {showExitModal && (
         <LessonExitModal

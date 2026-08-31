@@ -13,6 +13,50 @@
   box-sizing: border-box;
 }
 
+.modul7-step-wrapper {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.modul7-slide-forward {
+  animation: modul7SlideInForward 0.32s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.modul7-slide-backward {
+  animation: modul7SlideInBackward 0.32s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+@keyframes modul7SlideInForward {
+  0% {
+    opacity: 0.2;
+    transform: translate3d(40px, 0, 0);
+  }
+  100% {
+    opacity: 1;
+    transform: translate3d(0, 0, 0);
+  }
+}
+
+@keyframes modul7SlideInBackward {
+  0% {
+    opacity: 0.2;
+    transform: translate3d(-40px, 0, 0);
+  }
+  100% {
+    opacity: 1;
+    transform: translate3d(0, 0, 0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .modul7-slide-forward,
+  .modul7-slide-backward {
+    animation: none;
+  }
+}
+
 .modul7-lesson-page {
   position: relative;
   width: 100%;

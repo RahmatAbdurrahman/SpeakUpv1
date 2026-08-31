@@ -1689,8 +1689,8 @@ function CompletedLesson({ onFinish, xpEarned = 95 }) {
 
 // ─── Main Lesson 6 Modul 7 Screen ────────────────────────────────────────────
 export default function LessonModul7Screen({ onBack, onFinish }) {
-  // 1–6 = teori, 7–17 = latihan, lalu XP dan hasil analisis AI.
   const [step, setStep] = useState(1);
+  const [direction, setDirection] = useState("forward");
   const [initialAffirmationDone, setInitialAffirmationDone] = useState(false);
   const [analysisResult, setAnalysisResult] = useState(null);
   const [analysisError, setAnalysisError] = useState("");
@@ -1813,6 +1813,7 @@ export default function LessonModul7Screen({ onBack, onFinish }) {
   };
 
   const goNext = () => {
+    setDirection("forward");
     setStep((prev) => {
       if (prev === 17) {
         submitForAnalysis();
@@ -1828,6 +1829,7 @@ export default function LessonModul7Screen({ onBack, onFinish }) {
   };
 
   const goBack = () => {
+    setDirection("backward");
     setStep((prev) => {
       if (typeof prev === "number" && prev > 1) {
         return prev - 1;
@@ -1849,44 +1851,46 @@ export default function LessonModul7Screen({ onBack, onFinish }) {
 
   return (
     <div className="modul7-lesson-screen">
-      {step === 1 && <LessonPage1 onNext={goNext} onBack={handleRequestExit} />}
-      {step === 2 && <LessonPage2 onNext={goNext} onBack={handleRequestExit} />}
-      {step === 3 && <LessonPage3 onNext={goNext} onBack={handleRequestExit} />}
-      {step === 4 && <LessonPage4 onNext={goNext} onBack={handleRequestExit} />}
-      {step === 5 && <LessonPage5 onNext={goNext} onBack={handleRequestExit} />}
-      {step === 6 && <LessonPage6 onNext={goNext} onBack={handleRequestExit} />}
-      {step === 7 && <PracticeIntro onNext={goNext} onBack={handleRequestExit} />}
-      {step === 8 && <PracticeTopic onNext={goNext} onBack={handleRequestExit} />}
-      {step === 9 && <PracticePrep onNext={goNext} onBack={handleRequestExit} />}
-      {step === 10 && <PracticeSpeak onNext={goNext} onBack={handleRequestExit} />}
-      {step === 11 && <PracticeQaIntro onNext={goNext} onBack={handleRequestExit} />}
-      {step === 12 && (
-        <PracticeQuestionCue step={12} questionIndex={0} onNext={goNext} onBack={handleRequestExit} />
-      )}
-      {step === 13 && (
-        <PracticeAnswer step={13} questionIndex={0} onNext={goNext} onBack={handleRequestExit} />
-      )}
-      {step === 14 && <PracticeInterlude onNext={goNext} onBack={handleRequestExit} />}
-      {step === 15 && (
-        <PracticeQuestionCue step={15} questionIndex={1} onNext={goNext} onBack={handleRequestExit} />
-      )}
-      {step === 16 && (
-        <PracticeAnswer step={16} questionIndex={1} onNext={goNext} onBack={handleRequestExit} />
-      )}
-      {step === 17 && <PracticeSuccess onNext={goNext} onBack={handleRequestExit} />}
-      {step === "analyzing" && <AnalyzingScreen />}
-      {step === "analysis-error" && (
-        <AnalysisErrorScreen
-          message={analysisError}
-          onRetry={submitForAnalysis}
-          onSkip={() => {
-            setAnalysisResult(null);
-            setStep("analysis");
-          }}
-        />
-      )}
-      {step === "analysis" && <PracticeAnalysis result={analysisResult ?? PRACTICE_ANALYSIS} onFinish={goNext} />}
-      {step === "completed" && <CompletedLesson onFinish={onFinish} />}
+      <div key={String(step)} className={`modul7-step-wrapper modul7-slide-${direction}`}>
+        {step === 1 && <LessonPage1 onNext={goNext} onBack={handleRequestExit} />}
+        {step === 2 && <LessonPage2 onNext={goNext} onBack={handleRequestExit} />}
+        {step === 3 && <LessonPage3 onNext={goNext} onBack={handleRequestExit} />}
+        {step === 4 && <LessonPage4 onNext={goNext} onBack={handleRequestExit} />}
+        {step === 5 && <LessonPage5 onNext={goNext} onBack={handleRequestExit} />}
+        {step === 6 && <LessonPage6 onNext={goNext} onBack={handleRequestExit} />}
+        {step === 7 && <PracticeIntro onNext={goNext} onBack={handleRequestExit} />}
+        {step === 8 && <PracticeTopic onNext={goNext} onBack={handleRequestExit} />}
+        {step === 9 && <PracticePrep onNext={goNext} onBack={handleRequestExit} />}
+        {step === 10 && <PracticeSpeak onNext={goNext} onBack={handleRequestExit} />}
+        {step === 11 && <PracticeQaIntro onNext={goNext} onBack={handleRequestExit} />}
+        {step === 12 && (
+          <PracticeQuestionCue step={12} questionIndex={0} onNext={goNext} onBack={handleRequestExit} />
+        )}
+        {step === 13 && (
+          <PracticeAnswer step={13} questionIndex={0} onNext={goNext} onBack={handleRequestExit} />
+        )}
+        {step === 14 && <PracticeInterlude onNext={goNext} onBack={handleRequestExit} />}
+        {step === 15 && (
+          <PracticeQuestionCue step={15} questionIndex={1} onNext={goNext} onBack={handleRequestExit} />
+        )}
+        {step === 16 && (
+          <PracticeAnswer step={16} questionIndex={1} onNext={goNext} onBack={handleRequestExit} />
+        )}
+        {step === 17 && <PracticeSuccess onNext={goNext} onBack={handleRequestExit} />}
+        {step === "analyzing" && <AnalyzingScreen />}
+        {step === "analysis-error" && (
+          <AnalysisErrorScreen
+            message={analysisError}
+            onRetry={submitForAnalysis}
+            onSkip={() => {
+              setAnalysisResult(null);
+              setStep("analysis");
+            }}
+          />
+        )}
+        {step === "analysis" && <PracticeAnalysis result={analysisResult ?? PRACTICE_ANALYSIS} onFinish={goNext} />}
+        {step === "completed" && <CompletedLesson onFinish={onFinish} />}
+      </div>
 
       {showExitModal && (
         <LessonExitModal
