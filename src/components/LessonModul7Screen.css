@@ -278,6 +278,16 @@
   overflow: hidden;
 }
 
+.modul7-page2-scroll-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  height: 100%;
+  position: relative;
+  overflow: hidden;
+}
+
 .modul7-page2-content {
   flex: 1;
   display: flex;

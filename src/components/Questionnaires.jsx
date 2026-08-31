@@ -374,18 +374,6 @@ export default function Questionnaires({
             />
           )}
         </div>
-
-        {/* Bottom CTA */}
-        <div className="questionnaire-footer" data-node-id="207:3174">
-          <button
-            type="button"
-            className="btn-questionnaire-submit"
-            onClick={handleNext}
-            data-node-id="207:3175"
-          >
-            {isLastStep ? "Selesai" : "Lanjut"}
-          </button>
-        </div>
       </>
     );
   };
@@ -423,12 +411,25 @@ export default function Questionnaires({
       </header>
 
       {/* ── Main Form Section ─────────────────────────────────── */}
-      <main
-        key={currentStepIndex}
-        className={`questionnaire-form-section questionnaire-slide-${direction}`}
-        data-node-id="207:3165"
-      >
-        {renderBody()}
+      <main className="questionnaire-form-section" data-node-id="207:3165">
+        <div
+          key={currentStepIndex}
+          className={`questionnaire-content-wrap questionnaire-slide-${direction}`}
+        >
+          {renderBody()}
+        </div>
+
+        {/* Bottom CTA - Fixed / Non-sliding */}
+        <div className="questionnaire-footer" data-node-id="207:3174">
+          <button
+            type="button"
+            className="btn-questionnaire-submit"
+            onClick={handleNext}
+            data-node-id="207:3175"
+          >
+            {isLastStep ? "Selesai" : "Lanjut"}
+          </button>
+        </div>
       </main>
     </div>
   );

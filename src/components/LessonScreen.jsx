@@ -78,13 +78,13 @@ function LessonTopBar({ currentStep, totalSteps, onBack }) {
 }
 
 // ─── Page 1: Gugup vs Tenang (node 228:257) ──────────────────────────────────
-function LessonPage1({ onNext, onBack }) {
+function LessonPage1({ onNext, onBack, direction = "forward" }) {
   return (
     <div className="lesson-page lesson-page-1" data-node-id="228:257" data-name="Lesson-TarikNapas">
       <LessonTopBar currentStep={1} totalSteps={5} onBack={onBack} />
 
       {/* Main Content Area */}
-      <div className="lesson-p1-content" data-node-id="256:825">
+      <div className={`lesson-p1-content lesson-slide-${direction}`} data-node-id="256:825">
         <h2 className="lesson-p1-title" data-node-id="266:854">
           Saat gugup, napas jadi berantakan
         </h2>
@@ -135,7 +135,7 @@ function LessonPage1({ onNext, onBack }) {
 }
 
 // ─── Page 2: Teknik 4-7-8 (node 268:876) ────────────────────────────────────
-function LessonPage2({ onNext, onBack }) {
+function LessonPage2({ onNext, onBack, direction = "forward" }) {
   const steps = [
     {
       key: "tarik",
@@ -168,7 +168,7 @@ function LessonPage2({ onNext, onBack }) {
       <LessonTopBar currentStep={2} totalSteps={5} onBack={onBack} />
 
       {/* Main Content Area */}
-      <div className="lesson-p2-content" data-node-id="268:885">
+      <div className={`lesson-p2-content lesson-slide-${direction}`} data-node-id="268:885">
         <h2 className="lesson-p2-title" data-node-id="268:886">
           Kenalan sama Teknik 4-7-8
         </h2>
@@ -209,7 +209,7 @@ function LessonPage2({ onNext, onBack }) {
 }
 
 // ─── Page 3: Seberapa Gugup Kamu? (node 279:258) ───────────────────────────
-function LessonPage3({ onNext, onBack }) {
+function LessonPage3({ onNext, onBack, direction = "forward" }) {
   // Slider value from -5 (Santai Aja) to +5 (Gugup Banget), center is 0
   const [sliderValue, setSliderValue] = useState(0);
   const min = -5;
@@ -230,7 +230,7 @@ function LessonPage3({ onNext, onBack }) {
       <LessonTopBar currentStep={3} totalSteps={5} onBack={onBack} />
 
       {/* Main Content Area */}
-      <div className="lesson-p3-content" data-node-id="279:267">
+      <div className={`lesson-p3-content lesson-slide-${direction}`} data-node-id="279:267">
         <h2 className="lesson-p3-title" data-node-id="279:268">
           Sebelum mulai,
           <br />
@@ -322,7 +322,7 @@ function LessonPage3({ onNext, onBack }) {
 }
 
 // ─── Page 4: Video Animasi Ritme Napas (node 279:407) ─────────────────────────
-function LessonPage4({ onNext, onBack }) {
+function LessonPage4({ onNext, onBack, direction = "forward" }) {
   const [cycle, setCycle] = useState(1);
   const [isCompleted, setIsCompleted] = useState(false);
   const [countdown, setCountdown] = useState(3);
@@ -419,7 +419,7 @@ function LessonPage4({ onNext, onBack }) {
       </div>
 
       {/* Main Content Area (Dark) */}
-      <div className="lesson-p4-content" data-node-id="279:416">
+      <div className={`lesson-p4-content lesson-slide-${direction}`} data-node-id="279:416">
         {/* Top 4-7-8 Tutorial SVG Banner */}
         <img
           src={tutorialBanner}
@@ -486,33 +486,36 @@ function LessonPage4({ onNext, onBack }) {
 }
 
 // ─── Page 5: Conclusion (node 281:849) ──────────────────────────────────────
-function LessonPage5({ onNext, onBack }) {
+function LessonPage5({ onNext, onBack, direction = "forward" }) {
   const { isReady: isXpReady } = useGainXpPreloader(videoGainXP);
 
   return (
     <div className="lesson-page lesson-page-5" data-node-id="281:849">
       <LessonTopBar currentStep={5} totalSteps={5} onBack={onBack} />
 
-      {/* Full-width hero image with relax cloud (no gradient overlay) */}
-      <div className="lesson-p5-hero" data-node-id="281:910">
-        <img
-          src={relaxCloud}
-          alt="Makin tenang"
-          className="lesson-p5-hero-img"
-          data-node-id="281:850"
-        />
-      </div>
+      {/* Sliding Content Container */}
+      <div className={`lesson-p5-scroll-content lesson-slide-${direction}`}>
+        {/* Full-width hero image with relax cloud (no gradient overlay) */}
+        <div className="lesson-p5-hero" data-node-id="281:910">
+          <img
+            src={relaxCloud}
+            alt="Makin tenang"
+            className="lesson-p5-hero-img"
+            data-node-id="281:850"
+          />
+        </div>
 
-      {/* Result section */}
-      <div className="lesson-p5-result" data-node-id="281:851">
-        <div className="lesson-p5-text-wrapper" data-node-id="281:852">
-          <div className="lesson-p5-title-group" data-node-id="281:853">
-            <p className="lesson-p5-question" data-node-id="281:854">Gimana?</p>
-            <h3 className="lesson-p5-headline" data-node-id="281:855">Jauh lebih lega, kan?</h3>
+        {/* Result section */}
+        <div className="lesson-p5-result" data-node-id="281:851">
+          <div className="lesson-p5-text-wrapper" data-node-id="281:852">
+            <div className="lesson-p5-title-group" data-node-id="281:853">
+              <p className="lesson-p5-question" data-node-id="281:854">Gimana?</p>
+              <h3 className="lesson-p5-headline" data-node-id="281:855">Jauh lebih lega, kan?</h3>
+            </div>
+            <p className="lesson-p5-caption" data-node-id="281:856">
+              Teknik ini bisa kamu pakai kapan saja—sebelum presentasi, interview, atau momen mendebarkan lainnya.
+            </p>
           </div>
-          <p className="lesson-p5-caption" data-node-id="281:856">
-            Teknik ini bisa kamu pakai kapan saja—sebelum presentasi, interview, atau momen mendebarkan lainnya.
-          </p>
         </div>
       </div>
 
@@ -705,7 +708,7 @@ export default function LessonScreen({ lessonData, onBack, onFinish }) {
 
   return (
     <div className="lesson-screen">
-      <div key={step} className={`lesson-step-wrapper lesson-slide-${direction}`}>
+      <div key={step} className="lesson-step-wrapper">
         {step === "affirmation" && (
           <LessonAffirmation
             quote={lessonData?.affirmationQuote}
@@ -713,11 +716,11 @@ export default function LessonScreen({ lessonData, onBack, onFinish }) {
             onComplete={goNext}
           />
         )}
-        {step === 1 && <LessonPage1 onNext={goNext} onBack={handleRequestExit} />}
-        {step === 2 && <LessonPage2 onNext={goNext} onBack={handleRequestExit} />}
-        {step === 3 && <LessonPage3 onNext={goNext} onBack={handleRequestExit} />}
-        {step === 4 && <LessonPage4 onNext={goNext} onBack={handleRequestExit} />}
-        {step === 5 && <LessonPage5 onNext={goNext} onBack={handleRequestExit} />}
+        {step === 1 && <LessonPage1 onNext={goNext} onBack={handleRequestExit} direction={direction} />}
+        {step === 2 && <LessonPage2 onNext={goNext} onBack={handleRequestExit} direction={direction} />}
+        {step === 3 && <LessonPage3 onNext={goNext} onBack={handleRequestExit} direction={direction} />}
+        {step === 4 && <LessonPage4 onNext={goNext} onBack={handleRequestExit} direction={direction} />}
+        {step === 5 && <LessonPage5 onNext={goNext} onBack={handleRequestExit} direction={direction} />}
         {step === "completed" && <CompletedLesson onFinish={onFinish} />}
       </div>
 

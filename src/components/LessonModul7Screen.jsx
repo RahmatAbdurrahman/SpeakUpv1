@@ -491,12 +491,12 @@ function LessonTopBar({ currentStep, totalSteps, onBack, tone = "light" }) {
 }
 
 // ─── Page 1: Pernah nggak ngerasa... (Figma node 329:1659) ───────────────────
-function LessonPage1({ onNext, onBack }) {
+function LessonPage1({ onNext, onBack, direction = "forward" }) {
   return (
     <div className="modul7-lesson-page" data-node-id="329:1659" data-name="Lesson-Hadapi Pertanyaan Menantang">
       <LessonTopBar currentStep={1} totalSteps={TOTAL_LESSON_STEPS} onBack={onBack} />
 
-      <div className="modul7-lesson-content" data-node-id="329:1669">
+      <div className={`modul7-lesson-content modul7-slide-${direction}`} data-node-id="329:1669">
         <h2 className="modul7-lesson-heading" data-node-id="329:1670">
           Pernah nggak ngerasa...
         </h2>
@@ -593,26 +593,29 @@ function TypingQuote({ text, speed = 16, dataNodeId }) {
 }
 
 // ─── Page 2: Quotes / Mindset (Figma node 329:1710) ──────────────────────────
-function LessonPage2({ onNext, onPrev, onExit }) {
+function LessonPage2({ onNext, onPrev, onExit, direction = "forward" }) {
   return (
     <div className="modul7-lesson-page modul7-lesson-page-2" data-node-id="329:1710" data-name="Lesson-Hadapi Pertanyaan Menantang">
       <LessonTopBar currentStep={2} totalSteps={TOTAL_LESSON_STEPS} onBack={onExit} />
 
-      {/* Center Quotes Area */}
-      <div className="modul7-page2-content" data-node-id="329:1719">
-        <TypingQuote
-          text="”Menghadapi pertanyaan sulit bukan berarti kita harus jadi kamus berjalan. Tantangan sebenarnya adalah bagaimana kita tetap tenang saat otak dipaksa berpikir cepat di hadapan orang lain.”"
-          dataNodeId="329:1720"
-        />
-      </div>
+      {/* Center Sliding Content Area */}
+      <div className={`modul7-page2-scroll-content modul7-slide-${direction}`}>
+        {/* Center Quotes Area */}
+        <div className="modul7-page2-content" data-node-id="329:1719">
+          <TypingQuote
+            text="”Menghadapi pertanyaan sulit bukan berarti kita harus jadi kamus berjalan. Tantangan sebenarnya adalah bagaimana kita tetap tenang saat otak dipaksa berpikir cepat di hadapan orang lain.”"
+            dataNodeId="329:1720"
+          />
+        </div>
 
-      {/* Bottom Mascot Illustration */}
-      <div className="modul7-page2-mascot-wrapper" data-node-id="331:1763">
-        <img
-          src={imgMascottQuotes}
-          alt="Mascot Quotes"
-          className="modul7-page2-mascot-img"
-        />
+        {/* Bottom Mascot Illustration */}
+        <div className="modul7-page2-mascot-wrapper" data-node-id="331:1763">
+          <img
+            src={imgMascottQuotes}
+            alt="Mascot Quotes"
+            className="modul7-page2-mascot-img"
+          />
+        </div>
       </div>
 
       {/* Dual Bottom Buttons (Back pill + Lanjut pill) */}
@@ -662,12 +665,12 @@ const DottedArrow = () => (
 );
 
 // ─── Page 3: Cognitive Restructuring (Figma node 329:1733) ───────────────────
-function LessonPage3({ onNext, onPrev, onExit }) {
+function LessonPage3({ onNext, onPrev, onExit, direction = "forward" }) {
   return (
     <div className="modul7-lesson-page" data-node-id="329:1733" data-name="Lesson-Hadapi Pertanyaan Menantang">
       <LessonTopBar currentStep={3} totalSteps={TOTAL_LESSON_STEPS} onBack={onExit} />
 
-      <div className="modul7-lesson-content modul7-page3-content" data-node-id="329:1742">
+      <div className={`modul7-lesson-content modul7-page3-content modul7-slide-${direction}`} data-node-id="329:1742">
         {/* Title Header */}
         <div className="modul7-page3-header" data-node-id="334:1833">
           <p className="modul7-page3-subtitle" data-node-id="334:1831">
@@ -756,12 +759,12 @@ const DottedArrowShort = () => (
 );
 
 // ─── Page 4: Cognitive Defusion (Figma node 333:1784) ────────────────────────
-function LessonPage4({ onNext, onPrev, onExit }) {
+function LessonPage4({ onNext, onPrev, onExit, direction = "forward" }) {
   return (
     <div className="modul7-lesson-page" data-node-id="333:1784" data-name="Lesson-Hadapi Pertanyaan Menantang">
       <LessonTopBar currentStep={4} totalSteps={TOTAL_LESSON_STEPS} onBack={onExit} />
 
-      <div className="modul7-lesson-content modul7-page4-content" data-node-id="333:1793">
+      <div className={`modul7-lesson-content modul7-page4-content modul7-slide-${direction}`} data-node-id="333:1793">
         {/* Title Header */}
         <div className="modul7-page4-header" data-node-id="334:1834">
           <p className="modul7-page4-subtitle" data-node-id="334:1835">
@@ -836,26 +839,29 @@ function LessonPage4({ onNext, onPrev, onExit }) {
 }
 
 // ─── Page 5: Conclusion / Empowering Mindset (Figma node 334:1816) ───────────
-function LessonPage5({ onNext, onPrev, onExit }) {
+function LessonPage5({ onNext, onPrev, onExit, direction = "forward" }) {
   return (
     <div className="modul7-lesson-page modul7-lesson-page-2" data-node-id="334:1816" data-name="Lesson-Hadapi Pertanyaan Menantang">
       <LessonTopBar currentStep={5} totalSteps={TOTAL_LESSON_STEPS} onBack={onExit} />
 
-      {/* Center Quotes Area */}
-      <div className="modul7-page2-content" data-node-id="334:1825">
-        <TypingQuote
-          text="”Saat pertanyaan sulit datang, pikiranmu akan mencoba membunyikan alarm palsu. Uji faktanya atau beri jarak pada paniknya. Ingat: kamu adalah pengendali panggungmu, bukan tawanan dari pikiranmu sendiri.”"
-          dataNodeId="334:1826"
-        />
-      </div>
+      {/* Center Sliding Content Area */}
+      <div className={`modul7-page2-scroll-content modul7-slide-${direction}`}>
+        {/* Center Quotes Area */}
+        <div className="modul7-page2-content" data-node-id="334:1825">
+          <TypingQuote
+            text="”Saat pertanyaan sulit datang, pikiranmu akan mencoba membunyikan alarm palsu. Uji faktanya atau beri jarak pada paniknya. Ingat: kamu adalah pengendali panggungmu, bukan tawanan dari pikiranmu sendiri.”"
+            dataNodeId="334:1826"
+          />
+        </div>
 
-      {/* Bottom Mascot Illustration */}
-      <div className="modul7-page2-mascot-wrapper" data-node-id="334:1827">
-        <img
-          src={imgMascottQuotes}
-          alt="Mascot Quotes"
-          className="modul7-page2-mascot-img"
-        />
+        {/* Bottom Mascot Illustration */}
+        <div className="modul7-page2-mascot-wrapper" data-node-id="334:1827">
+          <img
+            src={imgMascottQuotes}
+            alt="Mascot Quotes"
+            className="modul7-page2-mascot-img"
+          />
+        </div>
       </div>
 
       {/* Dual Bottom Buttons */}
@@ -883,12 +889,12 @@ function LessonPage5({ onNext, onPrev, onExit }) {
 }
 
 // ─── Page 6: Teknik Merespons Kritik (Figma node 334:1838) ───────────────────
-function LessonPage6({ onNext, onPrev, onExit }) {
+function LessonPage6({ onNext, onPrev, onExit, direction = "forward" }) {
   return (
     <div className="modul7-lesson-page" data-node-id="334:1838" data-name="Lesson-Hadapi Pertanyaan Menantang">
       <LessonTopBar currentStep={6} totalSteps={TOTAL_LESSON_STEPS} onBack={onExit} />
 
-      <div className="modul7-lesson-content modul7-page6-content" data-node-id="334:1847">
+      <div className={`modul7-lesson-content modul7-page6-content modul7-slide-${direction}`} data-node-id="334:1847">
         {/* Title Header */}
         <div className="modul7-page6-header" data-node-id="334:1848">
           <p className="modul7-page6-subtitle" data-node-id="334:1849">
@@ -974,12 +980,12 @@ function LessonPage6({ onNext, onPrev, onExit }) {
 }
 
 // ─── Page 7: Skenario Latihan — Hadapi Pertanyaan Menantang ──────────────────
-function PracticeIntro({ onNext, onPrev, onExit }) {
+function PracticeIntro({ onNext, onPrev, onExit, direction = "forward" }) {
   return (
     <div className="modul7-lesson-page modul7-dark-page" data-name="Practice-Skenario Latihan">
       <LessonTopBar currentStep={7} totalSteps={TOTAL_LESSON_STEPS} onBack={onExit} tone="dark" />
 
-      <div className="modul7-lesson-content modul7-practice-intro-content">
+      <div className={`modul7-lesson-content modul7-practice-intro-content modul7-slide-${direction}`}>
         <div className="modul7-practice-header">
           <p className="modul7-practice-eyebrow">Skenario Latihan</p>
           <h2 className="modul7-practice-title">
@@ -1015,14 +1021,14 @@ function PracticeIntro({ onNext, onPrev, onExit }) {
 }
 
 // ─── Page 8: Tema nya adalah — random topic reveal ───────────────────────────
-function PracticeTopic({ onNext, onPrev, onExit }) {
+function PracticeTopic({ onNext, onPrev, onExit, direction = "forward" }) {
   const remaining = useCountdown(10, onNext);
 
   return (
     <div className="modul7-lesson-page modul7-dark-page" data-name="Practice-Tema">
       <LessonTopBar currentStep={8} totalSteps={TOTAL_LESSON_STEPS} onBack={onExit} tone="dark" />
 
-      <div className="modul7-lesson-content modul7-practice-centered">
+      <div className={`modul7-lesson-content modul7-practice-centered modul7-slide-${direction}`}>
         <p className="modul7-practice-eyebrow">Tema nya adalah</p>
         <p className="modul7-practice-topic">{PRACTICE_TOPIC}</p>
       </div>
@@ -1048,7 +1054,7 @@ function PracticeTopic({ onNext, onPrev, onExit }) {
 }
 
 // ─── Page 9: Waktu Persiapan — 2 minute prep with a quick outline ────────────
-function PracticePrep({ onNext, onBack }) {
+function PracticePrep({ onNext, onBack, direction = "forward" }) {
   const [outline, setOutline] = useState(["", "", ""]);
   const remaining = useCountdown(120, onNext);
 
@@ -1060,7 +1066,7 @@ function PracticePrep({ onNext, onBack }) {
     <div className="modul7-lesson-page modul7-dark-page" data-name="Practice-Waktu Persiapan">
       <LessonTopBar currentStep={9} totalSteps={TOTAL_LESSON_STEPS} onBack={onBack} tone="dark" />
 
-      <div className="modul7-lesson-content modul7-practice-prep-content">
+      <div className={`modul7-lesson-content modul7-practice-prep-content modul7-slide-${direction}`}>
         <div className="modul7-practice-timer-bar">
           <span className="modul7-practice-timer-label">Waktu Persiapan</span>
           <span className="modul7-practice-timer-value">{formatClock(remaining)}</span>
@@ -1103,7 +1109,7 @@ function PracticePrep({ onNext, onBack }) {
 }
 
 // ─── Page 10: Sampaikan pendapatmu — 2 minute mini-presentation ──────────────
-function PracticeSpeak({ onNext, onBack }) {
+function PracticeSpeak({ onNext, onBack, direction = "forward" }) {
   const [attempt, setAttempt] = useState(0);
   const [silent, setSilent] = useState(false);
 
@@ -1126,13 +1132,14 @@ function PracticeSpeak({ onNext, onBack }) {
     <PracticeSpeakRecording
       key={attempt}
       onBack={onBack}
+      direction={direction}
       onRestart={() => setAttempt((a) => a + 1)}
       onDone={(heard) => (heard ? onNext() : setSilent(true))}
     />
   );
 }
 
-function PracticeSpeakRecording({ onDone, onRestart, onBack }) {
+function PracticeSpeakRecording({ onDone, onRestart, onBack, direction = "forward" }) {
   const { detectedRef, audioLevels } = useSpeechCapture(true);
   const [gate, setGate] = useState(null); // null | "incomplete"
   // Populated from an effect (not during render) each time `remaining`
@@ -1161,7 +1168,7 @@ function PracticeSpeakRecording({ onDone, onRestart, onBack }) {
     <div className="modul7-lesson-page modul7-dark-page" data-name="Practice-Sampaikan Pendapat">
       <LessonTopBar currentStep={10} totalSteps={TOTAL_LESSON_STEPS} onBack={onBack} tone="dark" />
 
-      <div className="modul7-lesson-content modul7-practice-centered">
+      <div className={`modul7-lesson-content modul7-practice-centered modul7-slide-${direction}`}>
         <h2 className="modul7-practice-speak-title">Sampaikan pendapatmu</h2>
         <div className="modul7-practice-dial">{formatClock(remaining)}</div>
         <div className="modul7-practice-wave-wrap">
@@ -1188,12 +1195,12 @@ function PracticeSpeakRecording({ onDone, onRestart, onBack }) {
 }
 
 // ─── Page 11: Argumenmu sudah siap! — bridge into the Q&A ───────────────────
-function PracticeQaIntro({ onNext, onBack }) {
+function PracticeQaIntro({ onNext, onBack, direction = "forward" }) {
   return (
     <div className="modul7-lesson-page modul7-dark-page" data-name="Practice-Argumen Siap">
       <LessonTopBar currentStep={11} totalSteps={TOTAL_LESSON_STEPS} onBack={onBack} tone="dark" />
 
-      <div className="modul7-lesson-content modul7-practice-bridge-content">
+      <div className={`modul7-lesson-content modul7-practice-bridge-content modul7-slide-${direction}`}>
         <img src={imgMascottSenyum} alt="" className="modul7-practice-bridge-img" />
 
         <div className="modul7-practice-bridge-text">
@@ -1221,7 +1228,7 @@ function PracticeQaIntro({ onNext, onBack }) {
 }
 
 // ─── Pages 12 & 15: the challenging question, before answering ──────────────
-function PracticeQuestionCue({ step, questionIndex, onNext, onBack }) {
+function PracticeQuestionCue({ step, questionIndex, onNext, onBack, direction = "forward" }) {
   const remaining = useCountdown(15, onNext);
 
   return (
@@ -1232,7 +1239,7 @@ function PracticeQuestionCue({ step, questionIndex, onNext, onBack }) {
         {questionIndex + 1}/{PRACTICE_QUESTIONS.length}
       </p>
 
-      <div className="modul7-lesson-content modul7-practice-centered">
+      <div className={`modul7-lesson-content modul7-practice-centered modul7-slide-${direction}`}>
         <p className="modul7-practice-eyebrow">Pertanyaan #{questionIndex + 1}</p>
         <p className="modul7-practice-question">{PRACTICE_QUESTIONS[questionIndex]}</p>
       </div>
@@ -1248,7 +1255,7 @@ function PracticeQuestionCue({ step, questionIndex, onNext, onBack }) {
 }
 
 // ─── Pages 13 & 16: answering the question with a 1 minute timer ────────────
-function PracticeAnswer({ step, questionIndex, onNext, onBack }) {
+function PracticeAnswer({ step, questionIndex, onNext, onBack, direction = "forward" }) {
   const [attempt, setAttempt] = useState(0);
   const [silent, setSilent] = useState(false);
 
@@ -1274,13 +1281,14 @@ function PracticeAnswer({ step, questionIndex, onNext, onBack }) {
       step={step}
       questionIndex={questionIndex}
       onBack={onBack}
+      direction={direction}
       onRestart={() => setAttempt((a) => a + 1)}
       onDone={(heard) => (heard ? onNext() : setSilent(true))}
     />
   );
 }
 
-function PracticeAnswerRecording({ step, questionIndex, onDone, onRestart, onBack }) {
+function PracticeAnswerRecording({ step, questionIndex, onDone, onRestart, onBack, direction = "forward" }) {
   const { detectedRef, audioLevels } = useSpeechCapture(true);
   const [gate, setGate] = useState(null); // null | "incomplete"
   // Populated from an effect (not during render) each time `remaining`
@@ -1313,7 +1321,7 @@ function PracticeAnswerRecording({ step, questionIndex, onDone, onRestart, onBac
         {questionIndex + 1}/{PRACTICE_QUESTIONS.length}
       </p>
 
-      <div className="modul7-lesson-content modul7-practice-centered modul7-practice-answer-content">
+      <div className={`modul7-lesson-content modul7-practice-centered modul7-practice-answer-content modul7-slide-${direction}`}>
         <div className="modul7-practice-question-card">
           <p className="modul7-practice-eyebrow">Pertanyaan #{questionIndex + 1}</p>
           <p className="modul7-practice-question-sm">{PRACTICE_QUESTIONS[questionIndex]}</p>
@@ -1345,14 +1353,14 @@ function PracticeAnswerRecording({ step, questionIndex, onDone, onRestart, onBac
 }
 
 // ─── Page 14: Hebat, Tapi... — encouragement between the two questions ──────
-function PracticeInterlude({ onNext, onBack }) {
+function PracticeInterlude({ onNext, onBack, direction = "forward" }) {
   return (
     <div className="modul7-lesson-page modul7-dark-page" data-name="Practice-Hebat Tapi">
       <LessonTopBar currentStep={14} totalSteps={TOTAL_LESSON_STEPS} onBack={onBack} tone="dark" />
 
       <p className="modul7-practice-counter">1/{PRACTICE_QUESTIONS.length}</p>
 
-      <div className="modul7-lesson-content modul7-practice-bridge-content">
+      <div className={`modul7-lesson-content modul7-practice-bridge-content modul7-slide-${direction}`}>
         <img src={imgMascottSenyum} alt="" className="modul7-practice-bridge-img" />
 
         <div className="modul7-practice-bridge-text">
@@ -1375,7 +1383,7 @@ function PracticeInterlude({ onNext, onBack }) {
 
 
 // ─── Page 17: Keren! — practice cleared ─────────────────────────────────────
-function PracticeSuccess({ onNext, onBack }) {
+function PracticeSuccess({ onNext, onBack, direction = "forward" }) {
   useEffect(() => {
     playChallengePassedSound();
   }, []);
@@ -1384,7 +1392,7 @@ function PracticeSuccess({ onNext, onBack }) {
     <div className="modul7-lesson-page" data-name="Practice-Keren">
       <LessonTopBar currentStep={17} totalSteps={TOTAL_LESSON_STEPS} onBack={onBack} />
 
-      <div className="modul7-lesson-content modul7-practice-success-content">
+      <div className={`modul7-lesson-content modul7-practice-success-content modul7-slide-${direction}`}>
         <video
           src={videoHappySpeaker}
           autoPlay
@@ -1851,32 +1859,32 @@ export default function LessonModul7Screen({ onBack, onFinish }) {
 
   return (
     <div className="modul7-lesson-screen">
-      <div key={String(step)} className={`modul7-step-wrapper modul7-slide-${direction}`}>
-        {step === 1 && <LessonPage1 onNext={goNext} onBack={handleRequestExit} />}
-        {step === 2 && <LessonPage2 onNext={goNext} onPrev={goBack} onExit={handleRequestExit} />}
-        {step === 3 && <LessonPage3 onNext={goNext} onPrev={goBack} onExit={handleRequestExit} />}
-        {step === 4 && <LessonPage4 onNext={goNext} onPrev={goBack} onExit={handleRequestExit} />}
-        {step === 5 && <LessonPage5 onNext={goNext} onPrev={goBack} onExit={handleRequestExit} />}
-        {step === 6 && <LessonPage6 onNext={goNext} onPrev={goBack} onExit={handleRequestExit} />}
-        {step === 7 && <PracticeIntro onNext={goNext} onPrev={goBack} onExit={handleRequestExit} />}
-        {step === 8 && <PracticeTopic onNext={goNext} onPrev={goBack} onExit={handleRequestExit} />}
-        {step === 9 && <PracticePrep onNext={goNext} onBack={handleRequestExit} />}
-        {step === 10 && <PracticeSpeak onNext={goNext} onBack={handleRequestExit} />}
-        {step === 11 && <PracticeQaIntro onNext={goNext} onBack={handleRequestExit} />}
+      <div key={String(step)} className="modul7-step-wrapper">
+        {step === 1 && <LessonPage1 onNext={goNext} onBack={handleRequestExit} direction={direction} />}
+        {step === 2 && <LessonPage2 onNext={goNext} onPrev={goBack} onExit={handleRequestExit} direction={direction} />}
+        {step === 3 && <LessonPage3 onNext={goNext} onPrev={goBack} onExit={handleRequestExit} direction={direction} />}
+        {step === 4 && <LessonPage4 onNext={goNext} onPrev={goBack} onExit={handleRequestExit} direction={direction} />}
+        {step === 5 && <LessonPage5 onNext={goNext} onPrev={goBack} onExit={handleRequestExit} direction={direction} />}
+        {step === 6 && <LessonPage6 onNext={goNext} onPrev={goBack} onExit={handleRequestExit} direction={direction} />}
+        {step === 7 && <PracticeIntro onNext={goNext} onPrev={goBack} onExit={handleRequestExit} direction={direction} />}
+        {step === 8 && <PracticeTopic onNext={goNext} onPrev={goBack} onExit={handleRequestExit} direction={direction} />}
+        {step === 9 && <PracticePrep onNext={goNext} onBack={handleRequestExit} direction={direction} />}
+        {step === 10 && <PracticeSpeak onNext={goNext} onBack={handleRequestExit} direction={direction} />}
+        {step === 11 && <PracticeQaIntro onNext={goNext} onBack={handleRequestExit} direction={direction} />}
         {step === 12 && (
-          <PracticeQuestionCue step={12} questionIndex={0} onNext={goNext} onBack={handleRequestExit} />
+          <PracticeQuestionCue step={12} questionIndex={0} onNext={goNext} onBack={handleRequestExit} direction={direction} />
         )}
         {step === 13 && (
-          <PracticeAnswer step={13} questionIndex={0} onNext={goNext} onBack={handleRequestExit} />
+          <PracticeAnswer step={13} questionIndex={0} onNext={goNext} onBack={handleRequestExit} direction={direction} />
         )}
-        {step === 14 && <PracticeInterlude onNext={goNext} onBack={handleRequestExit} />}
+        {step === 14 && <PracticeInterlude onNext={goNext} onBack={handleRequestExit} direction={direction} />}
         {step === 15 && (
-          <PracticeQuestionCue step={15} questionIndex={1} onNext={goNext} onBack={handleRequestExit} />
+          <PracticeQuestionCue step={15} questionIndex={1} onNext={goNext} onBack={handleRequestExit} direction={direction} />
         )}
         {step === 16 && (
-          <PracticeAnswer step={16} questionIndex={1} onNext={goNext} onBack={handleRequestExit} />
+          <PracticeAnswer step={16} questionIndex={1} onNext={goNext} onBack={handleRequestExit} direction={direction} />
         )}
-        {step === 17 && <PracticeSuccess onNext={goNext} onBack={handleRequestExit} />}
+        {step === 17 && <PracticeSuccess onNext={goNext} onBack={handleRequestExit} direction={direction} />}
         {step === "analyzing" && <AnalyzingScreen />}
         {step === "analysis-error" && (
           <AnalysisErrorScreen
