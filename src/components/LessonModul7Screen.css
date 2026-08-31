@@ -1027,7 +1027,7 @@
   color: #FFFFFF;
   letter-spacing: -0.5px;
   text-align: center;
-  margin: 0 0 34px 0;
+  margin: 0 0 42px 0;
 }
 
 .modul7-practice-dial {
@@ -1047,6 +1047,18 @@
   color: #FFFFFF;
   letter-spacing: -1px;
   font-variant-numeric: tabular-nums;
+  box-shadow: 0 8px 24px rgba(36, 169, 129, 0.25);
+}
+
+.modul7-practice-wave-wrap {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  min-height: 52px;
+  margin-top: 36px;
+  margin-bottom: 16px;
+  flex-shrink: 0;
 }
 
 .modul7-voice-wave {
@@ -1054,9 +1066,7 @@
   align-items: center;
   justify-content: center;
   gap: 7px;
-  height: 32px;
-  margin-top: 12px;
-  margin-bottom: 8px;
+  height: 48px;
   flex-shrink: 0;
 }
 
@@ -1064,24 +1074,8 @@
   width: 6px;
   border-radius: 3px;
   background-color: var(--color-secondary, #24A981);
-  animation: modul7VoicePulse 1.1s ease-in-out infinite;
-}
-
-.modul7-voice-bar:nth-child(1) { height: 30px; animation-delay: 0s; }
-.modul7-voice-bar:nth-child(2) { height: 12px; animation-delay: 0.18s; }
-.modul7-voice-bar:nth-child(3) { height: 22px; animation-delay: 0.36s; }
-.modul7-voice-bar:nth-child(4) { height: 22px; animation-delay: 0.54s; }
-.modul7-voice-bar:nth-child(5) { height: 30px; animation-delay: 0.72s; }
-
-@keyframes modul7VoicePulse {
-  0%, 100% { transform: scaleY(1); }
-  50% { transform: scaleY(0.45); }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .modul7-voice-bar {
-    animation: none;
-  }
+  transition: height 0.08s cubic-bezier(0.2, 0.8, 0.4, 1);
+  min-height: 10px;
 }
 
 .modul7-practice-answer-content {
@@ -1097,11 +1091,12 @@
   display: flex;
   flex-direction: column;
   gap: 8px;
-  padding: 12px 16px;
+  padding: 14px 16px;
   background-color: var(--modul7-dark-surface, #313E44);
   border-radius: 12px;
   box-sizing: border-box;
-  margin-bottom: 14px;
+  margin-bottom: 38px;
+  margin-top: 4px;
 }
 
 .modul7-practice-question-sm {

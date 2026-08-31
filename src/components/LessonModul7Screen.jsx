@@ -299,21 +299,29 @@ const formatClock = (totalSeconds) => {
   return `${mins}:${String(secs).padStart(2, "0")}`;
 };
 
-// ─── Animated voice bars shown while the user is speaking ────────────────────
-const VoiceWave = () => (
-  <div className="modul7-voice-wave" aria-hidden="true">
-    <span className="modul7-voice-bar" />
-    <span className="modul7-voice-bar" />
-    <span className="modul7-voice-bar" />
-    <span className="modul7-voice-bar" />
-    <span className="modul7-voice-bar" />
-  </div>
-);
+// ─── Real-time Audio-Reactive Voice Bars driven by Microphone ─────────────────
+const VoiceWave = ({ levels = [0.2, 0.2, 0.2, 0.2, 0.2] }) => {
+  const baseHeights = [36, 52, 64, 52, 36];
+  return (
+    <div className="modul7-voice-wave" aria-hidden="true">
+      {levels.map((level, i) => (
+        <span
+          key={i}
+          className="modul7-voice-bar"
+          style={{
+            height: `${Math.max(10, Math.round(baseHeights[i] * level))}px`,
+          }}
+        />
+      ))}
+    </div>
+  );
+};
 
-// ─── Listens to the mic while `active` and tracks whether any speech-level
-// volume was heard. A ref (not state) so the RAF loop doesn't re-render. ────
+// ─── Listens to the mic while `active`, tracks volume levels for reactive waves,
+// and detects speech. ────────────────────────────────────────────────────────
 function useSpeechCapture(active) {
   const detectedRef = useRef(false);
+  const [audioLevels, setAudioLevels] = useState([0.22, 0.22, 0.22, 0.22, 0.22]);
 
   useEffect(() => {
     if (!active) return undefined;
@@ -336,21 +344,43 @@ function useSpeechCapture(active) {
         }
         audioCtx = new (window.AudioContext || window.webkitAudioContext)();
         const analyser = audioCtx.createAnalyser();
-        analyser.fftSize = 512;
+        analyser.fftSize = 256;
+        analyser.smoothingTimeConstant = 0.6;
         audioCtx.createMediaStreamSource(stream).connect(analyser);
         const data = new Uint8Array(analyser.frequencyBinCount);
 
-        const tick = () => {
+        let lastUpdate = 0;
+
+        const tick = (now) => {
           analyser.getByteFrequencyData(data);
           let sum = 0;
           for (let i = 0; i < data.length; i++) sum += data[i];
-          if (sum / data.length > SILENCE_THRESHOLD) detectedRef.current = true;
+          const avg = sum / data.length;
+          if (avg > SILENCE_THRESHOLD) detectedRef.current = true;
+
+          // Update audioLevels at ~30fps for smooth reactivity
+          if (now - lastUpdate > 30) {
+            lastUpdate = now;
+            const b1 = (data[2] || 0) / 255;
+            const b2 = (data[6] || 0) / 255;
+            const b3 = (data[12] || 0) / 255;
+            const b4 = (data[20] || 0) / 255;
+            const b5 = (data[30] || 0) / 255;
+
+            setAudioLevels([
+              Math.max(0.18, Math.min(1.0, b1 * 1.8 + 0.1)),
+              Math.max(0.18, Math.min(1.0, b2 * 2.0 + 0.1)),
+              Math.max(0.18, Math.min(1.0, b3 * 2.2 + 0.1)),
+              Math.max(0.18, Math.min(1.0, b4 * 2.0 + 0.1)),
+              Math.max(0.18, Math.min(1.0, b5 * 1.8 + 0.1)),
+            ]);
+          }
+
           rafId = requestAnimationFrame(tick);
         };
-        tick();
+        rafId = requestAnimationFrame(tick);
       } catch {
-        // No mic permission / no device — treated as silence when the
-        // recording ends, which is exactly the state we want to surface.
+        // No mic permission / device
       }
     })();
 
@@ -362,7 +392,7 @@ function useSpeechCapture(active) {
     };
   }, [active]);
 
-  return detectedRef;
+  return { detectedRef, audioLevels };
 }
 
 // ─── Overlay shown when "Selesai Bicara" is pressed too early (speech WAS
@@ -1103,7 +1133,7 @@ function PracticeSpeak({ onNext, onBack }) {
 }
 
 function PracticeSpeakRecording({ onDone, onRestart, onBack }) {
-  const detectedRef = useSpeechCapture(true);
+  const { detectedRef, audioLevels } = useSpeechCapture(true);
   const [gate, setGate] = useState(null); // null | "incomplete"
   // Populated from an effect (not during render) each time `remaining`
   // ticks, so attemptFinish() — a click handler / countdown callback, never
@@ -1134,7 +1164,9 @@ function PracticeSpeakRecording({ onDone, onRestart, onBack }) {
       <div className="modul7-lesson-content modul7-practice-centered">
         <h2 className="modul7-practice-speak-title">Sampaikan pendapatmu</h2>
         <div className="modul7-practice-dial">{formatClock(remaining)}</div>
-        <VoiceWave />
+        <div className="modul7-practice-wave-wrap">
+          <VoiceWave levels={audioLevels} />
+        </div>
       </div>
 
       <div className="modul7-lesson-cta-wrapper modul7-lesson-cta-wrapper--dark">
@@ -1249,7 +1281,7 @@ function PracticeAnswer({ step, questionIndex, onNext, onBack }) {
 }
 
 function PracticeAnswerRecording({ step, questionIndex, onDone, onRestart, onBack }) {
-  const detectedRef = useSpeechCapture(true);
+  const { detectedRef, audioLevels } = useSpeechCapture(true);
   const [gate, setGate] = useState(null); // null | "incomplete"
   // Populated from an effect (not during render) each time `remaining`
   // ticks, so attemptFinish() — a click handler / countdown callback, never
@@ -1288,7 +1320,10 @@ function PracticeAnswerRecording({ step, questionIndex, onDone, onRestart, onBac
         </div>
 
         <div className="modul7-practice-dial">{formatClock(remaining)}</div>
-        <VoiceWave />
+
+        <div className="modul7-practice-wave-wrap">
+          <VoiceWave levels={audioLevels} />
+        </div>
       </div>
 
       <div className="modul7-lesson-cta-wrapper modul7-lesson-cta-wrapper--dark">
