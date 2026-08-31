@@ -70,7 +70,7 @@ const EMPTY_STREAK_DAYS = [
 
 const MODULES = [
   { id: 1, module: "Modul 1", title: "Kenali Suaramu", lessons: 4, progress: "4/4", image: imgModul1, active: false, highlight: false, tag: null },
-  { id: 2, module: "Modul 2", title: "Fondasi Suara dan Tubuh", lessons: 6, progress: "1/6", image: imgModul2, active: false, highlight: false, tag: "Testing available" },
+  { id: 2, module: "Modul 2", title: "Fondasi Suara dan Tubuh", lessons: 6, progress: "6/6", image: imgModul2, active: false, highlight: false, tag: "Testing available" },
   { id: 3, module: "Modul 3", title: "Berani di Ruang Kelas", lessons: 6, progress: "6/6", image: imgModul3, active: false, highlight: false, tag: null },
   { id: 4, module: "Modul 4", title: "Percaya Diri di Depan Kamera", lessons: 6, progress: "6/6", image: imgModul4, active: false, highlight: false, tag: null },
   { id: 5, module: "Modul 5", title: "Bicara dengan Wibawa", lessons: 6, progress: "6/6", image: imgModul5, active: false, highlight: false, tag: null },
@@ -207,11 +207,10 @@ export default function HomeScreen({ userName, onSelectModule, onNavigatePractic
                   bulletStatus = "active";
                 }
 
-                // Connecting line states
-                const nextMod = MODULES[i + 1];
-                const prevMod = MODULES[i - 1];
-                const isTopCompleted = isCompleted || (prevMod && isModuleCompleted(prevMod));
-                const isBottomCompleted = isCompleted && (nextMod && isModuleCompleted(nextMod));
+                // Connecting line states: unbroken continuous track
+                const prevMod = i > 0 ? MODULES[i - 1] : null;
+                const isTopCompleted = Boolean(prevMod && isModuleCompleted(prevMod));
+                const isBottomCompleted = isCompleted;
 
                 return (
                   <div key={mod.id} className="home-timeline-row">
