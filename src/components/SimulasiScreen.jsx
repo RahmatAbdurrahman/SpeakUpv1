@@ -691,12 +691,60 @@ function SimulasiAnalysisChip({ label, tone }) {
   return <span className={`simulasi-analysis-chip simulasi-analysis-chip--${tone}`}>{label}</span>;
 }
 
+// ─── Accumulation Score Hero (Aura Halo Style from Mobbin Cleo AI) ───
+export function AccumulationScoreHero({ score }) {
+  const [showTooltip, setShowTooltip] = useState(false);
+  const clampedScore = score != null ? Math.round(score) : 80;
+
+  return (
+    <div className="simulasi-accumulation-hero">
+      <div className="simulasi-accumulation-aura" />
+      <div className="simulasi-accumulation-sparkles">
+        <span className="simulasi-sparkle-dot simulasi-sparkle-dot--1" />
+        <span className="simulasi-sparkle-dot simulasi-sparkle-dot--2" />
+        <span className="simulasi-sparkle-dot simulasi-sparkle-dot--3" />
+        <span className="simulasi-sparkle-dot simulasi-sparkle-dot--4" />
+        <span className="simulasi-sparkle-dot simulasi-sparkle-dot--5" />
+        <span className="simulasi-sparkle-dot simulasi-sparkle-dot--6" />
+      </div>
+
+      <div className="simulasi-accumulation-center">
+        <div className="simulasi-accumulation-number-wrap">
+          <h2 className="simulasi-accumulation-number">{clampedScore}</h2>
+          <button
+            type="button"
+            className="simulasi-accumulation-info-btn"
+            onClick={() => setShowTooltip((prev) => !prev)}
+            aria-label="Info akumulasi skor"
+            title="Info akumulasi skor"
+          >
+            i
+          </button>
+        </div>
+
+        <p className="simulasi-accumulation-sub">dari 100</p>
+
+        <div className="simulasi-accumulation-pill">
+          <span className="simulasi-accumulation-check-icon">✓</span>
+          <span>Berdasarkan evaluasi AI</span>
+        </div>
+
+        {showTooltip && (
+          <div className="simulasi-accumulation-tooltip">
+            Skor total dihitung dari akumulasi penilaian argumentasi, relevansi konteks, kestabilan tempo bicara, dan artikulasi intonasi.
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
 // Exported: SessionDetailScreen (Riwayat Sesi drill-down) reuses this exact
 // scoring/metrics rendering — same fallback-default logic, so a history
 // detail view can never silently drift out of sync with the live results
 // screen. Deliberately excludes the hero/headline and the CTA (XP-gated
 // "Lanjut" doesn't mean anything when just looking back at old history).
-export function AnalysisCards({ results }) {
+export function AnalysisCards({ results, showAccumulationScore = true }) {
   const metrics = results?.metrics;
   const feedback = results?.feedback;
   const sub = (() => {
@@ -710,8 +758,19 @@ export function AnalysisCards({ results }) {
     return {};
   })();
 
-  const argScore = sub?.argumentasi ?? sub?.kesesuaian_materi ?? (feedback?.skor ? Math.round(feedback.skor) : 88);
-  const relScore = sub?.relevansi ?? sub?.kesesuaian_materi ?? sub?.fluency ?? 88;
+  const totalScore =
+    feedback?.skor != null
+      ? Math.round(feedback.skor)
+      : Math.round(
+          ((sub?.argumentasi ?? sub?.kesesuaian_materi ?? 88) +
+            (sub?.relevansi ?? sub?.kesesuaian_materi ?? sub?.fluency ?? 88) +
+            (sub?.fluency ?? 88) +
+            (sub?.intonasi ?? 80)) /
+            4
+        );
+
+  const argScore = sub?.argumentasi ?? sub?.kesesuaian_materi ?? totalScore;
+  const relScore = sub?.relevansi ?? sub?.kesesuaian_materi ?? sub?.fluency ?? totalScore;
   const fillerCount = metrics?.filler_word_count != null ? metrics.filler_word_count : 0;
   const paceWpm = metrics?.pace_wpm != null ? Math.round(metrics.pace_wpm) : 140;
   const clarityScore = sub?.fluency ?? 88;
@@ -798,6 +857,8 @@ export function AnalysisCards({ results }) {
 
   return (
     <>
+      {showAccumulationScore && <AccumulationScoreHero score={totalScore} />}
+
       {scores.map((score) => (
         <div className="simulasi-analysis-card" key={score.id}>
           <div className="simulasi-analysis-card-top">

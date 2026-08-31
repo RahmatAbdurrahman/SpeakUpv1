@@ -41,6 +41,7 @@ import iconAI from "../assets/pages_assets/ai_analysis/Icons/AI.svg";
 import iconDownload from "../assets/icons/Download.svg";
 import TranscriptCard from "./TranscriptCard";
 import { exportAnalysisToPDF } from "../lib/pdfExport";
+import { AccumulationScoreHero } from "./SimulasiScreen";
 
 const MODUL7_ASSETS = [
   imgBlankTotal,
@@ -1466,6 +1467,14 @@ function PracticeAnalysis({ result = PRACTICE_ANALYSIS, onFinish }) {
             Dengan latihan yang konsisten, kamu akan semakin mahir dan percaya diri dalam berbicara!
           </p>
         </div>
+
+        <AccumulationScoreHero
+          score={
+            result?.skor != null
+              ? Math.round(result.skor)
+              : Math.round(((result.scores?.[0]?.value ?? 88) + (result.scores?.[1]?.value ?? 88)) / 2)
+          }
+        />
 
         {result.scores.map((score) => (
           <div className="modul7-analysis-card" key={score.id}>
