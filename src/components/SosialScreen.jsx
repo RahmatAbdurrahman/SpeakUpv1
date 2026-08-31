@@ -219,22 +219,27 @@ export default function SosialScreen({ onNavigateHome, onNavigateSimulasi, onNav
               <img src={cardBgDecor} alt="" className="sosial-match-bg-img" />
             </div>
 
-            {/* Large Transparent Illustration anchored flush to card edges */}
-            <div className="sosial-match-illus-pane" aria-hidden="true">
-              <img src={imgMatchmakingDuet} alt="" className="sosial-match-illus-img" />
-            </div>
+            <div className="sosial-match-card-content">
+              {/* Top Row: Left Info + Right Duet Illustration */}
+              <div className="sosial-match-top-row">
+                <div className="sosial-match-info-col">
+                  <div className="sosial-match-badge">
+                    <span className="sosial-match-badge-dot"></span>
+                    <span>Matchmaking Duet</span>
+                  </div>
 
-            <div className="sosial-match-content">
-              <div className="sosial-match-badge">
-                <span className="sosial-match-badge-dot"></span>
-                <span>Matchmaking Duet</span>
+                  <div className="sosial-match-text">
+                    <h3>Cari Partner Latihan</h3>
+                    <p>Dipasangkan otomatis dengan pengguna lain untuk latihan bareng & saling beri masukan secara live.</p>
+                  </div>
+                </div>
+
+                <div className="sosial-match-illus-col">
+                  <img src={imgMatchmakingDuet} alt="Cari Partner Latihan" className="sosial-match-duet-img" />
+                </div>
               </div>
 
-              <div className="sosial-match-text">
-                <h3>Cari Partner Latihan</h3>
-                <p>Dipasangkan otomatis dengan pengguna lain untuk latihan bareng & saling beri masukan secara live.</p>
-              </div>
-
+              {/* Bottom Row: CTA Button / States */}
               {queueState === "idle" && (
                 <button type="button" className="btn-sosial-match" onClick={handleFindPartner}>
                   Cari Partner Sekarang
