@@ -860,6 +860,493 @@ function InterviewCallView({
   );
 }
 
+// ─── Presentation Conference View (Video Conference UI with Draggable & Swappable PiP) ───
+function PresentationConferenceView({
+  scenario,
+  cheatSheet,
+  materialPdfPath,
+  stream,
+  camError,
+  seconds,
+  formatTime,
+  isRecording,
+  onFinish,
+  onBack,
+}) {
+  const containerRef = useRef(null);
+  const pipRef = useRef(null);
+  const mainVideoRef = useRef(null);
+  const pipVideoRef = useRef(null);
+
+  const [mainView, setMainView] = useState("slide"); // "slide" | "camera"
+  const [slidePage, setSlidePage] = useState(1);
+  const [totalSlidePages, setTotalSlidePages] = useState(1);
+  const [slideUrl, setSlideUrl] = useState(null);
+  const [slideLoading, setSlideLoading] = useState(false);
+  const [slideError, setSlideError] = useState("");
+
+  const [showNotesSheet, setShowNotesSheet] = useState(false);
+  const [showExitModal, setShowExitModal] = useState(false);
+  const [isMuted, setIsMuted] = useState(false);
+  const [isCamOff, setIsCamOff] = useState(false);
+
+  // Helper to dynamically get container and PiP dimensions
+  const getContainerMetrics = () => {
+    const container = containerRef.current;
+    const pip = pipRef.current;
+    const width = container ? container.clientWidth : window.innerWidth;
+    const height = container ? container.clientHeight : window.innerHeight;
+    const pipWidth = pip ? pip.offsetWidth : 110;
+    const pipHeight = pip ? pip.offsetHeight : 150;
+    const minX = 14;
+    const maxX = Math.max(minX, width - pipWidth - 14);
+    const minY = 68;
+    const maxY = Math.max(minY, height - pipHeight - 120);
+    return { width, height, pipWidth, pipHeight, minX, maxX, minY, maxY };
+  };
+
+  // Draggable PiP State with Magnetic Edge Snap
+  const [pipPos, setPipPos] = useState({ x: 240, y: 72, side: "right" });
+  const [isDragging, setIsDragging] = useState(false);
+  const isDraggingRef = useRef(false);
+  const dragStartRef = useRef({ startX: 0, startY: 0, initPipX: 0, initPipY: 0 });
+  const hasMovedRef = useRef(false);
+  const pipPosRef = useRef({ x: 240, y: 72, side: "right" });
+
+  useEffect(() => {
+    pipPosRef.current = pipPos;
+  }, [pipPos]);
+
+  // Set default initial position to Top-Right flush
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      const { maxX, minY } = getContainerMetrics();
+      setPipPos({ x: maxX, y: minY + 4, side: "right" });
+    }, 40);
+    return () => clearTimeout(timer);
+  }, []);
+
+  // Handle responsive resizing / rotation
+  useEffect(() => {
+    const handleResize = () => {
+      const { minX, maxX, minY, maxY } = getContainerMetrics();
+      setPipPos((prev) => ({
+        x: prev.side === "left" ? minX : maxX,
+        y: Math.max(minY, Math.min(maxY, prev.y)),
+        side: prev.side || "right",
+      }));
+    };
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
+
+  // Fetch signed URL for presentation PDF
+  useEffect(() => {
+    if (!materialPdfPath) return;
+    let active = true;
+    setSlideLoading(true);
+    setSlideError("");
+    getMaterialSignedUrl(materialPdfPath)
+      .then((url) => {
+        if (active) {
+          setSlideUrl(url);
+          setSlideLoading(false);
+        }
+      })
+      .catch(() => {
+        if (active) {
+          setSlideError("Gagal memuat slide presentasi.");
+          setSlideLoading(false);
+        }
+      });
+    return () => {
+      active = false;
+    };
+  }, [materialPdfPath]);
+
+  // Connect camera stream to active video element
+  useEffect(() => {
+    if (mainView === "camera" && mainVideoRef.current && stream) {
+      mainVideoRef.current.srcObject = stream;
+    } else if (mainView === "slide" && pipVideoRef.current && stream) {
+      pipVideoRef.current.srcObject = stream;
+    }
+  }, [stream, mainView, isCamOff]);
+
+  // Toggle Mute Audio
+  const toggleMute = () => {
+    if (!stream) return;
+    const audioTracks = stream.getAudioTracks();
+    const nextMuted = !isMuted;
+    audioTracks.forEach((t) => {
+      t.enabled = !nextMuted;
+    });
+    setIsMuted(nextMuted);
+  };
+
+  // Toggle Video Cam
+  const toggleCam = () => {
+    if (!stream) return;
+    const videoTracks = stream.getVideoTracks();
+    const nextCamOff = !isCamOff;
+    videoTracks.forEach((t) => {
+      t.enabled = !nextCamOff;
+    });
+    setIsCamOff(nextCamOff);
+  };
+
+  // Swap Main View & PiP View
+  const handleSwapView = () => {
+    setMainView((prev) => (prev === "slide" ? "camera" : "slide"));
+  };
+
+  // Pointer / Touch Dragging Handlers with Magnetic Edge Snapping
+  const handlePointerDown = (e) => {
+    if (e.button !== undefined && e.button !== 0) return;
+    isDraggingRef.current = true;
+    setIsDragging(true);
+    hasMovedRef.current = false;
+    dragStartRef.current = {
+      startX: e.clientX,
+      startY: e.clientY,
+      initPipX: pipPos.x,
+      initPipY: pipPos.y,
+    };
+    try {
+      e.currentTarget.setPointerCapture(e.pointerId);
+    } catch (_) {}
+  };
+
+  const handlePointerMove = (e) => {
+    if (!isDraggingRef.current) return;
+    const dx = e.clientX - dragStartRef.current.startX;
+    const dy = e.clientY - dragStartRef.current.startY;
+
+    if (Math.abs(dx) > 4 || Math.abs(dy) > 4) {
+      hasMovedRef.current = true;
+    }
+
+    const { minX, maxX, minY, maxY } = getContainerMetrics();
+    const nextX = Math.max(minX, Math.min(maxX, dragStartRef.current.initPipX + dx));
+    const nextY = Math.max(minY, Math.min(maxY, dragStartRef.current.initPipY + dy));
+
+    setPipPos((prev) => ({ ...prev, x: nextX, y: nextY }));
+  };
+
+  const handlePointerUp = (e) => {
+    if (!isDraggingRef.current) return;
+    isDraggingRef.current = false;
+    setIsDragging(false);
+    try {
+      e.currentTarget.releasePointerCapture(e.pointerId);
+    } catch (_) {}
+
+    const { width, pipWidth, minX, maxX, minY, maxY } = getContainerMetrics();
+
+    // Magnetic snap to nearest viewport edge (Left vs Right rail)
+    if (hasMovedRef.current) {
+      const currentX = pipPosRef.current.x;
+      const currentY = pipPosRef.current.y;
+      const pipCenterX = currentX + pipWidth / 2;
+      const screenCenterX = width / 2;
+
+      const isRight = pipCenterX >= screenCenterX;
+      const snapX = isRight ? maxX : minX;
+      const snapY = Math.max(minY, Math.min(maxY, currentY));
+
+      setPipPos({ x: snapX, y: snapY, side: isRight ? "right" : "left" });
+    } else {
+      // Tap / Click without moving -> toggle swap
+      handleSwapView();
+    }
+  };
+
+  const atFirst = slidePage <= 1;
+  const atLast = slidePage >= totalSlidePages;
+
+  return (
+    <div className="simulasi-conference-screen" ref={containerRef}>
+      {/* Top Bar: Conference Header with Timer */}
+      <header className="simulasi-conference-topbar">
+        <div className="simulasi-conference-topbar-left">
+          <button
+            type="button"
+            className="simulasi-conference-back-btn"
+            onClick={() => setShowExitModal(true)}
+            aria-label="Keluar Presentasi"
+          >
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M15 18l-6-6 6-6" />
+            </svg>
+          </button>
+          <div className="simulasi-conference-title-group">
+            <span className="simulasi-conference-title">{scenario?.title || "Presentasi"}</span>
+            <span className="simulasi-conference-sub">Mode Presentasi Interaktif</span>
+          </div>
+        </div>
+
+        <div className="simulasi-conference-topbar-right">
+          <div className="simulasi-conference-timer-badge">
+            <span className="simulasi-conference-timer-dot" />
+            <span className="simulasi-conference-timer-text">{formatTime(seconds)}</span>
+          </div>
+        </div>
+      </header>
+
+      {/* Main Stage (Full-bleed borderless display) */}
+      <div className="simulasi-conference-main-stage">
+        {mainView === "slide" ? (
+          <div className="simulasi-conference-slide-wrapper">
+            {slideError ? (
+              <div className="simulasi-conference-stage-msg">
+                <p>{slideError}</p>
+                {cheatSheet && <p className="simulasi-conference-fallback-notes">{cheatSheet}</p>}
+              </div>
+            ) : slideUrl ? (
+              <SlideViewer
+                url={slideUrl}
+                page={slidePage}
+                onPageChange={setSlidePage}
+                onNumPages={setTotalSlidePages}
+                hideNav={true}
+                tone="dark"
+              />
+            ) : slideLoading ? (
+              <div className="simulasi-conference-stage-msg">
+                <div className="simulasi-camera-spinner" />
+                <p>Memuat slide presentasi...</p>
+              </div>
+            ) : cheatSheet ? (
+              <div className="simulasi-conference-text-slide">
+                <div className="simulasi-conference-text-slide-inner">
+                  <span className="simulasi-conference-text-badge">Materi Presentasi</span>
+                  <p>{cheatSheet}</p>
+                </div>
+              </div>
+            ) : (
+              <div className="simulasi-conference-stage-msg">
+                <p>Slide siap dipresentasikan</p>
+              </div>
+            )}
+          </div>
+        ) : (
+          <div className="simulasi-conference-camera-wrapper">
+            {!isCamOff && stream ? (
+              <video
+                ref={mainVideoRef}
+                autoPlay
+                playsInline
+                muted
+                className="simulasi-conference-full-video"
+              />
+            ) : (
+              <div className="simulasi-conference-cam-off-placeholder">
+                <div className="simulasi-conference-avatar-circle">
+                  <span>👤</span>
+                </div>
+                <p>Kamera Dinonaktifkan</p>
+              </div>
+            )}
+          </div>
+        )}
+      </div>
+
+      {/* Draggable & Swappable PiP Box */}
+      <div
+        ref={pipRef}
+        className={`simulasi-conference-pip ${isDragging ? "is-dragging" : ""}`}
+        style={{
+          transform: `translate3d(${pipPos.x}px, ${pipPos.y}px, 0)`,
+        }}
+        onPointerDown={handlePointerDown}
+        onPointerMove={handlePointerMove}
+        onPointerUp={handlePointerUp}
+        onPointerCancel={handlePointerUp}
+        title="Ketuk untuk tukar tampilan, geser untuk memindahkan"
+      >
+        {mainView === "slide" ? (
+          // In slide main mode, PiP shows camera
+          <div className="simulasi-conference-pip-content">
+            {!isCamOff && stream ? (
+              <video
+                ref={pipVideoRef}
+                autoPlay
+                playsInline
+                muted
+                className="simulasi-conference-pip-video"
+              />
+            ) : (
+              <div className="simulasi-conference-pip-camoff">
+                <span>👤</span>
+              </div>
+            )}
+          </div>
+        ) : (
+          // In camera main mode, PiP shows slide
+          <div className="simulasi-conference-pip-content simulasi-conference-pip-slide">
+            {slideUrl ? (
+              <SlideViewer
+                url={slideUrl}
+                page={slidePage}
+                hideNav={true}
+                tone="dark"
+              />
+            ) : (
+              <div className="simulasi-conference-pip-notes">
+                <span>📄 Slide</span>
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* Swap indicator badge on PiP */}
+        <div className="simulasi-conference-pip-badge">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M7 16V4M7 4L3 8M7 4L11 8M17 8V20M17 20L21 16M17 20L13 16" />
+          </svg>
+        </div>
+      </div>
+
+      {/* Slide Navigation Controls Bar (Previous / Counter / Next) */}
+      <div className="simulasi-conference-slide-nav-bar">
+        <button
+          type="button"
+          className="simulasi-conference-nav-arrow"
+          onClick={() => setSlidePage((p) => Math.max(1, p - 1))}
+          disabled={atFirst || totalSlidePages <= 1}
+          aria-label="Slide sebelumnya"
+        >
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M15 18l-6-6 6-6" />
+          </svg>
+        </button>
+
+        <span className="simulasi-conference-nav-counter">
+          {slidePage} / {totalSlidePages || 1}
+        </span>
+
+        <button
+          type="button"
+          className="simulasi-conference-nav-arrow"
+          onClick={() => setSlidePage((p) => Math.min(totalSlidePages, p + 1))}
+          disabled={atLast || totalSlidePages <= 1}
+          aria-label="Slide berikutnya"
+        >
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M9 18l6-6-6-6" />
+          </svg>
+        </button>
+      </div>
+
+      {/* Bottom Conference Action Dock */}
+      <div className="simulasi-conference-bottom-dock">
+        {/* Mic Toggle Button */}
+        <button
+          type="button"
+          className={`simulasi-conf-dock-btn ${isMuted ? "is-off" : ""}`}
+          onClick={toggleMute}
+          title={isMuted ? "Nyalakan Mic" : "Matikan Mic"}
+        >
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z" />
+            <path d="M19 10v2a7 7 0 0 1-14 0v-2" />
+            <line x1="12" y1="19" x2="12" y2="22" />
+          </svg>
+          <span className="simulasi-conf-dock-label">{isMuted ? "Unmute" : "Mute"}</span>
+        </button>
+
+        {/* Cam Toggle Button */}
+        <button
+          type="button"
+          className={`simulasi-conf-dock-btn ${isCamOff ? "is-off" : ""}`}
+          onClick={toggleCam}
+          title={isCamOff ? "Nyalakan Kamera" : "Matikan Kamera"}
+        >
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M23 7l-7 5 7 5V7z" />
+            <rect x="1" y="5" width="15" height="14" rx="2" ry="2" />
+          </svg>
+          <span className="simulasi-conf-dock-label">{isCamOff ? "Cam Off" : "Cam On"}</span>
+        </button>
+
+        {/* Notes / Contekan Drawer Button */}
+        <button
+          type="button"
+          className={`simulasi-conf-dock-btn ${showNotesSheet ? "is-active" : ""}`}
+          onClick={() => setShowNotesSheet((v) => !v)}
+          title="Buka Catatan / Contekan"
+        >
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+            <polyline points="14 2 14 8 20 8" />
+            <line x1="16" y1="13" x2="8" y2="13" />
+            <line x1="16" y1="17" x2="8" y2="17" />
+            <polyline points="10 9 9 9 8 9" />
+          </svg>
+          <span className="simulasi-conf-dock-label">Notes</span>
+        </button>
+
+        {/* End Call / Stop Recording Button */}
+        <button
+          type="button"
+          className="simulasi-conf-dock-btn simulasi-conf-dock-btn--end"
+          onClick={onFinish}
+          title="Selesaikan Presentasi"
+        >
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M10.68 13.31a16 16 0 0 0 3.41 2.6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7 2 2 0 0 1 1.72 2v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.42 19.42 0 0 1-6-6 19.8 19.8 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91" />
+            <line x1="23" y1="1" x2="1" y2="23" />
+          </svg>
+          <span className="simulasi-conf-dock-label">Selesai</span>
+        </button>
+      </div>
+
+      {/* Notes / Contekan Slide-Up Bottom Sheet */}
+      {showNotesSheet && (
+        <div className="simulasi-conference-notes-backdrop" onClick={() => setShowNotesSheet(false)}>
+          <div className="simulasi-conference-notes-sheet" onClick={(e) => e.stopPropagation()}>
+            <div className="simulasi-conference-notes-header">
+              <div className="simulasi-conference-notes-handle" />
+              <div className="simulasi-conference-notes-title-row">
+                <span className="simulasi-conference-notes-title">📝 Contekan & Poin Materi</span>
+                <button
+                  type="button"
+                  className="simulasi-conference-notes-close"
+                  onClick={() => setShowNotesSheet(false)}
+                >
+                  ✕
+                </button>
+              </div>
+            </div>
+            <div className="simulasi-conference-notes-body">
+              {cheatSheet ? (
+                <p className="simulasi-conference-notes-text">{cheatSheet}</p>
+              ) : (
+                <p className="simulasi-conference-notes-empty">Belum ada catatan materi untuk sesi ini.</p>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Exit Confirmation Modal */}
+      {showExitModal && (
+        <LessonExitModal
+          title="Keluar dari Presentasi?"
+          desc="Rekaman presentasi tidak akan disimpan dan dianalisis jika kamu keluar sebelum selesai."
+          stayText="Lanjutkan Presentasi"
+          leaveText="Keluar Sesi"
+          onCancel={() => setShowExitModal(false)}
+          onConfirm={() => {
+            setShowExitModal(false);
+            if (onBack) onBack();
+          }}
+        />
+      )}
+    </div>
+  );
+}
+
 // ─── Recording step ─────────────────────────────────────────────────────────
 // `questions` non-empty = mode wawancara: satu rekaman berjalan terus, tapi
 // pertanyaan berganti satu per satu di layar (tanya-jawab bergantian), dan
@@ -875,15 +1362,8 @@ function RecordingStep({ scenario, cheatSheet, materialPdfPath, questions = [], 
   const [seconds, setSeconds] = useState(0);
   const [showCheatSheet, setShowCheatSheet] = useState(false);
   const [qIndex, setQIndex] = useState(0);
-  // Presentasi (kelas/lomba) only — split-screen camera+materi below replaces
-  // the overlay cheat-sheet other scenarios still use (see isPresentasi).
+  // Presentasi (kelas/lomba) uses modern Video Conference UI
   const isPresentasi = scenario?.kategori === "kelas" || scenario?.kategori === "lomba";
-  // "notes" = normal split view (camera + notes). Picking "slide" auto-enters
-  // a full-screen immersive presentation mode (see JSX below) — no separate
-  // manual expand step anymore.
-  const [materialView, setMaterialView] = useState("notes"); // "notes" | "slide"
-  const [slideUrl, setSlideUrl] = useState(null);
-  const [slideError, setSlideError] = useState("");
   const [analyserNode, setAnalyserNode] = useState(null);
   // null | "silent" | "incomplete" — see attemptFinish() below.
   const [gate, setGate] = useState(null);
@@ -961,9 +1441,6 @@ function RecordingStep({ scenario, cheatSheet, materialPdfPath, questions = [], 
       };
       tick();
     } catch {
-      // No AudioContext support in this browser — treat as "detected" so we
-      // never falsely block a real recording client-side. analyze-session's
-      // own transcript-length check is the authoritative backstop either way.
       detectedSpeechRef.current = true;
     }
 
@@ -972,24 +1449,6 @@ function RecordingStep({ scenario, cheatSheet, materialPdfPath, questions = [], 
       audioCtx?.close?.().catch(() => {});
     };
   }, [stream]);
-
-  // Lazy — only fetched once the presenter actually taps the Slide toggle,
-  // not on mount, since most of a session may be spent on Notes instead.
-  useEffect(() => {
-    if (!isPresentasi || materialView !== "slide" || !materialPdfPath || slideUrl) return undefined;
-    let active = true;
-    setSlideError("");
-    getMaterialSignedUrl(materialPdfPath)
-      .then((url) => {
-        if (active) setSlideUrl(url);
-      })
-      .catch(() => {
-        if (active) setSlideError("Gagal memuat slide. Coba lagi.");
-      });
-    return () => {
-      active = false;
-    };
-  }, [isPresentasi, materialView, materialPdfPath, slideUrl]);
 
   const startTimer = () => {
     timerRef.current = setInterval(() => {
@@ -1005,8 +1464,6 @@ function RecordingStep({ scenario, cheatSheet, materialPdfPath, questions = [], 
     if (!stream) return;
     chunksRef.current = [];
     detectedSpeechRef.current = false;
-    // analyze-session only wants audio, so record just the audio track even
-    // though the preview above shows the full video+audio stream.
     const audioOnlyStream = new MediaStream(stream.getAudioTracks());
     const mimeType = window.MediaRecorder?.isTypeSupported?.("audio/webm") ? "audio/webm" : "";
     const recorder = mimeType ? new MediaRecorder(audioOnlyStream, { mimeType }) : new MediaRecorder(audioOnlyStream);
@@ -1028,16 +1485,14 @@ function RecordingStep({ scenario, cheatSheet, materialPdfPath, questions = [], 
     startTimer();
   };
 
-  // For interview scenario: auto start recording on mount once stream is ready
+  // For interview & presentation: auto start recording on mount once stream is ready
   useEffect(() => {
-    if (scenario?.kategori === "interview" && stream && !isRecording && !gate) {
+    if ((scenario?.kategori === "interview" || isPresentasi) && stream && !isRecording && !gate) {
       startRecording();
     }
-  }, [scenario?.kategori, stream]);
+  }, [scenario?.kategori, isPresentasi, stream]);
 
-  // Gate before finalizing a recording: silence -> nothing to analyse at
-  // all; too short -> probably an accidental/rushed stop. Both PAUSE the
-  // recorder (not stop it) so "Lanjutkan" can resume the same take.
+  // Gate before finalizing a recording
   const attemptFinish = () => {
     const recorder = mediaRecorderRef.current;
     if (!recorder || recorder.state === "inactive") return;
@@ -1074,7 +1529,7 @@ function RecordingStep({ scenario, cheatSheet, materialPdfPath, questions = [], 
   const handleAbandon = () => {
     const recorder = mediaRecorderRef.current;
     if (recorder && recorder.state !== "inactive") {
-      recorder.onstop = null; // discard recording completely — do not fire onFinish / do not process
+      recorder.onstop = null; // discard recording completely
       recorder.stop();
     }
     if (timerRef.current) clearInterval(timerRef.current);
@@ -1088,7 +1543,7 @@ function RecordingStep({ scenario, cheatSheet, materialPdfPath, questions = [], 
   const handleGateRestart = () => {
     const recorder = mediaRecorderRef.current;
     if (recorder && recorder.state !== "inactive") {
-      recorder.onstop = null; // discard — don't fire the stale onFinish
+      recorder.onstop = null;
       recorder.stop();
     }
     if (isInterview) setQIndex(0);
@@ -1131,6 +1586,35 @@ function RecordingStep({ scenario, cheatSheet, materialPdfPath, questions = [], 
           stream={stream}
           camError={camError}
           analyserNode={analyserNode}
+        />
+      </div>
+    );
+  }
+
+  // Presentation Scenario UI branch (Video Conference style with borderless stage, draggable & swappable PiP facecam, slide navigation)
+  if (isPresentasi) {
+    return (
+      <div className="simulasi-conference-wrapper">
+        {gate && (
+          <RecordingGateModal
+            variant={gate}
+            secondsElapsed={seconds}
+            onResume={handleGateResume}
+            onRestart={handleGateRestart}
+            onAbandon={handleGateAbandon}
+          />
+        )}
+        <PresentationConferenceView
+          scenario={scenario}
+          cheatSheet={cheatSheet}
+          materialPdfPath={materialPdfPath}
+          stream={stream}
+          camError={camError}
+          seconds={seconds}
+          formatTime={formatTime}
+          isRecording={isRecording}
+          onFinish={handleToggle}
+          onBack={handleAbandon}
         />
       </div>
     );

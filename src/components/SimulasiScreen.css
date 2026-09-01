@@ -1884,3 +1884,528 @@
 .btn-simulasi-gate-ghost:hover {
   color: var(--color-text-primary, #243238);
 }
+
+/* ==========================================================================
+   Presentation Video Conference UI (Borderless Stage + Draggable PiP)
+   ========================================================================== */
+.simulasi-conference-wrapper {
+  width: 100%;
+  height: 100%;
+  position: relative;
+  overflow: hidden;
+  background-color: #06090E;
+}
+
+.simulasi-conference-screen {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  background-color: #06090E;
+  color: #FFFFFF;
+  position: relative;
+  overflow: hidden;
+  user-select: none;
+}
+
+/* Top Bar */
+.simulasi-conference-topbar {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 60px;
+  padding: 12px 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: linear-gradient(180deg, rgba(6, 9, 14, 0.85) 0%, rgba(6, 9, 14, 0) 100%);
+  z-index: 20;
+  box-sizing: border-box;
+  pointer-events: auto;
+}
+
+.simulasi-conference-topbar-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.simulasi-conference-back-btn {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.12);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  color: #FFFFFF;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: background 0.15s ease, transform 0.12s ease;
+}
+
+.simulasi-conference-back-btn:active {
+  transform: scale(0.92);
+}
+
+.simulasi-conference-title-group {
+  display: flex;
+  flex-direction: column;
+}
+
+.simulasi-conference-title {
+  font-family: var(--font-family-base, 'Space Grotesk', sans-serif);
+  font-size: 15px;
+  font-weight: 700;
+  color: #FFFFFF;
+  line-height: 1.2;
+}
+
+.simulasi-conference-sub {
+  font-family: var(--font-family-base, 'Space Grotesk', sans-serif);
+  font-size: 11px;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.55);
+}
+
+.simulasi-conference-topbar-right {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.simulasi-conference-timer-badge {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding: 0;
+  background: transparent;
+  border: none;
+}
+
+.simulasi-conference-timer-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background-color: #EF4444;
+  animation: simulasi-pulse-red 1.5s ease-in-out infinite;
+}
+
+.simulasi-conference-timer-text {
+  font-family: var(--font-family-base, 'Space Grotesk', sans-serif);
+  font-size: 14px;
+  font-weight: 700;
+  color: #FFFFFF;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.02em;
+}
+
+/* Main Stage (Borderless full-bleed stage) */
+.simulasi-conference-main-stage {
+  flex: 1;
+  width: 100%;
+  height: 100%;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #06090E;
+  overflow: hidden;
+  padding: 60px 0 110px 0;
+  box-sizing: border-box;
+}
+
+.simulasi-conference-slide-wrapper,
+.simulasi-conference-camera-wrapper {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+}
+
+.simulasi-conference-full-video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transform: scaleX(-1);
+  display: block;
+}
+
+.simulasi-conference-cam-off-placeholder {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  color: rgba(255, 255, 255, 0.6);
+  font-family: var(--font-family-base, 'Space Grotesk', sans-serif);
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.simulasi-conference-avatar-circle {
+  width: 72px;
+  height: 72px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 32px;
+}
+
+.simulasi-conference-stage-msg {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  color: rgba(255, 255, 255, 0.6);
+  font-family: var(--font-family-base, 'Space Grotesk', sans-serif);
+  font-size: 13px;
+  text-align: center;
+  padding: 20px;
+}
+
+.simulasi-conference-text-slide {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  box-sizing: border-box;
+}
+
+.simulasi-conference-text-slide-inner {
+  width: 100%;
+  max-width: 360px;
+  background: #111722;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 16px;
+  padding: 20px;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.simulasi-conference-text-badge {
+  align-self: flex-start;
+  padding: 4px 10px;
+  background: rgba(232, 117, 61, 0.18);
+  border-radius: 12px;
+  font-family: var(--font-family-base, 'Space Grotesk', sans-serif);
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--color-primary, #E8753D);
+}
+
+.simulasi-conference-text-slide-inner p {
+  font-family: var(--font-family-base, 'Space Grotesk', sans-serif);
+  font-size: 13px;
+  line-height: 1.6;
+  color: #E2E8F0;
+  margin: 0;
+  white-space: pre-wrap;
+}
+
+/* Picture-in-Picture (PiP) Window with Magnetic Edge Snapping */
+.simulasi-conference-pip {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 110px;
+  height: 150px;
+  border-radius: 14px;
+  background-color: #0E1522;
+  border: 1.5px solid rgba(255, 255, 255, 0.25);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6), 0 2px 8px rgba(0, 0, 0, 0.4);
+  overflow: hidden;
+  z-index: 25;
+  cursor: grab;
+  touch-action: none;
+  transition: transform 0.32s cubic-bezier(0.18, 0.9, 0.25, 1), box-shadow 0.15s ease, border-color 0.15s ease;
+}
+
+.simulasi-conference-pip.is-dragging {
+  cursor: grabbing;
+  border-color: var(--color-primary, #E8753D);
+  box-shadow: 0 14px 36px rgba(0, 0, 0, 0.85);
+  transition: none !important;
+}
+
+.simulasi-conference-pip-content {
+  width: 100%;
+  height: 100%;
+  position: relative;
+  background-color: #0B0F17;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.simulasi-conference-pip-video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transform: scaleX(-1);
+  display: block;
+}
+
+.simulasi-conference-pip-camoff {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  font-size: 28px;
+  background: #151C28;
+  color: rgba(255, 255, 255, 0.5);
+}
+
+.simulasi-conference-pip-slide {
+  padding: 4px;
+  box-sizing: border-box;
+}
+
+.simulasi-conference-pip-notes {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-family-base, 'Space Grotesk', sans-serif);
+  font-size: 11px;
+  font-weight: 700;
+  color: #CBD5E1;
+}
+
+.simulasi-conference-pip-badge {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: rgba(0, 0, 0, 0.6);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: #FFFFFF;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+}
+
+/* Slide Navigation Bar */
+.simulasi-conference-slide-nav-bar {
+  position: absolute;
+  bottom: 84px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 6px 14px;
+  background: rgba(15, 23, 42, 0.85);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 30px;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+  z-index: 20;
+}
+
+.simulasi-conference-nav-arrow {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.1);
+  border: none;
+  color: #FFFFFF;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: background 0.15s ease, transform 0.1s ease;
+}
+
+.simulasi-conference-nav-arrow:active:not(:disabled) {
+  transform: scale(0.92);
+  background: rgba(255, 255, 255, 0.2);
+}
+
+.simulasi-conference-nav-arrow:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+}
+
+.simulasi-conference-nav-counter {
+  font-family: var(--font-family-base, 'Space Grotesk', sans-serif);
+  font-size: 13px;
+  font-weight: 700;
+  color: #FFFFFF;
+  font-variant-numeric: tabular-nums;
+  min-width: 48px;
+  text-align: center;
+}
+
+/* Bottom Conference Dock */
+.simulasi-conference-bottom-dock {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 74px;
+  padding: 10px 20px 14px 20px;
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  justify-content: space-around;
+  background: linear-gradient(0deg, rgba(6, 9, 14, 0.95) 0%, rgba(6, 9, 14, 0.8) 70%, rgba(6, 9, 14, 0) 100%);
+  z-index: 20;
+}
+
+.simulasi-conf-dock-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+  background: none;
+  border: none;
+  color: rgba(255, 255, 255, 0.85);
+  cursor: pointer;
+  padding: 6px 12px;
+  border-radius: 12px;
+  transition: transform 0.12s ease, color 0.15s ease, background 0.15s ease;
+}
+
+.simulasi-conf-dock-btn:active {
+  transform: scale(0.94);
+}
+
+.simulasi-conf-dock-btn.is-off {
+  color: #EF4444;
+}
+
+.simulasi-conf-dock-btn.is-active {
+  color: var(--color-primary, #E8753D);
+  background: rgba(232, 117, 61, 0.12);
+}
+
+.simulasi-conf-dock-label {
+  font-family: var(--font-family-base, 'Space Grotesk', sans-serif);
+  font-size: 10px;
+  font-weight: 600;
+}
+
+.simulasi-conf-dock-btn--end {
+  background: #EF4444;
+  color: #FFFFFF;
+  border-radius: 24px;
+  padding: 8px 18px;
+  box-shadow: 0 4px 14px rgba(239, 68, 68, 0.4);
+}
+
+.simulasi-conf-dock-btn--end:hover {
+  filter: brightness(1.08);
+}
+
+.simulasi-conf-dock-btn--end:active {
+  transform: scale(0.94);
+  box-shadow: 0 2px 6px rgba(239, 68, 68, 0.3);
+}
+
+/* Notes Bottom Sheet */
+.simulasi-conference-notes-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.65);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  z-index: 100;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  animation: simulasi-fade-in 0.2s ease;
+}
+
+.simulasi-conference-notes-sheet {
+  width: 100%;
+  max-width: 440px;
+  max-height: 75vh;
+  background: #111722;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 24px 24px 0 0;
+  padding: 16px 20px 28px 20px;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  box-shadow: 0 -10px 40px rgba(0, 0, 0, 0.6);
+  animation: simulasi-slide-up 0.25s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+.simulasi-conference-notes-handle {
+  width: 36px;
+  height: 4px;
+  border-radius: 2px;
+  background: rgba(255, 255, 255, 0.2);
+  margin: 0 auto;
+}
+
+.simulasi-conference-notes-title-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.simulasi-conference-notes-title {
+  font-family: var(--font-family-base, 'Space Grotesk', sans-serif);
+  font-size: 15px;
+  font-weight: 700;
+  color: #FFFFFF;
+}
+
+.simulasi-conference-notes-close {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.1);
+  border: none;
+  color: #FFFFFF;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  font-size: 12px;
+}
+
+.simulasi-conference-notes-body {
+  overflow-y: auto;
+  max-height: 55vh;
+  padding-right: 4px;
+}
+
+.simulasi-conference-notes-text {
+  font-family: var(--font-family-base, 'Space Grotesk', sans-serif);
+  font-size: 13px;
+  font-weight: 500;
+  line-height: 1.6;
+  color: #CBD5E1;
+  margin: 0;
+  white-space: pre-wrap;
+}
+
+.simulasi-conference-notes-empty {
+  font-family: var(--font-family-base, 'Space Grotesk', sans-serif);
+  font-size: 13px;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.4);
+  text-align: center;
+  margin: 20px 0;
+}

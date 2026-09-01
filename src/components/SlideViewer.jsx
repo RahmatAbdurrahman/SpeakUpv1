@@ -18,7 +18,16 @@ import "./SlideViewer.css";
  * width, which is the only thing that meaningfully raises the scale on a
  * portrait screen.
  */
-export default function SlideViewer({ url, expanded = false, tone = "light" }) {
+export default function SlideViewer({
+  url,
+  expanded = false,
+  rotation = 0,
+  page: externalPage,
+  onPageChange,
+  onNumPages,
+  hideNav = false,
+  tone = "dark",
+}) {
   const canvasRef = useRef(null);
   const boxRef = useRef(null);
   const docRef = useRef(null);
@@ -30,12 +39,16 @@ export default function SlideViewer({ url, expanded = false, tone = "light" }) {
   // flight on the same canvas — keep the task so we can cancel it first.
   const renderTaskRef = useRef(null);
 
-  const [numPages, setNumPages] = useState(0);
-  const [page, setPage] = useState(1);
+  const [internalNumPages, setInternalNumPages] = useState(0);
+  const [internalPage, setInternalPage] = useState(1);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   // Bumped on resize/expand so the render effect recomputes the fit scale.
   const [fitTick, setFitTick] = useState(0);
+
+  const isControlled = typeof externalPage === "number";
+  const activePage = isControlled ? externalPage : internalPage;
+  const numPages = internalNumPages;
 
   // ── Load the document once per URL ───────────────────────────────────
   useEffect(() => {
@@ -43,8 +56,8 @@ export default function SlideViewer({ url, expanded = false, tone = "light" }) {
     let active = true;
     setLoading(true);
     setError("");
-    setNumPages(0);
-    setPage(1);
+    setInternalNumPages(0);
+    if (!isControlled) setInternalPage(1);
 
     (async () => {
       try {
@@ -62,7 +75,8 @@ export default function SlideViewer({ url, expanded = false, tone = "light" }) {
           return;
         }
         docRef.current = doc;
-        setNumPages(doc.numPages);
+        setInternalNumPages(doc.numPages);
+        if (onNumPages) onNumPages(doc.numPages);
         setLoading(false);
       } catch {
         if (active) {
@@ -102,11 +116,12 @@ export default function SlideViewer({ url, expanded = false, tone = "light" }) {
 
     (async () => {
       try {
-        const pdfPage = await doc.getPage(page);
+        const currentPageNum = Math.max(1, Math.min(numPages, activePage || 1));
+        const pdfPage = await doc.getPage(currentPageNum);
         if (cancelled) return;
 
-        const rotation = expanded ? 90 : 0;
-        const base = pdfPage.getViewport({ scale: 1, rotation });
+        const rot = rotation || 0;
+        const base = pdfPage.getViewport({ scale: 1, rotation: rot });
         const boxW = box.clientWidth;
         const boxH = box.clientHeight;
         if (boxW === 0 || boxH === 0) return;
@@ -114,7 +129,7 @@ export default function SlideViewer({ url, expanded = false, tone = "light" }) {
         // Contain: whole page always visible, never cropped — the point of
         // Prev/Next is that nothing needs scrolling to be reachable.
         const scale = Math.min(boxW / base.width, boxH / base.height);
-        const viewport = pdfPage.getViewport({ scale, rotation });
+        const viewport = pdfPage.getViewport({ scale, rotation: rot });
 
         // Rasterise at device pixel ratio so text stays sharp on retina.
         const dpr = Math.min(window.devicePixelRatio || 1, 2);
@@ -142,10 +157,16 @@ export default function SlideViewer({ url, expanded = false, tone = "light" }) {
     return () => {
       cancelled = true;
     };
-  }, [page, numPages, expanded, fitTick]);
+  }, [activePage, numPages, rotation, fitTick]);
 
-  const atFirst = page <= 1;
-  const atLast = page >= numPages;
+  const handlePageChange = (newPage) => {
+    const clamped = Math.max(1, Math.min(numPages, newPage));
+    if (!isControlled) setInternalPage(clamped);
+    if (onPageChange) onPageChange(clamped);
+  };
+
+  const atFirst = activePage <= 1;
+  const atLast = activePage >= numPages;
 
   return (
     <div className={`slideview slideview--${tone}`}>
@@ -155,24 +176,24 @@ export default function SlideViewer({ url, expanded = false, tone = "light" }) {
         <canvas ref={canvasRef} className="slideview-canvas" style={error || loading ? { display: "none" } : undefined} />
       </div>
 
-      {numPages > 0 && !error && (
+      {!hideNav && numPages > 0 && !error && (
         <div className="slideview-nav">
           <button
             type="button"
             className="slideview-nav-btn"
-            onClick={() => setPage((p) => Math.max(1, p - 1))}
+            onClick={() => handlePageChange(activePage - 1)}
             disabled={atFirst}
             aria-label="Halaman sebelumnya"
           >
             ‹
           </button>
           <span className="slideview-nav-count">
-            {page} / {numPages}
+            {activePage} / {numPages}
           </span>
           <button
             type="button"
             className="slideview-nav-btn"
-            onClick={() => setPage((p) => Math.min(numPages, p + 1))}
+            onClick={() => handlePageChange(activePage + 1)}
             disabled={atLast}
             aria-label="Halaman berikutnya"
           >
