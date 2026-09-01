@@ -872,6 +872,9 @@ function RecordingStep({ scenario, cheatSheet, materialPdfPath, questions = [], 
   const [stream, setStream] = useState(null);
   const [camError, setCamError] = useState(null);
   const [isRecording, setIsRecording] = useState(false);
+  const [seconds, setSeconds] = useState(0);
+  const [showCheatSheet, setShowCheatSheet] = useState(false);
+  const [qIndex, setQIndex] = useState(0);
   // Presentasi (kelas/lomba) only — split-screen camera+materi below replaces
   // the overlay cheat-sheet other scenarios still use (see isPresentasi).
   const isPresentasi = scenario?.kategori === "kelas" || scenario?.kategori === "lomba";
