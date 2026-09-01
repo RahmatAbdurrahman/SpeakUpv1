@@ -1,0 +1,165 @@
+/* Layar tunggu analisa dengan progres bertahap.
+   Palet & tipografi mengikuti .simulasi-processing-screen yang digantikannya. */
+.analysisprog-screen {
+  width: 100%;
+  height: 100%;
+  background-color: var(--color-bg-app, #FAF8F3);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  padding: 0 32px;
+  text-align: center;
+  box-sizing: border-box;
+}
+
+.analysisprog-lottie-wrap {
+  width: 90px;
+  height: 90px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.analysisprog-lottie {
+  width: 100%;
+  height: 100%;
+}
+
+.analysisprog-title {
+  font-family: var(--font-family-base, 'Space Grotesk', sans-serif);
+  font-size: 17px;
+  font-weight: 700;
+  color: var(--color-text-primary, #243238);
+  margin: 0;
+}
+
+/* ── Bar ─────────────────────────────────────────────────────────────── */
+.analysisprog-bar-wrap {
+  width: 100%;
+  max-width: 280px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 2px;
+}
+
+.analysisprog-bar-track {
+  flex: 1;
+  height: 8px;
+  border-radius: 20px;
+  background: rgba(36, 169, 129, 0.16);
+  overflow: hidden;
+}
+
+.analysisprog-bar-fill {
+  height: 100%;
+  border-radius: 20px;
+  background: var(--color-secondary, #24A981);
+  /* transition mengikuti interval 110ms di JS supaya geraknya mulus,
+     bukan meloncat tiap tick */
+  transition: width 0.16s linear;
+}
+
+.analysisprog-percent {
+  font-family: var(--font-family-base, 'Space Grotesk', sans-serif);
+  font-size: 12.5px;
+  font-weight: 700;
+  color: var(--color-secondary-dark, #17674F);
+  min-width: 34px;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+.analysisprog-stage {
+  font-family: var(--font-family-base, 'Space Grotesk', sans-serif);
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--color-text-primary, #243238);
+  margin: 0;
+}
+
+/* ── Daftar tahap ────────────────────────────────────────────────────── */
+.analysisprog-steps {
+  list-style: none;
+  margin: 6px 0 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  width: 100%;
+  max-width: 280px;
+}
+
+.analysisprog-step {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  text-align: left;
+  opacity: 0.4;
+  transition: opacity 0.25s ease;
+}
+.analysisprog-step.aktif,
+.analysisprog-step.selesai {
+  opacity: 1;
+}
+
+.analysisprog-step-dot {
+  width: 18px;
+  height: 18px;
+  flex-shrink: 0;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-family-base, 'Space Grotesk', sans-serif);
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--color-text-caption, #8199A3);
+  background: rgba(129, 153, 163, 0.18);
+}
+.analysisprog-step.aktif .analysisprog-step-dot {
+  background: var(--color-secondary, #24A981);
+  color: #FFFFFF;
+}
+.analysisprog-step.selesai .analysisprog-step-dot {
+  background: rgba(36, 169, 129, 0.22);
+  color: var(--color-secondary-dark, #17674F);
+}
+
+.analysisprog-step-label {
+  font-family: var(--font-family-base, 'Space Grotesk', sans-serif);
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--color-text-primary, #243238);
+}
+.analysisprog-step.aktif .analysisprog-step-label {
+  font-weight: 700;
+}
+
+/* Varian gelap untuk Live Presentation (LiveRoomScreen) */
+.analysisprog-screen--dark {
+  background-color: #141414;
+}
+.analysisprog-screen--dark .analysisprog-title,
+.analysisprog-screen--dark .analysisprog-stage,
+.analysisprog-screen--dark .analysisprog-step-label {
+  color: #F1F5F9;
+}
+.analysisprog-screen--dark .analysisprog-bar-track {
+  background: rgba(255, 255, 255, 0.12);
+}
+.analysisprog-screen--dark .analysisprog-percent {
+  color: #4ADE80;
+}
+.analysisprog-screen--dark .analysisprog-bar-fill {
+  background: #15B392;
+}
+.analysisprog-screen--dark .analysisprog-step-dot {
+  background: rgba(255, 255, 255, 0.14);
+  color: #94A3B8;
+}
+.analysisprog-screen--dark .analysisprog-step.aktif .analysisprog-step-dot {
+  background: #15B392;
+  color: #FFFFFF;
+}

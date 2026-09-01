@@ -311,7 +311,14 @@ export async function uploadSessionAudio(userId, sessionId, blob) {
   return path;
 }
 
-export async function runAnalysis({ sessionId, audioPath, durationSeconds }) {
+/**
+ * `onStage` dipanggil di batas-batas yang BENAR-BENAR teramati dari client —
+ * tepat sebelum tiap edge function dipanggil, dan setelah keduanya selesai.
+ * AnalysisProgress memakai ini sebagai titik jangkar yang jujur; gerak
+ * persentase di antaranya cuma perkiraan (lihat komentar di komponen itu).
+ */
+export async function runAnalysis({ sessionId, audioPath, durationSeconds, onStage }) {
+  onStage?.("transcribing");
   await invokeFunction("analyze-session", {
     session_id: sessionId,
     audio_storage_path: audioPath,
@@ -325,7 +332,9 @@ export async function runAnalysis({ sessionId, audioPath, durationSeconds }) {
     duration_recorded_seconds: durationSeconds ?? null,
   });
 
+  onStage?.("feedback");
   await invokeFunction("generate-feedback", { session_id: sessionId });
+  onStage?.("finishing");
 }
 
 export async function fetchSessionResults(sessionId) {

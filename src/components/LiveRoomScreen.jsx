@@ -32,7 +32,7 @@ import {
   Track,
 } from "../lib/livekit";
 import PeerRatingModal from "./PeerRatingModal";
-import SessionLoadingScreen from "./SessionLoadingScreen";
+import AnalysisProgress from "./AnalysisProgress";
 import SlideViewer from "./SlideViewer";
 
 const AVATAR_COLORS = ["#E0F2FE:#0369A1", "#FEF3C7:#B45309", "#DCFCE7:#15803D", "#FCE7F3:#BE185D"];
@@ -110,6 +110,7 @@ export default function LiveRoomScreen({ roomData, onLeaveRoom, onSessionEnded }
   const [livePhase, setLivePhase] = useState("presenting"); // "presenting" | "qna"
   const [finishing, setFinishing] = useState(false);
   const [finishError, setFinishError] = useState("");
+  const [analysisStage, setAnalysisStage] = useState("uploading");
   const [realViewerCount, setRealViewerCount] = useState(0);
   const recStreamRef = useRef(null);
   const recorderRef = useRef(null);
@@ -166,6 +167,7 @@ export default function LiveRoomScreen({ roomData, onLeaveRoom, onSessionEnded }
   const handleFinishLivePresentation = async () => {
     setFinishing(true);
     setFinishError("");
+    setAnalysisStage("uploading");
     try {
       if (roomData?.roomId) await endLiveRoom(roomData.roomId).catch(() => {});
       roomRef.current?.disconnect();
@@ -184,10 +186,16 @@ export default function LiveRoomScreen({ roomData, onLeaveRoom, onSessionEnded }
 
       const audioPath = await uploadSessionAudio(user.id, roomData.sessionId, recorded.blob);
       await updateSessionAudio(roomData.sessionId, audioPath);
-      await runAnalysis({ sessionId: roomData.sessionId, audioPath, durationSeconds: recorded.durationSeconds });
+      await runAnalysis({
+        sessionId: roomData.sessionId,
+        audioPath,
+        durationSeconds: recorded.durationSeconds,
+        onStage: setAnalysisStage,
+      });
       const results = await fetchSessionResults(roomData.sessionId);
       await markSimulationCompleted(roomData.simulationId);
 
+      setAnalysisStage("done");
       onSessionEnded?.({ sessionId: roomData.sessionId, results });
     } catch (err) {
       setFinishError(friendlySimulasiError(err));
@@ -556,7 +564,7 @@ export default function LiveRoomScreen({ roomData, onLeaveRoom, onSessionEnded }
   };
 
   if (finishing) {
-    return <SessionLoadingScreen text="Menganalisis presentasimu..." />;
+    return <AnalysisProgress stage={analysisStage} title="Menganalisis presentasimu..." tone="dark" />;
   }
 
   // Broadcaster's phase CTA — advances to Q&A, or (during Q&A) finishes the

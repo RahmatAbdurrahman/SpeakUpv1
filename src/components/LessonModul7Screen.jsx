@@ -2,6 +2,7 @@ import React, { useState, useRef, useEffect } from "react";
 import "./LessonModul7Screen.css";
 import LessonExitModal from "./LessonExitModal";
 import LessonAffirmation from "./LessonAffirmation";
+import { AnalysisProgressBar } from "./AnalysisProgress";
 import { useAssetPreloader, useGainXpPreloader, getPreloadedVideoSrc } from "../lib/assetPreloader";
 import { useUserProgress } from "../context/UserProgressContext";
 import { playXpTickSound, playXpCompleteSound, playGainXpIntroSound, playChallengePassedSound, playBreathingStartSound, playLessonEnterPortalSound } from "../lib/soundEffects";
@@ -1456,9 +1457,9 @@ function PracticeSuccess({ onNext, onBack, direction = "forward" }) {
 }
 
 // ─── Shown while analyze-session + generate-feedback are running for real ──
-function AnalyzingScreen() {
+function AnalyzingScreen({ stage = "uploading" }) {
   return (
-    <div className="modul7-lesson-page modul7-dark-page modul7-analyzing-page" data-name="Practice-Menganalisis">
+    <div className="modul7-lesson-page modul7-dark-page modul7-analyzing-page analysisprog-screen--dark" data-name="Practice-Menganalisis">
       <div className="modul7-analyzing-lottie-wrap">
         <DotLottieReact
           src={animaBotLottie}
@@ -1468,9 +1469,8 @@ function AnalyzingScreen() {
         />
       </div>
       <p className="modul7-analyzing-title">Menganalisis rekamanmu...</p>
-      <p className="modul7-analyzing-sub">
-        AI kami lagi dengerin jawabanmu, biasanya cuma beberapa detik. Jangan tutup halaman ini.
-      </p>
+      <AnalysisProgressBar stage={stage} />
+      <p className="modul7-analyzing-sub">Jangan tutup halaman ini.</p>
     </div>
   );
 }
@@ -1731,6 +1731,7 @@ export default function LessonModul7Screen({ onBack, onFinish }) {
   const [initialAffirmationDone, setInitialAffirmationDone] = useState(false);
   const [analysisResult, setAnalysisResult] = useState(null);
   const [analysisError, setAnalysisError] = useState("");
+  const [analysisStage, setAnalysisStage] = useState("uploading");
 
   // Asset preloading: ensure >= 50% assets are ready before proceeding
   const { isThresholdMet } = useAssetPreloader(MODUL7_ASSETS, 0.5);
@@ -1813,6 +1814,7 @@ export default function LessonModul7Screen({ onBack, onFinish }) {
       return;
     }
     setAnalysisError("");
+    setAnalysisStage("uploading");
     setStep("analyzing");
     try {
       const {
@@ -1829,10 +1831,11 @@ export default function LessonModul7Screen({ onBack, onFinish }) {
       await createSessionRow({ id: sessionId, simulationId: simulation.id });
       const audioPath = await uploadSessionAudio(user.id, sessionId, recorded.blob);
       await updateSessionAudio(sessionId, audioPath);
-      await runAnalysis({ sessionId, audioPath, durationSeconds: recorded.durationSeconds });
+      await runAnalysis({ sessionId, audioPath, durationSeconds: recorded.durationSeconds, onStage: setAnalysisStage });
       const data = await fetchSessionResults(sessionId);
       await markSimulationCompleted(simulation.id);
 
+      setAnalysisStage("done");
       setAnalysisResult(mapSessionResultToAnalysis(data));
       setStep((curr) => (curr === "analyzing" ? "analysis" : curr));
     } catch (err) {
@@ -1918,7 +1921,7 @@ export default function LessonModul7Screen({ onBack, onFinish }) {
           <PracticeAnswer step={16} questionIndex={1} onNext={goNext} onBack={handleRequestExit} direction={direction} />
         )}
         {step === 17 && <PracticeSuccess onNext={goNext} onBack={handleRequestExit} direction={direction} />}
-        {step === "analyzing" && <AnalyzingScreen />}
+        {step === "analyzing" && <AnalyzingScreen stage={analysisStage} />}
         {step === "analysis-error" && (
           <AnalysisErrorScreen
             message={analysisError}

@@ -30,6 +30,7 @@ import { playXpTickSound, playXpCompleteSound, playGainXpIntroSound, playScoreRe
 import { DotLottieReact } from "@lottiefiles/dotlottie-react";
 import animaBotLottie from "../assets/lotties/AnimaBot.lottie";
 import SessionLoadingScreen from "./SessionLoadingScreen";
+import AnalysisProgress from "./AnalysisProgress";
 import SlideViewer from "./SlideViewer";
 import TranscriptCard from "./TranscriptCard";
 import LessonExitModal from "./LessonExitModal";
@@ -2316,6 +2317,9 @@ export default function SimulasiScreen({ onNavigateHome, onNavigateSosial, onNav
   const [questions, setQuestions] = useState([]);
   const [questionsLoading, setQuestionsLoading] = useState(false);
   const [results, setResults] = useState(null);
+  // Tahap analisa untuk AnalysisProgress — diisi dari batas-batas nyata di
+  // handleRecordingFinished + callback onStage runAnalysis.
+  const [analysisStage, setAnalysisStage] = useState("uploading");
   const { xp, addXp, refreshProgress, isInitialized } = useUserProgress();
 
   const resetToPicker = () => {
@@ -2440,6 +2444,7 @@ export default function SimulasiScreen({ onNavigateHome, onNavigateSosial, onNav
 
   const handleRecordingFinished = async (audioBlob, durationSeconds) => {
     setStep("processing");
+    setAnalysisStage("uploading");
     try {
       const {
         data: { user },
@@ -2449,11 +2454,12 @@ export default function SimulasiScreen({ onNavigateHome, onNavigateSosial, onNav
 
       const audioPath = await uploadSessionAudio(user.id, sessionId, audioBlob);
       await updateSessionAudio(sessionId, audioPath);
-      await runAnalysis({ sessionId, audioPath, durationSeconds });
+      await runAnalysis({ sessionId, audioPath, durationSeconds, onStage: setAnalysisStage });
       const data = await fetchSessionResults(sessionId);
       await markSimulationCompleted(simulationId);
       refreshProgress();
 
+      setAnalysisStage("done");
       setResults(data);
       setStep((curr) => (curr === "processing" ? "results" : curr));
     } catch (err) {
@@ -2556,22 +2562,7 @@ export default function SimulasiScreen({ onNavigateHome, onNavigateSosial, onNav
   }
 
   if (step === "processing") {
-    return (
-      <div className="simulasi-processing-screen">
-        <div className="simulasi-processing-lottie-wrap">
-          <DotLottieReact
-            src={animaBotLottie}
-            loop
-            autoplay
-            className="simulasi-processing-lottie"
-          />
-        </div>
-        <p className="simulasi-processing-title">Menganalisis rekamanmu...</p>
-        <p className="simulasi-processing-sub">
-          AI kami lagi dengerin cara kamu ngomong. Ini butuh beberapa detik.
-        </p>
-      </div>
-    );
+    return <AnalysisProgress stage={analysisStage} title="Menganalisis rekamanmu..." />;
   }
 
   if (step === "results" && results) {
