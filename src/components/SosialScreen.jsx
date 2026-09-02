@@ -7,6 +7,7 @@ import iconGroup from "../assets/pages_assets/practice/icon_group.svg";
 import imgLive from "../assets/pages_assets/sosial/Image-Live.png";
 import imgMatchmakingDuet from "../assets/pages_assets/sosial/Image-Card-MatchmakingDuet.png";
 import cardBgDecor from "../assets/pages_assets/home/Card-bg-decor.svg";
+import iconCamcorder from "../assets/icons/Camcorder.svg";
 import { supabase } from "../lib/supabaseClient";
 import {
   fetchLeaderboard,
@@ -211,29 +212,6 @@ export default function SosialScreen({ onNavigateHome, onNavigateSimulasi, onNav
       <div className="sosial-scroll-body">
         {errorMessage && <p className="sosial-error-banner">{errorMessage}</p>}
 
-        {/* ── Match Partner Card ─────────────────────────────────── */}
-        <section className="sosial-section">
-          <div className="sosial-match-card">
-            {/* Left side: Transparent Character Illustration */}
-            <div className="sosial-match-illus-side">
-              <img src={imgMatchmakingDuet} alt="Cari Partner Latihan" className="sosial-match-duet-img" />
-            </div>
-
-            {/* Right side: Content */}
-            <div className="sosial-match-content-side">
-              <span className="sosial-match-badge-orange">MATCHMAKING DUET</span>
-              <h3 className="sosial-match-title">Cari Partner Latihan</h3>
-              <p className="sosial-match-desc">
-                Dipasangkan otomatis dengan pengguna lain untuk latihan bareng & saling beri masukan secara live.
-              </p>
-
-              <button type="button" className="btn-sosial-match" onClick={handleFindPartner}>
-                Cari Partner Sekarang
-              </button>
-            </div>
-          </div>
-        </section>
-
         {/* ── Live Sekarang Section ──────────────────────────────── */}
         <section className="sosial-section">
           <div className="sosial-section-header">
@@ -244,7 +222,8 @@ export default function SosialScreen({ onNavigateHome, onNavigateSimulasi, onNav
               )}
             </div>
             <button type="button" className="btn-sosial-create-live" onClick={handleCreateLive}>
-              ➕ Mulai Live
+              <img src={iconCamcorder} alt="" className="btn-sosial-camcorder-icon" />
+              <span>Mulai Live</span>
             </button>
           </div>
 

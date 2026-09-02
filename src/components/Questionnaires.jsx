@@ -298,12 +298,31 @@ export default function Questionnaires({
   const currentQuestion = questions[currentStepIndex];
   const isFirstStep = currentStepIndex === 0;
   const isLastStep = currentStepIndex === totalSteps - 1;
-
-  // Generic answer setter
   const setAnswer = (qId, val) =>
     setAnswers((prev) => ({ ...prev, [qId]: val }));
 
+  const currentAnswer = answers[currentQuestion?.id];
+  const isAnswerValid = (() => {
+    if (!currentQuestion) return false;
+    if (currentQuestion.type === "tags_multi") {
+      return Array.isArray(currentAnswer) && currentAnswer.length > 0;
+    }
+    if (currentQuestion.type === "radio") {
+      return typeof currentAnswer === "string" && currentAnswer.trim().length > 0;
+    }
+    if (
+      currentQuestion.type === "slider" ||
+      currentQuestion.type === "scale" ||
+      currentQuestion.type === "centered_slider" ||
+      currentQuestion.type === "scale_boxes"
+    ) {
+      return typeof currentAnswer === "number" && !isNaN(currentAnswer);
+    }
+    return currentAnswer !== undefined && currentAnswer !== null && currentAnswer !== "";
+  })();
+
   const handleNext = () => {
+    if (!isAnswerValid) return;
     setDirection("forward");
     if (isLastStep) {
       if (onFinish) onFinish(answers);
@@ -425,6 +444,7 @@ export default function Questionnaires({
             type="button"
             className="btn-questionnaire-submit"
             onClick={handleNext}
+            disabled={!isAnswerValid}
             data-node-id="207:3175"
           >
             {isLastStep ? "Selesai" : "Lanjut"}

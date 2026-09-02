@@ -190,8 +190,18 @@ function App() {
     setCurrentScreen("viewer-feedback");
   };
 
-  const handleOpenSessionDetail = (session) => {
-    setSelectedHistorySession(session);
+  const handleOpenSessionDetail = (sessionOrId) => {
+    if (typeof sessionOrId === "string") {
+      setSelectedHistorySession({ sessionId: sessionOrId });
+    } else if (sessionOrId) {
+      setSelectedHistorySession({
+        sessionId: sessionOrId.sessionId || sessionOrId.id,
+        kategori: sessionOrId.kategori,
+        date: sessionOrId.date || sessionOrId.started_at,
+        isLive: Boolean(sessionOrId.isLive),
+        ...sessionOrId,
+      });
+    }
     setCurrentScreen("session-detail");
   };
 
@@ -297,10 +307,10 @@ function App() {
 
         {currentScreen === "session-detail" && selectedHistorySession && (
           <SessionDetailScreen
-            sessionId={selectedHistorySession.sessionId}
+            sessionId={selectedHistorySession.sessionId || selectedHistorySession.id}
             kategori={selectedHistorySession.kategori}
-            date={selectedHistorySession.date}
-            isLive={selectedHistorySession.isLive}
+            date={selectedHistorySession.date || selectedHistorySession.started_at}
+            isLive={Boolean(selectedHistorySession.isLive)}
             onBack={() => {
               setSelectedHistorySession(null);
               setCurrentScreen("profile");

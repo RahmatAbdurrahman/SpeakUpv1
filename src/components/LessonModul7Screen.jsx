@@ -405,11 +405,30 @@ function useSpeechCapture(active) {
 // mounted recording screen underneath rather than replacing it, so
 // "Lanjutkan" is just closing this overlay — the countdown/mic never
 // stopped, nothing to resume from a saved state. ─────────────────────────
-function PracticeIncompleteGate({ elapsedSeconds, onResume, onRestart, onSkip }) {
+function PracticeIncompleteGate({
+  elapsedSeconds,
+  questionIndex,
+  isLastQuestion,
+  onResume,
+  onRestart,
+  onSkip,
+}) {
+  let title = "Sesi kamu belum selesai";
+  let skipLabel = "Langsung ke Sesi Berikutnya";
+
+  if (questionIndex !== undefined) {
+    title = "Pertanyaan kamu belum selesai";
+    if (isLastQuestion || questionIndex > 0) {
+      skipLabel = "Akhiri sesi tanya jawab";
+    } else {
+      skipLabel = "Langsung ke Pertanyaan Berikutnya";
+    }
+  }
+
   return (
     <div className="modul7-gate-backdrop">
       <div className="modul7-gate-sheet">
-        <h2 className="modul7-gate-title">Sesi kamu belum selesai</h2>
+        <h2 className="modul7-gate-title">{title}</h2>
         <p className="modul7-gate-desc">
           Baru {elapsedSeconds} detik ngomong — hasil analisisnya bisa kurang akurat kalau dipotong sekarang. Mau gimana?
         </p>
@@ -421,7 +440,7 @@ function PracticeIncompleteGate({ elapsedSeconds, onResume, onRestart, onSkip })
             Ulangi dari Awal
           </button>
           <button type="button" className="btn-modul7-gate-ghost" onClick={onSkip}>
-            Langsung ke Sesi Berikutnya
+            {skipLabel}
           </button>
         </div>
       </div>
@@ -1373,6 +1392,8 @@ function PracticeAnswerRecording({ step, questionIndex, onDone, onRestart, onBac
       {gate === "incomplete" && (
         <PracticeIncompleteGate
           elapsedSeconds={60 - remaining}
+          questionIndex={questionIndex}
+          isLastQuestion={questionIndex === PRACTICE_QUESTIONS.length - 1}
           onResume={() => setGate(null)}
           onRestart={onRestart}
           onSkip={() => onDone(true)}

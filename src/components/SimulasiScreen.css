@@ -134,9 +134,9 @@
   width: 100%;
   max-width: 366px;
   height: 46px;
-  background-color: var(--color-primary, #E8753D);
+  background-color: var(--color-primary, #24A981);
   color: #FFFFFF;
-  border: 1px solid #8B4827;
+  border: 1px solid var(--color-primary-dark, #17674F);
   border-radius: var(--buttons, 100px);
   font-family: var(--font-family-base, 'Space Grotesk', sans-serif);
   font-size: 14px;
@@ -145,7 +145,7 @@
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  box-shadow: 0px 4px 0px 0px #8B4827;
+  box-shadow: 0px 4px 0px 0px var(--color-primary-dark, #17674F);
   pointer-events: auto;
   user-select: none;
   -webkit-tap-highlight-color: transparent;
@@ -166,7 +166,7 @@
 
 .simulasi-start-btn:active {
   transform: translateY(2px);
-  box-shadow: 0px 2px 0px 0px #8B4827;
+  box-shadow: 0px 2px 0px 0px var(--color-primary-dark, #17674F);
 }
 
 @keyframes circleToPillExpand {
@@ -813,10 +813,10 @@
 }
 
 .btn--start-answering {
-  background-color: var(--color-primary, #E8753D);
+  background-color: var(--color-primary, #24A981);
   color: #FFFFFF;
-  border: 1px solid #8B4827;
-  box-shadow: 0 4px 0 0 #8B4827, 0 6px 16px rgba(232, 117, 61, 0.28);
+  border: 1px solid var(--color-primary-dark, #17674F);
+  box-shadow: 0 4px 0 0 #17674F, 0 6px 16px rgba(36, 169, 129, 0.28);
 }
 
 .btn--start-answering:hover {
@@ -825,7 +825,7 @@
 
 .btn--start-answering:active {
   transform: translateY(2px);
-  box-shadow: 0 2px 0 0 #8B4827;
+  box-shadow: 0 2px 0 0 #17674F;
 }
 
 .btn--finish-answering {
@@ -1459,10 +1459,10 @@
   width: 100%;
   max-width: 366px;
   height: 46px;
-  background-color: var(--color-primary, #E8753D);
-  border: 1px solid #8B4827;
+  background-color: var(--color-primary, #24A981);
+  border: 1px solid var(--color-primary-dark, #17674F);
   border-radius: 34px;
-  box-shadow: 0px 4px 0px 0px #8B4827;
+  box-shadow: 0px 4px 0px 0px var(--color-primary-dark, #17674F);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -1485,10 +1485,14 @@
 }
 .btn-simulasi-lanjut:active {
   transform: translateY(2px);
-  box-shadow: 0px 2px 0px 0px #8B4827;
+  box-shadow: 0px 2px 0px 0px var(--color-primary-dark, #17674F);
 }
 .btn-simulasi-lanjut:disabled {
-  opacity: 0.6;
+  background-color: #8FD8C4;
+  border-color: #72C9B3;
+  box-shadow: 0px 4px 0px 0px #72C9B3;
+  color: #FFFFFF;
+  opacity: 1;
   cursor: not-allowed;
   transform: none;
 }
@@ -1610,21 +1614,67 @@
    Upload step & manual notes fallback
    ========================================================================== */
 .simulasi-upload-screen {
+  position: relative;
   width: 100%;
   height: 100%;
   background-color: var(--color-bg-app, #FAF8F3);
   display: flex;
   flex-direction: column;
   box-sizing: border-box;
-  padding: 32px 20px 32px 20px;
-  gap: 20px;
+  overflow: hidden;
 }
-.simulasi-upload-body {
+
+.simulasi-upload-topbar {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 30;
+  background-color: var(--color-bg-app, #FAF8F3);
+  padding: 48px 20px 14px 20px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+  box-sizing: border-box;
+}
+
+.simulasi-upload-topbar-title {
+  font-family: var(--font-family-base, 'Space Grotesk', sans-serif);
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--color-text-primary, #243238);
+}
+
+.simulasi-upload-scroll-body {
   flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding: 95px 20px 115px 20px;
   display: flex;
   flex-direction: column;
   gap: 4px;
+  box-sizing: border-box;
+  -webkit-overflow-scrolling: touch;
 }
+.simulasi-upload-scroll-body::-webkit-scrollbar {
+  display: none;
+}
+
+.simulasi-upload-bottom-dock {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  padding: 12px 20px calc(16px + env(safe-area-inset-bottom, 16px)) 20px;
+  background: linear-gradient(180deg, rgba(250, 248, 243, 0) 0%, rgba(250, 248, 243, 0.96) 28%, #FAF8F3 100%);
+  display: flex;
+  justify-content: center;
+  z-index: 30;
+  box-sizing: border-box;
+  pointer-events: auto;
+}
+
 .simulasi-upload-label {
   font-family: var(--font-family-base, 'Space Grotesk', sans-serif);
   font-size: 16px;
@@ -1633,9 +1683,10 @@
   margin: 0 0 4px 0;
   line-height: 1.4;
 }
+
 .simulasi-file-drop {
-  margin-top: 16px;
-  height: 120px;
+  margin-top: 14px;
+  height: 90px;
   border: 2px dashed var(--color-border, rgba(20, 60, 63, 0.2));
   border-radius: var(--radius-md, 16px);
   display: flex;
@@ -1649,7 +1700,115 @@
   color: var(--color-text-caption, #8199A3);
   cursor: pointer;
   background-color: var(--color-surface, #FFFFFF);
+  transition: border-color 0.15s ease, background-color 0.15s ease;
 }
+.simulasi-file-drop:hover {
+  border-color: var(--color-primary, #24A981);
+  background-color: rgba(36, 169, 129, 0.04);
+}
+
+/* ── Interview Target Objective Selector ──────────────────────────────────── */
+.simulasi-interview-objective-section {
+  margin-top: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.simulasi-interview-objective-label {
+  font-family: var(--font-family-base, 'Space Grotesk', sans-serif);
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--color-text-primary, #243238);
+  line-height: 1.4;
+}
+
+.simulasi-interview-objective-hint {
+  font-family: var(--font-family-base, 'Space Grotesk', sans-serif);
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--color-text-caption, #8199A3);
+  margin: 0 0 8px 0;
+  line-height: 1.4;
+}
+
+.simulasi-interview-objective-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.simulasi-interview-objective-card {
+  background: #FFFFFF;
+  border: 1.5px solid var(--color-border, rgba(20, 60, 63, 0.12));
+  border-radius: 16px;
+  padding: 14px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  cursor: pointer;
+  box-shadow: none;
+  transition: border-color 0.15s ease, background-color 0.15s ease;
+}
+
+.simulasi-interview-objective-card:hover {
+  border-color: rgba(232, 117, 61, 0.4);
+}
+
+.simulasi-interview-objective-card.active {
+  background: #FFF9F5;
+  border-color: var(--color-primary, #E8753D);
+  box-shadow: none;
+}
+
+.simulasi-objective-card-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.simulasi-objective-icon {
+  font-size: 20px;
+  line-height: 1;
+}
+
+.simulasi-objective-title {
+  font-family: var(--font-family-base, 'Space Grotesk', sans-serif);
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--color-text-primary, #243238);
+  flex: 1;
+  letter-spacing: -0.3px;
+}
+
+.simulasi-objective-circle {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  border: 1.5px solid #CBD5E1;
+  background: #FFFFFF;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  transition: all 0.15s ease;
+}
+
+.simulasi-objective-circle.checked {
+  background: var(--color-primary, #E8753D);
+  border-color: var(--color-primary, #E8753D);
+}
+
+.simulasi-objective-desc {
+  font-family: var(--font-family-base, 'Space Grotesk', sans-serif);
+  font-size: 12px;
+  font-weight: 400;
+  color: var(--color-text-caption, #8199A3);
+  margin: 0;
+  line-height: 1.45;
+  padding-left: 30px;
+}
+
 .simulasi-manual-textarea {
   margin-top: 16px;
   width: 100%;

@@ -680,6 +680,14 @@
   transform: translateY(2px);
   box-shadow: 0px 2px 0px 0px #8B4827;
 }
+.btn-questionnaire-submit:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+  filter: grayscale(0.5);
+  transform: none !important;
+  box-shadow: 0px 4px 0px 0px #8B4827;
+  pointer-events: none;
+}
 
 /* ── Mobile ───────────────────────────────────────────────────────────────── */
 @media (max-width: 767px) {

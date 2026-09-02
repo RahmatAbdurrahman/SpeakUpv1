@@ -4,7 +4,13 @@ import { DotLottieReact } from "@lottiefiles/dotlottie-react";
 import animaBotLottie from "../assets/lotties/AnimaBot.lottie";
 import SessionLoadingScreen from "./SessionLoadingScreen";
 import { UploadStep, PrepStep, ManualNotesStep } from "./SimulasiScreen";
-import { uploadMaterial, generateNotes, saveManualMaterialText, friendlySimulasiError } from "../lib/simulasi";
+import {
+  uploadMaterial,
+  generateNotes,
+  saveManualMaterialText,
+  extractPdfTextClientSide,
+  friendlySimulasiError,
+} from "../lib/simulasi";
 import { createLivePresentationSession, fetchOwnDisplayName, goLive } from "../lib/sosial";
 import { supabase } from "../lib/supabaseClient";
 
@@ -60,19 +66,39 @@ export default function LivePresentationScreen({ onBack, onEnterLive }) {
       // Slide toggle during the live broadcast shows the PDF itself, same
       // reasoning as SimulasiScreen's own Presentasi flow.
       setMaterialPdfPath(pdfPath);
-      const text = await generateNotes(simulationId, pdfPath);
 
-      if (!text) {
+      // 1. Ekstraksi teks PDF langsung di client (100% reliable)
+      const clientExtractedText = await extractPdfTextClientSide(file);
+
+      // 2. Minta ringkasan AI jika Edge Function tersedia
+      let text = "";
+      try {
+        text = await generateNotes(simulationId, pdfPath);
+      } catch (genErr) {
+        console.warn("generateNotes Edge Function failed, using client extraction:", genErr);
+      }
+
+      const finalNotes = text || clientExtractedText;
+
+      if (!finalNotes) {
         setStep("manual-notes");
         return;
       }
-      setNotes(text);
+
+      // Simpan catatan ke simulation_materials
+      try {
+        await saveManualMaterialText(simulationId, LIVE_SCENARIO.kategori, finalNotes);
+      } catch (saveErr) {
+        console.warn("saveManualMaterialText error:", saveErr);
+      }
+
+      setNotes(finalNotes);
       setStep("prep");
     } catch (err) {
-      // Edge case 11.1 — PDF gagal diparse (mis. hasil scan gambar): fallback
-      // ke textarea manual, sama seperti alur Simulasi Presentasi.
+      console.error("Upload error:", err);
+      // Fallback ke manual notes jika ada kendala pemrosesan PDF
       const status = err?.context?.status ?? err?.status;
-      if (status === 422) {
+      if (status === 422 || err?.message?.includes("internal") || err?.message?.includes("kesalahan")) {
         setStep("manual-notes");
         return;
       }
@@ -85,12 +111,16 @@ export default function LivePresentationScreen({ onBack, onEnterLive }) {
     setErrorMessage("");
     setStep("processing-materials");
     try {
-      await saveManualMaterialText(simulationId, LIVE_SCENARIO.kategori, text);
-      setNotes(text);
+      if (text && text.trim()) {
+        await saveManualMaterialText(simulationId, LIVE_SCENARIO.kategori, text);
+      }
+      setNotes(text || "");
       setStep("prep");
     } catch (err) {
-      setErrorMessage(friendlySimulasiError(err));
-      setStep("manual-notes");
+      console.warn("saveManualMaterialText error:", err);
+      // Tetap lanjutkan ke prep dengan catatan di local state
+      setNotes(text || "");
+      setStep("prep");
     }
   };
 

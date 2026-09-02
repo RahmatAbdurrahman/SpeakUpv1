@@ -14,11 +14,12 @@ import { supabase, invokeFunction } from "./supabaseClient";
  */
 export const SCENARIOS = [
   {
-    id: "spontan",
-    kategori: "spontan",
-    title: "Spontaneous",
-    description: "Topik dadakan, waktu mepet. Latih otakmu mikir cepat sambil tetap kalem.",
-    needsUpload: false,
+    id: "interview",
+    kategori: "interview",
+    title: "Interview",
+    description: "Simulasi wawancara kerja atau beasiswa dengan pertanyaan yang realistis.",
+    needsUpload: true,
+    uploadLabel: "Upload CV/portofolio kamu",
   },
   {
     id: "presentasi",
@@ -29,12 +30,11 @@ export const SCENARIOS = [
     uploadLabel: "Upload PDF materi kamu",
   },
   {
-    id: "interview",
-    kategori: "interview",
-    title: "Interview",
-    description: "Simulasi wawancara kerja atau beasiswa dengan pertanyaan yang realistis.",
-    needsUpload: true,
-    uploadLabel: "Upload CV/portofolio kamu",
+    id: "spontan",
+    kategori: "spontan",
+    title: "Spontaneous",
+    description: "Topik dadakan, waktu mepet. Latih otakmu mikir cepat sambil tetap kalem.",
+    needsUpload: false,
   },
 ];
 
@@ -90,6 +90,37 @@ export async function getMaterialSignedUrl(path) {
   const { data, error } = await supabase.storage.from("materials").createSignedUrl(path, 600);
   if (error) throw error;
   return data.signedUrl;
+}
+
+/** Ekstraksi teks PDF langsung di client menggunakan pdfjs-dist */
+export async function extractPdfTextClientSide(file) {
+  try {
+    const pdfjs = await import("pdfjs-dist");
+    const workerUrl = (await import("pdfjs-dist/build/pdf.worker.min.mjs?url")).default;
+    pdfjs.GlobalWorkerOptions.workerSrc = workerUrl;
+
+    const arrayBuffer = await file.arrayBuffer();
+    const loadingTask = pdfjs.getDocument({ data: arrayBuffer });
+    const doc = await loadingTask.promise;
+
+    let pagesText = [];
+    for (let i = 1; i <= doc.numPages; i++) {
+      const page = await doc.getPage(i);
+      const textContent = await page.getTextContent();
+      const pageText = textContent.items
+        .map((item) => item.str)
+        .join(" ")
+        .replace(/\s+/g, " ")
+        .trim();
+      if (pageText) {
+        pagesText.push(`📌 Slide ${i}:\n${pageText}`);
+      }
+    }
+    return pagesText.join("\n\n");
+  } catch (err) {
+    console.warn("extractPdfTextClientSide failed:", err);
+    return "";
+  }
 }
 
 /** Kelas/Lomba: PDF materi → simulation_materials.generated_notes (shown to user). */
@@ -268,6 +299,131 @@ export async function generateSpontaneousTopicAI({ sessionId, simulationId, excl
 
   // 3. Fallback to clean random everyday topic
   return getRandomSpontaneousTopic(excludeTopic);
+}
+
+// ─── Interview Objectives & Tailored Questions ─────────────────────────────
+
+export const INTERVIEW_OBJECTIVES = [
+  {
+    id: "kerja",
+    label: "Interview Kerja",
+    tag: "Job / Career",
+    desc: "Fokus ke pengalaman kerja, keahlian profesional, studi kasus, & kecocokan budaya kerja.",
+    icon: "💼",
+  },
+  {
+    id: "beasiswa",
+    label: "Interview Beasiswa",
+    tag: "Scholarship",
+    desc: "Fokus ke motivasi studi, rencana riset/akademik, kontribusi bagi Indonesia, & kepemimpinan.",
+    icon: "🎓",
+  },
+  {
+    id: "magang",
+    label: "Interview Magang",
+    tag: "Internship",
+    desc: "Fokus ke latar belakang kuliah, proyek akademik, potensi diri, & kemauan belajar.",
+    icon: "🚀",
+  },
+  {
+    id: "organisasi",
+    label: "Interview Organisasi",
+    tag: "Leadership",
+    desc: "Fokus ke kepemimpinan, dinamika tim, penyelesaian konflik, & visi program kerja.",
+    icon: "👥",
+  },
+];
+
+export const INTERVIEW_QUESTIONS_BY_OBJECTIVE = {
+  kerja: [
+    "Can you tell about your professional background and future career goals?",
+    "What is your greatest strength and how will it help you succeed in this job position?",
+    "Tell me about a challenging work or project situation you faced and how you solved it using the STAR method.",
+    "Why are you interested in joining our company and this role specifically?",
+  ],
+  beasiswa: [
+    "Mengapa Anda memilih jurusan dan universitas tujuan Anda, dan apa motivasi terbesar mendaftar beasiswa ini?",
+    "Bagaimana rencana studi Anda dan apa kontribusi konkret yang ingin Anda berikan untuk Indonesia setelah lulus nanti?",
+    "Ceritakan tantangan akademik atau kegagalan terbesar yang pernah Anda lalui serta bagaimana cara Anda mengatasinya.",
+    "Mengapa komite beasiswa harus memilih Anda sebagai penerima beasiswa dibandingkan kandidat berprestasi lainnya?",
+  ],
+  magang: [
+    "Ceritakan latar belakang pendidikan Anda, minat utama, dan proyek kampus yang paling Anda banggakan.",
+    "Keahlian atau keterampilan teknis apa yang ingin paling Anda kembangkan selama menjalani program magang ini?",
+    "Bagaimana cara Anda membagi prioritas dan waktu ketika menghadapi banyak tugas atau deadline bersamaan?",
+    "Mengapa Anda tertarik magang di tim kami dan apa ekspektasi yang ingin Anda capai setelah magang selesai?",
+  ],
+  organisasi: [
+    "Ceritakan pengalaman organisasi atau kepemimpinan Anda dan bagaimana gaya kepemimpinan yang Anda terapkan.",
+    "Bagaimana strategi Anda dalam menyelesaikan konflik atau perbedaan pendapat di antara sesama anggota tim?",
+    "Apa visi, inovasi, dan program kerja unggulan yang ingin Anda bawa untuk kemajuan organisasi ini?",
+    "Bagaimana Anda menjaga komitmen dan tanggung jawab ketika menghadapi situasi kerja di bawah tekanan tinggi?",
+  ],
+};
+
+/**
+ * Generates tailored interview questions based on candidate CV & chosen objective.
+ */
+export async function generateInterviewQuestionsAI({
+  sessionId,
+  simulationId,
+  objective = "kerja",
+  candidateContext = "",
+} = {}) {
+  const objMeta = INTERVIEW_OBJECTIVES.find((o) => o.id === objective) || INTERVIEW_OBJECTIVES[0];
+  const defaultList = INTERVIEW_QUESTIONS_BY_OBJECTIVE[objective] || INTERVIEW_QUESTIONS_BY_OBJECTIVE.kerja;
+
+  // 1. Direct Gemini AI generation if available
+  const clientKey = import.meta.env.VITE_GEMINI_API_KEY;
+  if (clientKey && candidateContext) {
+    try {
+      const prompt =
+        `Kamu adalah pewawancara profesional untuk sesi wawancara: ${objMeta.label} (${objMeta.desc}). ` +
+        `Berikut adalah ringkasan profil / CV kandidat: """${candidateContext.slice(0, 1500)}""". ` +
+        `Buatkan TEPAT 4 pertanyaan wawancara yang spesifik, relevan, dan mendalam sesuai fokus ${objMeta.label}. ` +
+        `Keluarkan HANYA array JSON string berisi 4 pertanyaan, contoh: ["Pertanyaan 1?", "Pertanyaan 2?", "Pertanyaan 3?", "Pertanyaan 4?"] tanpa markdown backticks tambahan.`;
+
+      const res = await fetch(
+        `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${clientKey}`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            contents: [{ parts: [{ text: prompt }] }],
+            generationConfig: { temperature: 0.7, maxOutputTokens: 300 },
+          }),
+        }
+      );
+      if (res.ok) {
+        const data = await res.json();
+        const rawText = data?.candidates?.[0]?.content?.parts?.[0]?.text;
+        const jsonMatch = rawText?.match(/\[[\s\S]*\]/);
+        if (jsonMatch) {
+          const parsed = JSON.parse(jsonMatch[0]);
+          if (Array.isArray(parsed) && parsed.length >= 3) {
+            return parsed.slice(0, 4);
+          }
+        }
+      }
+    } catch (err) {
+      console.warn("Direct Gemini interview questions generation failed:", err);
+    }
+  }
+
+  // 2. Edge function questions fallback
+  if (sessionId) {
+    try {
+      const questions = await fetchGeneratedQuestions(sessionId, "interview");
+      if (Array.isArray(questions) && questions.length >= 3) {
+        return questions.slice(0, 4);
+      }
+    } catch {
+      // ignore
+    }
+  }
+
+  // 3. Structured curated fallback for this specific objective
+  return defaultList;
 }
 
 /** Also used as the no-real-viewer Q&A fallback for any kategori mid/post-session. */

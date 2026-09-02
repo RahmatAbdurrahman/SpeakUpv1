@@ -35,6 +35,7 @@ import SlideViewer from "./SlideViewer";
 import TranscriptCard from "./TranscriptCard";
 import LessonExitModal from "./LessonExitModal";
 import { exportAnalysisToPDF } from "../lib/pdfExport";
+import { playQuestionTTS, stopQuestionTTS } from "../lib/interviewTTS";
 import { supabase } from "../lib/supabaseClient";
 import {
   SCENARIOS,
@@ -42,6 +43,7 @@ import {
   markSimulationCompleted,
   validateMaterialFile,
   uploadMaterial,
+  extractPdfTextClientSide,
   generateNotes,
   analyzeCv,
   getMaterialSignedUrl,
@@ -55,6 +57,9 @@ import {
   fetchSessionResults,
   fetchGeneratedQuestions,
   friendlySimulasiError,
+  INTERVIEW_OBJECTIVES,
+  INTERVIEW_QUESTIONS_BY_OBJECTIVE,
+  generateInterviewQuestionsAI,
 } from "../lib/simulasi";
 import { useUserProgress } from "../context/UserProgressContext";
 import { SimulasiSkeleton } from "./SkeletonLoader";
@@ -158,7 +163,10 @@ function TopicStep({ topics, loading, error, onBack, onStart, onShuffle, shuffli
 // upload step, since "logic Presentasi" now also powers Live Presentation.
 export function UploadStep({ scenario, uploading, error, onBack, onSubmit }) {
   const [file, setFile] = useState(null);
+  const [interviewObjective, setInterviewObjective] = useState("kerja");
   const [localError, setLocalError] = useState("");
+
+  const isInterview = scenario.kategori === "interview";
 
   const handleFileChange = (e) => {
     const f = e.target.files?.[0];
@@ -175,33 +183,79 @@ export function UploadStep({ scenario, uploading, error, onBack, onSubmit }) {
 
   return (
     <div className="simulasi-upload-screen">
-      <header className="simulasi-recording-topbar">
+      <header className="simulasi-upload-topbar">
         <button type="button" className="simulasi-back-btn" onClick={onBack} aria-label="Kembali">
           <img src={arrowLeftIcon} alt="" className="simulasi-back-icon" />
         </button>
-        <span className="simulasi-recording-scenario">{scenario.title}</span>
+        <span className="simulasi-upload-topbar-title">{scenario.title}</span>
       </header>
 
-      <div className="simulasi-upload-body">
+      <div className="simulasi-upload-scroll-body">
         <p className="simulasi-upload-label">{scenario.uploadLabel}</p>
         <p className="simulasi-hint-text">Format PDF, maksimal 10MB.</p>
 
         <label className="simulasi-file-drop">
           <input type="file" accept="application/pdf" onChange={handleFileChange} hidden />
-          {file ? file.name : "Pilih file PDF"}
+          {file ? `📄 ${file.name}` : "Pilih file PDF"}
         </label>
+
+        {/* ── Interview Target Option Selector ── */}
+        {isInterview && (
+          <div className="simulasi-interview-objective-section">
+            <label className="simulasi-interview-objective-label">
+              🎯 Mau simulasi interview apa?
+            </label>
+            <p className="simulasi-interview-objective-hint">
+              Pilih tujuan agar AI pewawancara menyesuaikan pertanyaan & evaluasi secara akurat:
+            </p>
+
+            <div className="simulasi-interview-objective-grid">
+              {INTERVIEW_OBJECTIVES.map((obj) => {
+                const isSelected = interviewObjective === obj.id;
+                return (
+                  <div
+                    key={obj.id}
+                    className={`simulasi-interview-objective-card ${isSelected ? "active" : ""}`}
+                    onClick={() => setInterviewObjective(obj.id)}
+                    role="button"
+                    tabIndex={0}
+                  >
+                    <div className="simulasi-objective-card-header">
+                      <span className="simulasi-objective-icon">{obj.icon}</span>
+                      <span className="simulasi-objective-title">{obj.label}</span>
+                      <span className={`simulasi-objective-circle ${isSelected ? "checked" : ""}`}>
+                        {isSelected && (
+                          <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
+                            <path
+                              d="M2.5 6.2L4.8 8.5L9.5 3.8"
+                              stroke="#FFFFFF"
+                              strokeWidth="2"
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                            />
+                          </svg>
+                        )}
+                      </span>
+                    </div>
+                    <p className="simulasi-objective-desc">{obj.desc}</p>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        )}
 
         {(localError || error) && <p className="simulasi-error-banner">{localError || error}</p>}
       </div>
 
-      <div className="simulasi-prep-cta">
+      <div className="simulasi-upload-bottom-dock">
         <button
           type="button"
           className="btn-simulasi-lanjut"
           disabled={!file || uploading}
-          onClick={() => onSubmit(file)}
+          onClick={() => onSubmit({ file, interviewObjective })}
         >
-          {uploading ? "Mengunggah..." : "Lanjut"}
+          {uploading ? "Mengunggah & Menganalisis..." : "Lanjut"}
         </button>
       </div>
     </div>
@@ -212,37 +266,83 @@ export function UploadStep({ scenario, uploading, error, onBack, onSubmit }) {
 // Exported for the same reason as UploadStep above (edge case 11.1 fallback).
 export function ManualNotesStep({ scenario, saving, onBack, onSubmit }) {
   const [text, setText] = useState("");
+  const [interviewObjective, setInterviewObjective] = useState("kerja");
+  const isInterview = scenario.kategori === "interview";
+
   return (
     <div className="simulasi-upload-screen">
-      <header className="simulasi-recording-topbar">
+      <header className="simulasi-upload-topbar">
         <button type="button" className="simulasi-back-btn" onClick={onBack} aria-label="Kembali">
           <img src={arrowLeftIcon} alt="" className="simulasi-back-icon" />
         </button>
-        <span className="simulasi-recording-scenario">{scenario.title}</span>
+        <span className="simulasi-upload-topbar-title">{scenario.title}</span>
       </header>
-      <div className="simulasi-upload-body">
+
+      <div className="simulasi-upload-scroll-body">
         <p className="simulasi-upload-label">
           File-nya gagal dibaca otomatis (mungkin hasil scan gambar). Tulis ringkasannya manual ya, biar sesi tetap
           bisa lanjut.
         </p>
         <textarea
           className="simulasi-manual-textarea"
-          rows={8}
+          rows={6}
           value={text}
           onChange={(e) => setText(e.target.value)}
           placeholder={
-            scenario.kategori === "interview"
-              ? "Ringkas pengalaman & skill utama kamu..."
+            isInterview
+              ? "Ringkas pengalaman, skill utama, atau motivasi studi/karir kamu..."
               : "Ringkas poin-poin utama materi kamu..."
           }
         />
+
+        {isInterview && (
+          <div className="simulasi-interview-objective-section" style={{ marginTop: "16px" }}>
+            <label className="simulasi-interview-objective-label">
+              🎯 Mau simulasi interview apa?
+            </label>
+            <div className="simulasi-interview-objective-grid">
+              {INTERVIEW_OBJECTIVES.map((obj) => {
+                const isSelected = interviewObjective === obj.id;
+                return (
+                  <div
+                    key={obj.id}
+                    className={`simulasi-interview-objective-card ${isSelected ? "active" : ""}`}
+                    onClick={() => setInterviewObjective(obj.id)}
+                    role="button"
+                    tabIndex={0}
+                  >
+                    <div className="simulasi-objective-card-header">
+                      <span className="simulasi-objective-icon">{obj.icon}</span>
+                      <span className="simulasi-objective-title">{obj.label}</span>
+                      <span className={`simulasi-objective-circle ${isSelected ? "checked" : ""}`}>
+                        {isSelected && (
+                          <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
+                            <path
+                              d="M2.5 6.2L4.8 8.5L9.5 3.8"
+                              stroke="#FFFFFF"
+                              strokeWidth="2"
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                            />
+                          </svg>
+                        )}
+                      </span>
+                    </div>
+                    <p className="simulasi-objective-desc">{obj.desc}</p>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        )}
       </div>
-      <div className="simulasi-prep-cta">
+
+      <div className="simulasi-upload-bottom-dock">
         <button
           type="button"
           className="btn-simulasi-lanjut"
           disabled={!text.trim() || saving}
-          onClick={() => onSubmit(text.trim())}
+          onClick={() => onSubmit({ text: text.trim(), interviewObjective })}
         >
           {saving ? "Menyimpan..." : "Lanjut"}
         </button>
@@ -536,9 +636,7 @@ function InterviewCallView({
 
   const endSpeaking = () => {
     if (ttsTimeoutRef.current) clearTimeout(ttsTimeoutRef.current);
-    if ("speechSynthesis" in window) {
-      window.speechSynthesis.cancel();
-    }
+    stopQuestionTTS();
     setIsInterviewerSpeaking(false);
     if (videoSpeakingRef.current) {
       videoSpeakingRef.current.pause();
@@ -550,42 +648,7 @@ function InterviewCallView({
     }
   };
 
-  // Helper to pick Indonesian voice and apply true male pitch
-  const getIndonesianVoiceAndPitch = (voices = []) => {
-    const idVoices = voices.filter(
-      (v) =>
-        v.lang &&
-        (v.lang.toLowerCase().startsWith("id") ||
-          v.lang.toLowerCase().includes("indonesia") ||
-          v.lang.toLowerCase() === "in_id" ||
-          v.lang.toLowerCase() === "in-id")
-    );
-
-    // If explicit male voice is found (e.g. Microsoft Ardi Neural / Indonesian Male)
-    const explicitMale = idVoices.find(
-      (v) =>
-        v.name.toLowerCase().includes("ardi") ||
-        v.name.toLowerCase().includes("male") ||
-        v.name.toLowerCase().includes("pria") ||
-        v.name.toLowerCase().includes("guy") ||
-        v.name.toLowerCase().includes("man")
-    );
-
-    if (explicitMale) {
-      return { voice: explicitMale, pitch: 0.85 };
-    }
-
-    // If available Indonesian voice is generic (Google Bahasa Indonesia / Damayanti),
-    // lower pitch to 0.68 - 0.70 to shift timbre distinctly into an authoritative male voice
-    const fallbackId = idVoices[0];
-    if (fallbackId) {
-      return { voice: fallbackId, pitch: 0.68 };
-    }
-
-    return { voice: null, pitch: 0.68 };
-  };
-
-  // Trigger question speech (Speaking.webm + TTS + Subtitle)
+  // Trigger question speech (Speaking.webm + Real-Time Male Voice TTS + Subtitle)
   const speakQuestion = (text) => {
     if (blinkTimeoutRef.current) clearTimeout(blinkTimeoutRef.current);
     if (ttsTimeoutRef.current) clearTimeout(ttsTimeoutRef.current);
@@ -594,7 +657,7 @@ function InterviewCallView({
     setIsAnswering(false);
     setSubtitle(text);
 
-    // Play speaking video
+    // Play speaking mascot video
     if (videoSpeakingRef.current) {
       videoSpeakingRef.current.currentTime = 0;
       videoSpeakingRef.current.play().catch(() => {});
@@ -603,55 +666,21 @@ function InterviewCallView({
       videoBlinkingRef.current.pause();
     }
 
-    // Web Speech API / TTS
-    if ("speechSynthesis" in window) {
-      try {
-        window.speechSynthesis.resume();
-        window.speechSynthesis.cancel();
-
-        const triggerUtterance = () => {
-          try {
-            window.speechSynthesis.resume();
-            const utterance = new SpeechSynthesisUtterance(text);
-            utterance.lang = "id-ID";
-            utterance.rate = 0.92;
-
-            const voices = window.speechSynthesis.getVoices?.() || [];
-            const { voice, pitch } = getIndonesianVoiceAndPitch(voices);
-            if (voice) utterance.voice = voice;
-            utterance.pitch = pitch;
-
-            utterance.onend = () => {
-              endSpeaking();
-            };
-            utterance.onerror = (err) => {
-              console.warn("TTS utterance error:", err);
-              endSpeaking();
-            };
-
-            window.speechSynthesis.speak(utterance);
-          } catch (e) {
-            console.warn("TTS speak failed inside trigger:", e);
-          }
-        };
-
-        // If voices are not yet loaded, wait for voiceschanged or fire with short timeout
-        const currentVoices = window.speechSynthesis.getVoices?.() || [];
-        if (!currentVoices || currentVoices.length === 0) {
-          window.speechSynthesis.onvoiceschanged = () => {
-            triggerUtterance();
-          };
-          setTimeout(triggerUtterance, 120);
-        } else {
-          setTimeout(triggerUtterance, 40);
+    // Play real-time male voice TTS (Puter.js OpenAI Onyx with Edge TTS / Web Speech fallback)
+    playQuestionTTS(text, {
+      onStart: () => {
+        setIsInterviewerSpeaking(true);
+        if (videoSpeakingRef.current) {
+          videoSpeakingRef.current.play().catch(() => {});
         }
-      } catch (e) {
-        console.warn("TTS speak setup failed:", e);
-      }
-    }
+      },
+      onEnd: () => {
+        endSpeaking();
+      },
+    });
 
-    // Fallback duration based on sentence length (approx 100ms/char, min 5s, max 20s)
-    const fallbackDuration = Math.min(20000, Math.max(5000, text.length * 100));
+    // Safety fallback duration based on sentence length
+    const fallbackDuration = Math.min(20000, Math.max(6000, text.length * 120));
     ttsTimeoutRef.current = setTimeout(() => {
       endSpeaking();
     }, fallbackDuration);
@@ -668,11 +697,16 @@ function InterviewCallView({
       clearTimeout(timer);
       if (blinkTimeoutRef.current) clearTimeout(blinkTimeoutRef.current);
       if (ttsTimeoutRef.current) clearTimeout(ttsTimeoutRef.current);
-      if ("speechSynthesis" in window) {
-        window.speechSynthesis.cancel();
-      }
+      stopQuestionTTS();
     };
   }, [qIndex, currentQuestion]);
+
+  // Ensure TTS audio is immediately destroyed when the interview component unmounts
+  useEffect(() => {
+    return () => {
+      stopQuestionTTS();
+    };
+  }, []);
 
   const handleStartAnswering = () => {
     endSpeaking();
@@ -828,6 +862,8 @@ function InterviewCallView({
           onCancel={() => setShowExitModal(false)}
           onConfirm={() => {
             setShowExitModal(false);
+            endSpeaking();
+            stopQuestionTTS();
             if (onBack) onBack();
           }}
         />
@@ -850,7 +886,11 @@ function InterviewCallView({
         <button
           type="button"
           className="simulasi-call-btn simulasi-call-btn--hangup"
-          onClick={onFinish}
+          onClick={() => {
+            endSpeaking();
+            stopQuestionTTS();
+            onFinish();
+          }}
           title="Tutup & Selesaikan Sesi"
           aria-label="Tutup & Selesaikan Sesi"
         >
@@ -2314,6 +2354,8 @@ export default function SimulasiScreen({ onNavigateHome, onNavigateSosial, onNav
   const [materialPdfPath, setMaterialPdfPath] = useState(null);
   const [topics, setTopics] = useState([]);
   const [shufflingTopic, setShufflingTopic] = useState(false);
+  const [interviewObjective, setInterviewObjective] = useState("kerja");
+  const [candidateContext, setCandidateContext] = useState("");
   const [questions, setQuestions] = useState([]);
   const [questionsLoading, setQuestionsLoading] = useState(false);
   const [results, setResults] = useState(null);
@@ -2323,6 +2365,7 @@ export default function SimulasiScreen({ onNavigateHome, onNavigateSosial, onNav
   const { xp, addXp, refreshProgress, isInitialized } = useUserProgress();
 
   const resetToPicker = () => {
+    stopQuestionTTS();
     setScenario(null);
     setSelectedScenario(null);
     setSimulationId(null);
@@ -2330,10 +2373,19 @@ export default function SimulasiScreen({ onNavigateHome, onNavigateSosial, onNav
     setNotes("");
     setMaterialPdfPath(null);
     setTopics([]);
+    setInterviewObjective("kerja");
+    setCandidateContext("");
     setQuestions([]);
     setQuestionsLoading(false);
     setStep("picker");
   };
+
+  // Stop any audio when navigating away from the simulation screen
+  useEffect(() => {
+    return () => {
+      stopQuestionTTS();
+    };
+  }, []);
 
   const handlePick = async (s) => {
     setScenario(s);
@@ -2371,7 +2423,11 @@ export default function SimulasiScreen({ onNavigateHome, onNavigateSosial, onNav
     }
   };
 
-  const handleMaterialUpload = async (file) => {
+  const handleMaterialUpload = async (payload) => {
+    const file = payload?.file || payload;
+    const objective = payload?.interviewObjective || "kerja";
+    setInterviewObjective(objective);
+
     setErrorMessage("");
     setStep("processing-materials");
     try {
@@ -2383,21 +2439,46 @@ export default function SimulasiScreen({ onNavigateHome, onNavigateSosial, onNav
       // "Slide" toggle can show it even if text extraction below comes back
       // empty (edge case 11.1) or hasn't happened at all for kategori kelas/lomba.
       setMaterialPdfPath(pdfPath);
-      const text =
-        scenario.kategori === "interview" ? await analyzeCv(simulationId, pdfPath) : await generateNotes(simulationId, pdfPath);
+
+      // 1. Ekstraksi teks PDF langsung di client (100% reliable)
+      const clientExtractedText = await extractPdfTextClientSide(file);
+
+      let text = "";
+      try {
+        text =
+          scenario.kategori === "interview" ? await analyzeCv(simulationId, pdfPath) : await generateNotes(simulationId, pdfPath);
+      } catch (genErr) {
+        console.warn("AI extraction encountered error, falling back to client extracted text:", genErr);
+      }
+
+      const finalText = text || clientExtractedText;
+
+      if (!finalText && scenario.kategori === "interview") {
+        text = `Kandidat mengikuti interview dengan fokus: ${objective}.`;
+      } else {
+        text = finalText;
+      }
 
       if (!text) {
         setStep("manual-notes");
         return;
       }
-      if (scenario.kategori !== "interview") setNotes(text);
-      await beginSessionForPrep();
+      if (scenario.kategori !== "interview") {
+        setNotes(text);
+        try {
+          await saveManualMaterialText(simulationId, scenario.kategori, text);
+        } catch (saveErr) {
+          console.warn("saveManualMaterialText error:", saveErr);
+        }
+      } else {
+        setCandidateContext(text);
+      }
+      await beginSessionForPrep(objective, text);
     } catch (err) {
-      // Edge Function returns 422 when the PDF/CV couldn't be parsed (e.g. a
-      // scanned image) — edge case 11.1: fall back to a manual text-area,
-      // don't cancel the session.
+      console.error("Upload material error:", err);
+      // Fallback to manual text-area if Edge Function returns 422 or error
       const status = err?.context?.status ?? err?.status;
-      if (status === 422) {
+      if (status === 422 || err?.message?.includes("internal") || err?.message?.includes("kesalahan")) {
         setStep("manual-notes");
         return;
       }
@@ -2406,20 +2487,28 @@ export default function SimulasiScreen({ onNavigateHome, onNavigateSosial, onNav
     }
   };
 
-  const handleManualNotes = async (text) => {
+  const handleManualNotes = async (payload) => {
+    const text = typeof payload === "string" ? payload : payload?.text || "";
+    const objective = payload?.interviewObjective || interviewObjective || "kerja";
+    setInterviewObjective(objective);
+
     setErrorMessage("");
     setStep("processing-materials");
     try {
       await saveManualMaterialText(simulationId, scenario.kategori, text);
-      if (scenario.kategori !== "interview") setNotes(text);
-      await beginSessionForPrep();
+      if (scenario.kategori !== "interview") {
+        setNotes(text);
+      } else {
+        setCandidateContext(text);
+      }
+      await beginSessionForPrep(objective, text);
     } catch (err) {
       setErrorMessage(friendlySimulasiError(err));
       setStep("manual-notes");
     }
   };
 
-  const beginSessionForPrep = async () => {
+  const beginSessionForPrep = async (targetObjective = interviewObjective, cvText = candidateContext) => {
     const newSessionId = crypto.randomUUID();
     await createSessionRow({ id: newSessionId, simulationId });
     setSessionId(newSessionId);
@@ -2428,10 +2517,19 @@ export default function SimulasiScreen({ onNavigateHome, onNavigateSosial, onNav
     if (scenario.kategori === "interview") {
       setQuestionsLoading(true);
       try {
-        const generated = await fetchGeneratedQuestions(newSessionId, "interview");
-        setQuestions(generated && generated.length > 0 ? generated : DEFAULT_INTERVIEW_QUESTIONS);
+        const generated = await generateInterviewQuestionsAI({
+          sessionId: newSessionId,
+          simulationId,
+          objective: targetObjective || "kerja",
+          candidateContext: cvText || "",
+        });
+        setQuestions(
+          generated && generated.length > 0
+            ? generated
+            : INTERVIEW_QUESTIONS_BY_OBJECTIVE[targetObjective] || DEFAULT_INTERVIEW_QUESTIONS
+        );
       } catch {
-        setQuestions(DEFAULT_INTERVIEW_QUESTIONS);
+        setQuestions(INTERVIEW_QUESTIONS_BY_OBJECTIVE[targetObjective] || DEFAULT_INTERVIEW_QUESTIONS);
       } finally {
         setQuestionsLoading(false);
       }
@@ -2443,6 +2541,7 @@ export default function SimulasiScreen({ onNavigateHome, onNavigateSosial, onNav
   };
 
   const handleRecordingFinished = async (audioBlob, durationSeconds) => {
+    stopQuestionTTS();
     setStep("processing");
     setAnalysisStage("uploading");
     try {

@@ -90,6 +90,32 @@ export async function goLive(sessionId) {
   return data;
 }
 
+export async function fetchLiveRoomDetails(sessionId) {
+  if (!sessionId) return null;
+  try {
+    const { data: session, error } = await supabase
+      .from("simulation_sessions")
+      .select("id, simulation_id, simulations(id, user_id, kategori, simulation_materials(generated_notes))")
+      .eq("id", sessionId)
+      .maybeSingle();
+    if (error || !session) return null;
+    const sim = session.simulations;
+    const simulationId = session.simulation_id || sim?.id;
+    const hostId = sim?.user_id;
+    const notes = sim?.simulation_materials?.[0]?.generated_notes || "";
+    const materialPdfPath = hostId && simulationId ? `${hostId}/${simulationId}.pdf` : null;
+    return {
+      simulationId,
+      hostId,
+      notes,
+      materialPdfPath,
+      kategori: sim?.kategori || "kelas",
+    };
+  } catch {
+    return null;
+  }
+}
+
 /**
  * Live Presentation now reuses the exact same "simulasi" pre-flight as the
  * Presentasi scenario (upload materi → generate-notes → prep kamera) — the
