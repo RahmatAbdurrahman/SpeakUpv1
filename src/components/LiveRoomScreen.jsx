@@ -92,6 +92,15 @@ export default function LiveRoomScreen({ roomData, onLeaveRoom, onSessionEnded }
   const pipVideoRef = useRef(null);
   const containerRef = useRef(null);
   const pipRef = useRef(null);
+  // Wadah tersembunyi untuk elemen <audio> milik track suara presenter.
+  const audioSinkRef = useRef(null);
+  // Cermin dari state mainView, supaya handler LiveKit (closure yang dibuat
+  // sekali saat connect) tidak membaca nilai basi saat penonton menukar tampilan.
+  const mainViewRef = useRef("slide");
+  // Ref tidak memicu render, jadi status "ada video masuk" perlu state sendiri
+  // agar placeholder kamera-mati hilang begitu track presenter tiba.
+  const [hasRemoteVideo, setHasRemoteVideo] = useState(false);
+  const [perluAktifkanSuara, setPerluAktifkanSuara] = useState(false);
 
   // Audio / Video / Call state
   const [isMicOn, setIsMicOn] = useState(false);
@@ -191,8 +200,8 @@ export default function LiveRoomScreen({ roomData, onLeaveRoom, onSessionEnded }
   // ── Fetch Details (notes & material PDF) for Viewer / Broadcaster ─────────
   useEffect(() => {
     let active = true;
-    if (roomData?.sessionId && (!notes || !materialPdfPath)) {
-      fetchLiveRoomDetails(roomData.sessionId).then((details) => {
+    if ((roomData?.roomId || roomData?.sessionId) && (!notes || !materialPdfPath)) {
+      fetchLiveRoomDetails(roomData.roomId, roomData.sessionId).then((details) => {
         if (!active || !details) return;
         if (details.notes) setNotes((n) => n || details.notes);
         if (details.materialPdfPath) setMaterialPdfPath((p) => p || details.materialPdfPath);
@@ -201,7 +210,7 @@ export default function LiveRoomScreen({ roomData, onLeaveRoom, onSessionEnded }
     return () => {
       active = false;
     };
-  }, [roomData?.sessionId, notes, materialPdfPath]);
+  }, [roomData?.roomId, roomData?.sessionId, notes, materialPdfPath]);
 
   // ── Load Signed URL for PDF Presentation ─────────────────────────────────
   useEffect(() => {
@@ -234,6 +243,7 @@ export default function LiveRoomScreen({ roomData, onLeaveRoom, onSessionEnded }
 
   // ── Re-attach video track on view swap ───────────────────────────────────
   useEffect(() => {
+    mainViewRef.current = mainView;
     const track = currentVideoTrackRef.current;
     if (!track) return;
     const targetEl = mainView === "camera" ? mainVideoRef.current : pipVideoRef.current;
@@ -463,27 +473,71 @@ export default function LiveRoomScreen({ roomData, onLeaveRoom, onSessionEnded }
         }
         roomRef.current = room;
 
-        room.on(RoomEvent.TrackSubscribed, (track) => {
+        // Satu jalur pasang untuk video DAN audio.
+        // BUG sebelumnya: hanya Track.Kind.Video yang ditangani, sehingga track
+        // audio presenter tidak pernah di-attach ke elemen mana pun — dan track
+        // LiveKit yang tidak di-attach tidak berbunyi sama sekali di penonton.
+        const pasangTrack = (track) => {
           if (track.kind === Track.Kind.Video) {
             currentVideoTrackRef.current = track;
-            const targetEl = mainView === "camera" ? mainVideoRef.current : pipVideoRef.current;
+            const targetEl =
+              mainViewRef.current === "camera" ? mainVideoRef.current : pipVideoRef.current;
             if (targetEl) attachTrack(track, targetEl);
+            setHasRemoteVideo(true);
+          } else if (track.kind === Track.Kind.Audio) {
+            const sink = audioSinkRef.current;
+            if (sink) {
+              // Sengaja TIDAK memakai attachTrack di sini: helper itu
+              // mengosongkan wadah sebelum menempel, sehingga pembicara kedua
+              // (mode duet) akan membungkam yang pertama. Elemen audio tidak
+              // terlihat, jadi aman ditumpuk. detachTrack tetap membersihkannya.
+              sink.appendChild(track.attach());
+            }
           }
-        });
+        };
+
+        room.on(RoomEvent.TrackSubscribed, pasangTrack);
         room.on(RoomEvent.TrackUnsubscribed, (track) => {
-          if (currentVideoTrackRef.current === track) currentVideoTrackRef.current = null;
+          if (currentVideoTrackRef.current === track) {
+            currentVideoTrackRef.current = null;
+            setHasRemoteVideo(false);
+          }
           detachTrack(track);
         });
+
+        // BUG sebelumnya: handler di atas baru dipasang SETELAH connectToRoom()
+        // selesai, padahal LiveKit menembakkan TrackSubscribed untuk peserta
+        // yang sudah lebih dulu siaran tepat saat proses connect. Penonton yang
+        // masuk ke siaran berjalan (alur normal) jadi melewatkan kamera & suara
+        // presenter selamanya. Sapuan ini memasang track yang sudah terlanjur
+        // ter-subscribe sebelum kita sempat mendengarkan.
+        room.remoteParticipants.forEach((peserta) => {
+          peserta.trackPublications.forEach((pub) => {
+            if (pub.isSubscribed && pub.track) pasangTrack(pub.track);
+          });
+        });
+
+        // Browser memblokir autoplay bersuara sampai ada interaksi pengguna.
+        // Penonton sudah menekan tombol untuk masuk room, jadi biasanya lolos;
+        // kalau ditolak, tombol "Aktifkan suara" muncul di UI.
+        try {
+          await room.startAudio();
+        } catch {
+          if (active) setPerluAktifkanSuara(true);
+        }
         room.on(RoomEvent.LocalTrackPublished, (publication) => {
           if (publication.track?.kind === Track.Kind.Video) {
             currentVideoTrackRef.current = publication.track;
-            const targetEl = mainView === "camera" ? mainVideoRef.current : pipVideoRef.current;
+            const targetEl =
+              mainViewRef.current === "camera" ? mainVideoRef.current : pipVideoRef.current;
             if (targetEl) attachTrack(publication.track, targetEl);
+            setHasRemoteVideo(true);
           }
         });
         room.on(RoomEvent.LocalTrackUnpublished, (publication) => {
           if (publication.track && currentVideoTrackRef.current === publication.track) {
             currentVideoTrackRef.current = null;
+            setHasRemoteVideo(false);
             detachTrack(publication.track);
           }
         });
@@ -736,6 +790,25 @@ export default function LiveRoomScreen({ roomData, onLeaveRoom, onSessionEnded }
 
   return (
     <div className="live-conference-wrapper" ref={containerRef}>
+      {/* Wadah elemen <audio> track presenter. Tanpa ini suara tidak berbunyi. */}
+      <div ref={audioSinkRef} style={{ display: "none" }} aria-hidden="true" />
+
+      {perluAktifkanSuara && (
+        <button
+          type="button"
+          className="live-conference-enable-audio"
+          onClick={async () => {
+            try {
+              await roomRef.current?.startAudio();
+              setPerluAktifkanSuara(false);
+            } catch {
+              triggerToast("Gagal mengaktifkan suara");
+            }
+          }}
+        >
+          🔊 Ketuk untuk mengaktifkan suara
+        </button>
+      )}
       {/* ── Toast Alert ─────────────────────────────────────────── */}
       {showToast && (
         <div className="teams-toast">
@@ -838,7 +911,7 @@ export default function LiveRoomScreen({ roomData, onLeaveRoom, onSessionEnded }
                 <p>{connectionError}</p>
               </div>
             )}
-            {!connecting && !connectionError && !isBroadcaster && !currentVideoTrackRef.current && (
+            {!connecting && !connectionError && !isBroadcaster && !hasRemoteVideo && (
               <div className="live-conference-cam-off-placeholder">
                 <div className="live-conference-avatar-circle">
                   <span>{initialsFor(speakerName)}</span>
@@ -867,7 +940,7 @@ export default function LiveRoomScreen({ roomData, onLeaveRoom, onSessionEnded }
           // When Slide is in main view, PiP shows camera
           <div className="live-conference-pip-content">
             <div ref={pipVideoRef} className="live-conference-pip-video" />
-            {!connecting && !currentVideoTrackRef.current && (
+            {!connecting && !hasRemoteVideo && (
               <div className="live-conference-pip-camoff">
                 <span>{isBroadcaster ? "👤" : initialsFor(speakerName)}</span>
               </div>
