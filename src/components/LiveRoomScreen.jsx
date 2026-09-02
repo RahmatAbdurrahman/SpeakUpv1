@@ -490,6 +490,18 @@ export default function LiveRoomScreen({ roomData, onLeaveRoom, onSessionEnded }
           }
         });
 
+        // Auto-publish camera & mic for broadcaster upon join
+        if (broadcaster) {
+          try {
+            await setCameraEnabled(room, true);
+            setIsCamOn(true);
+            await setMicrophoneEnabled(room, true);
+            setIsMicOn(true);
+          } catch (camErr) {
+            console.warn("Auto-enable camera/mic failed:", camErr);
+          }
+        }
+
         setConnecting(false);
       } catch (err) {
         if (active) {

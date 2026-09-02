@@ -54,7 +54,8 @@ export default function LivePresentationScreen({ onBack, onEnterLive }) {
     };
   }, []);
 
-  const handleMaterialUpload = async (file) => {
+  const handleMaterialUpload = async (payload) => {
+    const file = payload?.file || payload;
     setErrorMessage("");
     setStep("processing-materials");
     try {
@@ -68,7 +69,12 @@ export default function LivePresentationScreen({ onBack, onEnterLive }) {
       setMaterialPdfPath(pdfPath);
 
       // 1. Ekstraksi teks PDF langsung di client (100% reliable)
-      const clientExtractedText = await extractPdfTextClientSide(file);
+      let clientExtractedText = "";
+      try {
+        clientExtractedText = await extractPdfTextClientSide(file);
+      } catch (e) {
+        console.warn("Client-side PDF extraction error:", e);
+      }
 
       // 2. Minta ringkasan AI jika Edge Function tersedia
       let text = "";
@@ -78,7 +84,7 @@ export default function LivePresentationScreen({ onBack, onEnterLive }) {
         console.warn("generateNotes Edge Function failed, using client extraction:", genErr);
       }
 
-      const finalNotes = text || clientExtractedText;
+      const finalNotes = (typeof text === "string" && text.trim() ? text : clientExtractedText) || "";
 
       if (!finalNotes) {
         setStep("manual-notes");
@@ -107,12 +113,13 @@ export default function LivePresentationScreen({ onBack, onEnterLive }) {
     }
   };
 
-  const handleManualNotes = async (text) => {
+  const handleManualNotes = async (payload) => {
+    const text = typeof payload === "string" ? payload : payload?.text || "";
     setErrorMessage("");
     setStep("processing-materials");
     try {
-      if (text && text.trim()) {
-        await saveManualMaterialText(simulationId, LIVE_SCENARIO.kategori, text);
+      if (text && typeof text === "string" && text.trim()) {
+        await saveManualMaterialText(simulationId, LIVE_SCENARIO.kategori, text.trim());
       }
       setNotes(text || "");
       setStep("prep");

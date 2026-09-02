@@ -30,8 +30,12 @@ export async function setMicrophoneEnabled(room, enabled) {
 
 /** Attaches a track to a container element and returns the created media element for cleanup. */
 export function attachTrack(track, container) {
+  if (!container) return null;
+  while (container.firstChild) {
+    container.removeChild(container.firstChild);
+  }
   const el = track.attach();
-  container?.appendChild(el);
+  container.appendChild(el);
   return el;
 }
 
