@@ -50,7 +50,7 @@
   overflow: hidden;
 }
 .register-progress-segment.filled {
-  background-color: var(--color-secondary, #24A981);
+  background-color: #24A981;
 }
 
 /* ── Main Form Section ────────────────────────────────────────────────────── */

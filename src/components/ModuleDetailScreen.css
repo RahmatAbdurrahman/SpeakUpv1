@@ -329,7 +329,7 @@
 
 .btn-lesson-status--active,
 .btn-lesson-status--completed {
-  background-color: var(--color-secondary, #24A981);
+  background-color: #24A981;
   border: 1px solid #17674F;
   box-shadow: 0px 4px 0px 0px #17674F;
   color: #FFFFFF;
@@ -344,7 +344,7 @@
 }
 
 .btn-lesson-status--current {
-  background-color: var(--color-primary, #E8753D);
+  background-color: #E8753D;
   border: 1px solid #8B4827;
   box-shadow: 0px 4px 0px 0px #8B4827;
   color: #FFFFFF;
@@ -400,10 +400,10 @@
 .btn-open-next-module {
   height: 38px;
   padding: 0 24px;
-  background-color: var(--color-secondary, #24A981);
-  border: 1px solid #17674F;
+  background-color: #E8753D;
+  border: 1px solid #8B4827;
   border-radius: 34px;
-  box-shadow: 0px 4px 0px 0px #17674F;
+  box-shadow: 0px 4px 0px 0px #8B4827;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -421,7 +421,7 @@
 .btn-open-next-module:hover { filter: brightness(1.05); }
 .btn-open-next-module:active {
   transform: translateY(2px);
-  box-shadow: 0px 2px 0px 0px #17674F;
+  box-shadow: 0px 2px 0px 0px #8B4827;
 }
 
 .btn-open-next-module--inactive {

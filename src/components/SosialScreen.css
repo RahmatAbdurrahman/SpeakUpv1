@@ -184,7 +184,7 @@
   font-family: var(--font-family-base, 'Space Grotesk', sans-serif);
   font-size: 12px;
   font-weight: 700;
-  color: var(--color-secondary, #24A981);
+  color: #24A981;
   background: rgba(36, 169, 129, 0.1);
   padding: 2px 8px;
   border-radius: 100px;
@@ -203,7 +203,7 @@
   font-family: var(--font-family-base, 'Space Grotesk', sans-serif);
   font-size: 12px;
   font-weight: 600;
-  color: var(--color-secondary, #24A981);
+  color: #24A981;
   margin: 6px 0 0 4px;
 }
 
@@ -898,7 +898,7 @@
 }
 
 .sosial-lb-me-tag {
-  color: var(--color-secondary, #24A981);
+  color: #24A981;
   font-weight: 700;
   font-size: 11px;
 }

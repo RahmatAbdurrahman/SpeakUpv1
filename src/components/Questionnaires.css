@@ -52,7 +52,7 @@
   overflow: hidden;
 }
 .progress-segment.filled {
-  background-color: var(--color-secondary, #24A981);
+  background-color: #24A981;
 }
 
 /* Nav Row */
@@ -433,10 +433,10 @@
   font-weight: 700;
 }
 .slider-bottom-min {
-  color: var(--color-secondary, #24A981);
+  color: #24A981;
 }
 .slider-bottom-max {
-  color: var(--color-text-secondary, #DA5000);
+  color: #DA5000;
 }
 
 /* ── Video Record – Intro Screen ──────────────────────────────────────────── */

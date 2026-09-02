@@ -462,14 +462,14 @@
 /* ── Slide Navigation Controls Bar (Pitchdeck Reader) ────────────────────── */
 .live-conference-slide-nav-bar {
   position: absolute;
-  bottom: 84px;
+  bottom: 104px;
   left: 50%;
   transform: translateX(-50%);
   display: flex;
   align-items: center;
   gap: 12px;
-  background: rgba(15, 25, 29, 0.85);
-  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(15, 25, 29, 0.9);
+  border: 1px solid rgba(255, 255, 255, 0.16);
   border-radius: 34px;
   padding: 6px 14px;
   backdrop-filter: blur(14px);

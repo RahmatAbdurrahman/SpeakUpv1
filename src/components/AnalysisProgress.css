@@ -55,7 +55,7 @@
 .analysisprog-bar-fill {
   height: 100%;
   border-radius: 20px;
-  background: var(--color-secondary, #24A981);
+  background: #24A981;
   /* transition mengikuti interval 110ms di JS supaya geraknya mulus,
      bukan meloncat tiap tick */
   transition: width 0.16s linear;
@@ -65,7 +65,7 @@
   font-family: var(--font-family-base, 'Space Grotesk', sans-serif);
   font-size: 12.5px;
   font-weight: 700;
-  color: var(--color-secondary-dark, #17674F);
+  color: #17674F;
   min-width: 34px;
   text-align: right;
   font-variant-numeric: tabular-nums;
@@ -119,12 +119,12 @@
   background: rgba(129, 153, 163, 0.18);
 }
 .analysisprog-step.aktif .analysisprog-step-dot {
-  background: var(--color-secondary, #24A981);
+  background: #24A981;
   color: #FFFFFF;
 }
 .analysisprog-step.selesai .analysisprog-step-dot {
   background: rgba(36, 169, 129, 0.22);
-  color: var(--color-secondary-dark, #17674F);
+  color: #17674F;
 }
 
 .analysisprog-step-label {

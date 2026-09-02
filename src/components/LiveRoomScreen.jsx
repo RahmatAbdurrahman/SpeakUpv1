@@ -150,18 +150,18 @@ export default function LiveRoomScreen({ roomData, onLeaveRoom, onSessionEnded }
     const pipHeight = pip ? pip.offsetHeight : 150;
     const minX = 14;
     const maxX = Math.max(minX, width - pipWidth - 14);
-    const minY = 68;
-    const maxY = Math.max(minY, height - pipHeight - 130);
+    const minY = 96;
+    const maxY = Math.max(minY, height - pipHeight - 115);
     return { width, height, pipWidth, pipHeight, minX, maxX, minY, maxY };
   };
 
   // Draggable PiP State with Magnetic Edge Snap
-  const [pipPos, setPipPos] = useState({ x: 240, y: 72, side: "right" });
+  const [pipPos, setPipPos] = useState({ x: 240, y: 96, side: "right" });
   const [isDragging, setIsDragging] = useState(false);
   const isDraggingRef = useRef(false);
   const dragStartRef = useRef({ startX: 0, startY: 0, initPipX: 0, initPipY: 0 });
   const hasMovedRef = useRef(false);
-  const pipPosRef = useRef({ x: 240, y: 72, side: "right" });
+  const pipPosRef = useRef({ x: 240, y: 96, side: "right" });
 
   useEffect(() => {
     pipPosRef.current = pipPos;
@@ -170,7 +170,7 @@ export default function LiveRoomScreen({ roomData, onLeaveRoom, onSessionEnded }
   useEffect(() => {
     const timer = setTimeout(() => {
       const { maxX, minY } = getContainerMetrics();
-      setPipPos({ x: maxX, y: minY + 4, side: "right" });
+      setPipPos({ x: maxX, y: minY, side: "right" });
     }, 40);
     return () => clearTimeout(timer);
   }, []);
