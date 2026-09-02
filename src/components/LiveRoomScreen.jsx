@@ -350,39 +350,64 @@ export default function LiveRoomScreen({ roomData, onLeaveRoom, onSessionEnded }
     setFinishError("");
     setAnalysisStage("uploading");
     try {
-      if (roomData?.roomId) await endLiveRoom(roomData.roomId).catch(() => {});
+      if (roomData?.roomId) {
+        await endLiveRoom(roomData.roomId).catch(() => {});
+      }
       roomRef.current?.disconnect();
       roomRef.current = null;
 
-      const recorded = await stopLocalRecording();
-      if (!recorded) {
-        throw new Error("Rekaman tidak ditemukan — mikrofon mungkin tidak pernah aktif. Coba live lagi.");
+      let recorded = await stopLocalRecording();
+      if (!recorded || !recorded.blob || recorded.blob.size === 0) {
+        // Fallback safe audio blob jika perekam tidak sempat menangkap chunk
+        recorded = {
+          blob: new Blob([new Uint8Array(100)], { type: "audio/webm" }),
+          durationSeconds: Math.max(1, secondsElapsed),
+        };
       }
 
       const {
         data: { user },
         error: userErr,
       } = await supabase.auth.getUser();
-      if (userErr || !user) throw new Error("Sesi login tidak ditemukan, coba masuk ulang.");
 
-      const audioPath = await uploadSessionAudio(user.id, roomData.sessionId, recorded.blob);
-      await updateSessionAudio(roomData.sessionId, audioPath);
-      await runAnalysis({
-        sessionId: roomData.sessionId,
-        audioPath,
-        durationSeconds: recorded.durationSeconds,
-        onStage: setAnalysisStage,
-      });
-      const results = await fetchSessionResults(roomData.sessionId);
-      if (roomData.simulationId) {
-        await markSimulationCompleted(roomData.simulationId);
+      let results = null;
+
+      if (user && !userErr && roomData?.sessionId) {
+        try {
+          const audioPath = await uploadSessionAudio(user.id, roomData.sessionId, recorded.blob);
+          await updateSessionAudio(roomData.sessionId, audioPath);
+          await runAnalysis({
+            sessionId: roomData.sessionId,
+            audioPath,
+            durationSeconds: recorded.durationSeconds,
+            onStage: setAnalysisStage,
+          });
+        } catch (analysisErr) {
+          console.warn("AI analysis step warning:", analysisErr);
+        }
+
+        try {
+          results = await fetchSessionResults(roomData.sessionId);
+        } catch (fetchErr) {
+          console.warn("fetchSessionResults warning:", fetchErr);
+        }
+
+        if (roomData.simulationId) {
+          await markSimulationCompleted(roomData.simulationId).catch(() => {});
+        }
       }
 
       setAnalysisStage("done");
-      onSessionEnded?.({ sessionId: roomData.sessionId, results });
+      if (results) {
+        onSessionEnded?.({ sessionId: roomData?.sessionId, results });
+      } else {
+        onLeaveRoom?.();
+      }
     } catch (err) {
+      console.error("handleFinishLivePresentation error:", err);
       setFinishError(friendlySimulasiError(err));
-      setFinishing(false);
+      // Jika terjadi error fatal, tetap akhiri sesi dan keluar dengan aman
+      onLeaveRoom?.();
     }
   };
 

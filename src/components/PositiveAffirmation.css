@@ -107,7 +107,7 @@
   width: 100%;
   max-width: 366px;
   height: 46px;
-  background-color: var(--color-primary, #E8753D);
+  background-color: #E8753D;
   color: #FFFFFF;
   border: 1px solid #8B4827;
   border-radius: var(--radius-full, 100px);

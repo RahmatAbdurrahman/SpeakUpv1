@@ -203,10 +203,10 @@
   width: 100%;
   max-width: 366px;
   height: 46px;
-  background: #24A981;
-  border: 1px solid #1A7A5E;
+  background: #E8753D;
+  border: 1px solid #8B4827;
   border-radius: 34px;
-  box-shadow: 0px 4px 0px 0px #1A7A5E;
+  box-shadow: 0px 4px 0px 0px #8B4827;
   color: #FFFFFF;
   font-family: var(--font-family-base, 'Space Grotesk', sans-serif);
   font-size: 14px;
@@ -217,7 +217,7 @@
 
 .btn-lesson-primary:active {
   transform: translateY(2px);
-  box-shadow: 0px 2px 0px 0px #1A7A5E;
+  box-shadow: 0px 2px 0px 0px #8B4827;
 }
 
 .btn-lesson-finish {

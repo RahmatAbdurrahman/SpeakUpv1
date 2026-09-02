@@ -207,10 +207,10 @@
   user-select: none;
   -webkit-tap-highlight-color: transparent;
 }
-.tag-chip:hover { border-color: var(--color-primary, #E8753D); }
+.tag-chip:hover { border-color: #E8753D; }
 .tag-chip.active {
   background-color: rgba(232, 117, 61, 0.12);
-  border: 2px solid var(--color-primary, #E8753D);
+  border: 2px solid #E8753D;
   padding: 7px 11px;
   color: var(--color-text-secondary, #DA5000);
 }
@@ -238,10 +238,10 @@
   box-sizing: border-box;
   -webkit-tap-highlight-color: transparent;
 }
-.radio-card:hover { border-color: var(--color-primary, #E8753D); }
+.radio-card:hover { border-color: #E8753D; }
 .radio-card.active {
   background-color: rgba(232, 117, 61, 0.12);
-  border: 2px solid var(--color-primary, #E8753D);
+  border: 2px solid #E8753D;
   padding: 15px 19px;
 }
 .radio-indicator {
@@ -256,7 +256,7 @@
   transition: border-color 0.15s ease;
 }
 .radio-card.active .radio-indicator {
-  border-color: var(--color-primary, #E8753D);
+  border-color: #E8753D;
 }
 .radio-dot {
   width: 10px;
@@ -266,7 +266,7 @@
   transition: background-color 0.15s ease;
 }
 .radio-card.active .radio-dot {
-  background-color: var(--color-primary, #E8753D);
+  background-color: #E8753D;
 }
 .radio-label {
   font-size: 14px;
@@ -658,7 +658,7 @@
   width: 100%;
   max-width: 366px;
   height: 46px;
-  background-color: var(--color-primary, #E8753D);
+  background-color: #E8753D;
   color: #FFFFFF;
   border: 1px solid #8B4827;
   border-radius: var(--buttons, 100px);
