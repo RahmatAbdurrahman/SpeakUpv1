@@ -19,14 +19,16 @@
 
 /* ── TopBar ──────────────────────────────────────────────────────────────── */
 .profile-topbar {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 30;
   display: flex;
   align-items: flex-end;
   justify-content: space-between;
   padding: 48px 20px 16px 20px;
   background-color: var(--color-bg-app, #FAF8F3);
-  border-bottom: 1px solid rgba(0, 0, 0, 0.05);
-  flex-shrink: 0;
-  z-index: 10;
   box-sizing: border-box;
 }
 
@@ -70,10 +72,11 @@
   flex: 1;
   overflow-y: auto;
   overflow-x: hidden;
-  padding: 16px 20px 120px;
+  padding: 104px 20px 130px;
   display: flex;
   flex-direction: column;
   gap: 16px;
+  box-sizing: border-box;
   -webkit-overflow-scrolling: touch;
 }
 
@@ -1058,8 +1061,9 @@
   font-family: var(--font-family-base, 'Space Grotesk', sans-serif);
   font-size: 10px;
   font-weight: 700;
-  padding: 3px 9px;
+  padding: 4px 10px;
   border-radius: 34px;
+  border: none;
   white-space: nowrap;
   display: inline-flex;
   align-items: center;
@@ -1067,13 +1071,18 @@
 }
 
 .profile-analysis-chip--good {
-  color: #24A981;
-  background: rgba(36, 169, 129, 0.1);
+  color: #17674F;
+  background: rgba(36, 169, 129, 0.12);
+}
+
+.profile-analysis-chip--medium {
+  color: #C2410C;
+  background: rgba(232, 117, 61, 0.12);
 }
 
 .profile-analysis-chip--warn {
-  color: #F43F5E;
-  background: rgba(244, 63, 94, 0.1);
+  color: #DC2626;
+  background: rgba(239, 68, 68, 0.12);
 }
 
 /* ── Peer Rating Card ────────────────────────────────────────────────────── */

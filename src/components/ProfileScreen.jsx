@@ -7,6 +7,7 @@ import iconGroup from "../assets/pages_assets/practice/icon_group.svg";
 import iconFlash from "../assets/pages_assets/ai_analysis/Icons/Flash-Icon.svg";
 import iconEye from "../assets/icons/Eye.svg";
 import iconSpeed from "../assets/pages_assets/ai_analysis/Icons/Speed-Icon.svg";
+import iconMouth from "../assets/pages_assets/ai_analysis/Icons/Mouth-Icon.svg";
 import iconArgument from "../assets/pages_assets/ai_analysis/Icons/Argument-Icon.svg";
 import iconSettings from "../assets/icons/Settings.svg";
 import iconStar from "../assets/icons/Star.svg";
@@ -20,6 +21,33 @@ import { fetchProgressSummary, fetchStreakSummary } from "../lib/progress";
 import { fetchMyPeerRatingSummary } from "../lib/peerFeedback";
 import { useUserProgress } from "../context/UserProgressContext";
 import { ProfileSkeleton } from "./SkeletonLoader";
+
+function getMetricBadge(score, type) {
+  const val = score != null ? Math.round(score) : 0;
+  if (val >= 75) {
+    let label = "Lancar";
+    if (type === "fluency") label = "Lancar";
+    else if (type === "eye") label = "Fokus";
+    else if (type === "intonasi") label = "Dinamis";
+    else if (type === "argument") label = "Terstruktur";
+    return { label, tone: "good" };
+  }
+  if (val >= 50) {
+    let label = "Cukup";
+    if (type === "fluency") label = "Cukup Lancar";
+    else if (type === "eye") label = "Cukup Fokus";
+    else if (type === "intonasi") label = "Cukup Dinamis";
+    else if (type === "argument") label = "Cukup Terstruktur";
+    return { label, tone: "medium" };
+  }
+  // val < 50
+  let label = "Perlu Latihan";
+  if (type === "fluency") label = "Perlu Latihan";
+  else if (type === "eye") label = "Kurang Fokus";
+  else if (type === "intonasi") label = "Monoton";
+  else if (type === "argument") label = "Belum Terstruktur";
+  return { label, tone: "warn" };
+}
 
 const KATEGORI_LABEL = {
   spontan: "Spontaneous",
@@ -687,50 +715,74 @@ export default function ProfileScreen({
 
               <div className="profile-analysis-grid">
                 {/* Fluency */}
-                <div className="profile-analysis-card">
-                  <img src={iconFlash} alt="" className="profile-analysis-icon" />
-                  <p className="profile-analysis-card-label">Kelancaran</p>
-                  <p className="profile-analysis-metric">
-                    {summary?.avgSubScores?.fluency != null ? Math.round(summary.avgSubScores.fluency) : 84}
-                    <span className="profile-analysis-metric-unit">/ 100</span>
-                  </p>
-                  <span className="profile-analysis-chip profile-analysis-chip--good">Lancar</span>
-                </div>
+                {(() => {
+                  const score = summary?.avgSubScores?.fluency != null ? Math.round(summary.avgSubScores.fluency) : 84;
+                  const badge = getMetricBadge(score, "fluency");
+                  return (
+                    <div className="profile-analysis-card">
+                      <img src={iconFlash} alt="" className="profile-analysis-icon" />
+                      <p className="profile-analysis-card-label">Kelancaran</p>
+                      <p className="profile-analysis-metric">
+                        {score}
+                        <span className="profile-analysis-metric-unit">/ 100</span>
+                      </p>
+                      <span className={`profile-analysis-chip profile-analysis-chip--${badge.tone}`}>{badge.label}</span>
+                    </div>
+                  );
+                })()}
 
                 {/* Eye Contact */}
-                <div className="profile-analysis-card">
-                  <img src={iconEye} alt="" className="profile-analysis-icon" />
-                  <p className="profile-analysis-card-label">Kontak Mata</p>
-                  <p className="profile-analysis-metric">
-                    {summary?.avgSubScores?.eye_contact != null ? Math.round(summary.avgSubScores.eye_contact) : 76}
-                    <span className="profile-analysis-metric-unit">/ 100</span>
-                  </p>
-                  <span className="profile-analysis-chip profile-analysis-chip--good">Fokus</span>
-                </div>
+                {(() => {
+                  const score = summary?.avgSubScores?.eye_contact != null ? Math.round(summary.avgSubScores.eye_contact) : 76;
+                  const badge = getMetricBadge(score, "eye");
+                  return (
+                    <div className="profile-analysis-card">
+                      <img src={iconEye} alt="" className="profile-analysis-icon" />
+                      <p className="profile-analysis-card-label">Kontak Mata</p>
+                      <p className="profile-analysis-metric">
+                        {score}
+                        <span className="profile-analysis-metric-unit">/ 100</span>
+                      </p>
+                      <span className={`profile-analysis-chip profile-analysis-chip--${badge.tone}`}>{badge.label}</span>
+                    </div>
+                  );
+                })()}
 
                 {/* Intonasi */}
-                <div className="profile-analysis-card">
-                  <img src={iconSpeed} alt="" className="profile-analysis-icon" />
-                  <p className="profile-analysis-card-label">Intonasi</p>
-                  <p className="profile-analysis-metric">
-                    {summary?.avgSubScores?.intonasi != null ? Math.round(summary.avgSubScores.intonasi) : 80}
-                    <span className="profile-analysis-metric-unit">/ 100</span>
-                  </p>
-                  <span className="profile-analysis-chip profile-analysis-chip--good">Dinamis</span>
-                </div>
+                {(() => {
+                  const score = summary?.avgSubScores?.intonasi != null ? Math.round(summary.avgSubScores.intonasi) : 80;
+                  const badge = getMetricBadge(score, "intonasi");
+                  return (
+                    <div className="profile-analysis-card">
+                      <img src={iconMouth} alt="" className="profile-analysis-icon" />
+                      <p className="profile-analysis-card-label">Intonasi</p>
+                      <p className="profile-analysis-metric">
+                        {score}
+                        <span className="profile-analysis-metric-unit">/ 100</span>
+                      </p>
+                      <span className={`profile-analysis-chip profile-analysis-chip--${badge.tone}`}>{badge.label}</span>
+                    </div>
+                  );
+                })()}
 
                 {/* Struktur Materi */}
-                <div className="profile-analysis-card">
-                  <img src={iconArgument} alt="" className="profile-analysis-icon" />
-                  <p className="profile-analysis-card-label">Struktur Argumen</p>
-                  <p className="profile-analysis-metric">
-                    {summary?.avgSubScores?.kesesuaian_materi != null
-                      ? Math.round(summary.avgSubScores.kesesuaian_materi)
-                      : 78}
-                    <span className="profile-analysis-metric-unit">/ 100</span>
-                  </p>
-                  <span className="profile-analysis-chip profile-analysis-chip--good">Terstruktur</span>
-                </div>
+                {(() => {
+                  const score = summary?.avgSubScores?.kesesuaian_materi != null
+                    ? Math.round(summary.avgSubScores.kesesuaian_materi)
+                    : 78;
+                  const badge = getMetricBadge(score, "argument");
+                  return (
+                    <div className="profile-analysis-card">
+                      <img src={iconArgument} alt="" className="profile-analysis-icon" />
+                      <p className="profile-analysis-card-label">Struktur Argumen</p>
+                      <p className="profile-analysis-metric">
+                        {score}
+                        <span className="profile-analysis-metric-unit">/ 100</span>
+                      </p>
+                      <span className={`profile-analysis-chip profile-analysis-chip--${badge.tone}`}>{badge.label}</span>
+                    </div>
+                  );
+                })()}
               </div>
             </section>
 

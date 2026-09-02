@@ -542,6 +542,7 @@ function InterviewCallView({
   const videoSpeakingRef = useRef(null);
   const blinkTimeoutRef = useRef(null);
   const ttsTimeoutRef = useRef(null);
+  const speakingDelayTimeoutRef = useRef(null);
 
   const [isInterviewerSpeaking, setIsInterviewerSpeaking] = useState(false);
   const [subtitle, setSubtitle] = useState("");
@@ -635,6 +636,7 @@ function InterviewCallView({
   };
 
   const endSpeaking = () => {
+    if (speakingDelayTimeoutRef.current) clearTimeout(speakingDelayTimeoutRef.current);
     if (ttsTimeoutRef.current) clearTimeout(ttsTimeoutRef.current);
     stopQuestionTTS();
     setIsInterviewerSpeaking(false);
@@ -652,26 +654,45 @@ function InterviewCallView({
   const speakQuestion = (text) => {
     if (blinkTimeoutRef.current) clearTimeout(blinkTimeoutRef.current);
     if (ttsTimeoutRef.current) clearTimeout(ttsTimeoutRef.current);
+    if (speakingDelayTimeoutRef.current) clearTimeout(speakingDelayTimeoutRef.current);
 
-    setIsInterviewerSpeaking(true);
     setIsAnswering(false);
     setSubtitle(text);
 
-    // Play speaking mascot video
-    if (videoSpeakingRef.current) {
-      videoSpeakingRef.current.currentTime = 0;
-      videoSpeakingRef.current.play().catch(() => {});
-    }
-    if (videoBlinkingRef.current) {
-      videoBlinkingRef.current.pause();
+    const activateSpeakingVideo = () => {
+      setIsInterviewerSpeaking(true);
+      if (videoSpeakingRef.current) {
+        videoSpeakingRef.current.currentTime = 0;
+        videoSpeakingRef.current.play().catch(() => {});
+      }
+      if (videoBlinkingRef.current) {
+        videoBlinkingRef.current.pause();
+      }
+    };
+
+    const isFirstQuestion = qIndex === 0;
+    const delayMs = isFirstQuestion ? 3000 : 0;
+
+    if (delayMs > 0) {
+      // 3-second delay only on the first question for avatar speaking state while TTS initializes
+      setIsInterviewerSpeaking(false);
+      if (videoBlinkingRef.current) {
+        videoBlinkingRef.current.play().catch(() => {});
+      }
+
+      speakingDelayTimeoutRef.current = setTimeout(() => {
+        activateSpeakingVideo();
+      }, delayMs);
+    } else {
+      // Subsequent questions speak immediately without delay
+      activateSpeakingVideo();
     }
 
-    // Play real-time male voice TTS (Puter.js OpenAI Onyx with Edge TTS / Web Speech fallback)
+    // Play real-time male voice TTS (ElevenLabs / Edge TTS fallback)
     playQuestionTTS(text, {
       onStart: () => {
-        setIsInterviewerSpeaking(true);
-        if (videoSpeakingRef.current) {
-          videoSpeakingRef.current.play().catch(() => {});
+        if (!isFirstQuestion || !speakingDelayTimeoutRef.current) {
+          activateSpeakingVideo();
         }
       },
       onEnd: () => {
@@ -680,7 +701,7 @@ function InterviewCallView({
     });
 
     // Safety fallback duration based on sentence length
-    const fallbackDuration = Math.min(20000, Math.max(6000, text.length * 120));
+    const fallbackDuration = Math.min(24000, Math.max(9000, delayMs + text.length * 120));
     ttsTimeoutRef.current = setTimeout(() => {
       endSpeaking();
     }, fallbackDuration);
@@ -695,6 +716,7 @@ function InterviewCallView({
 
     return () => {
       clearTimeout(timer);
+      if (speakingDelayTimeoutRef.current) clearTimeout(speakingDelayTimeoutRef.current);
       if (blinkTimeoutRef.current) clearTimeout(blinkTimeoutRef.current);
       if (ttsTimeoutRef.current) clearTimeout(ttsTimeoutRef.current);
       stopQuestionTTS();
@@ -704,6 +726,7 @@ function InterviewCallView({
   // Ensure TTS audio is immediately destroyed when the interview component unmounts
   useEffect(() => {
     return () => {
+      if (speakingDelayTimeoutRef.current) clearTimeout(speakingDelayTimeoutRef.current);
       stopQuestionTTS();
     };
   }, []);
