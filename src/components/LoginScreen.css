@@ -115,8 +115,8 @@
   font-weight: 700;
 }
 .login-input:focus {
-  border-color: var(--color-primary, #E8753D);
-  box-shadow: 0 0 0 2px rgba(232, 117, 61, 0.15);
+  border-color: #E8753D;
+  box-shadow: 0 0 0 2px rgba(232, 117, 61, 0.2);
 }
 .login-input-wrapper .login-input {
   padding-right: 48px;
