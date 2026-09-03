@@ -9,7 +9,39 @@ const ELEVENLABS_VOICE_ID = "pNInz6obpgDQGcFmaJgB"; // Adam - Professional & Nat
 let currentAudioInstance = null;
 let activePlaybackId = 0;
 let currentAbortController = null;
+let isAudioUnlocked = false;
 const audioCache = new Map();
+
+/**
+ * Pre-unlocks audio context and browser media autoplay permissions during user clicks.
+ */
+export function unlockAudio() {
+  if (isAudioUnlocked) return;
+  try {
+    // 1. Silent dummy Audio element to register user gesture
+    const silentAudio = new Audio();
+    silentAudio.src = "data:audio/wav;base64,UklGRigAAABXQVZFZm10IBIAAAABAAEARKwAAIhYAQACABAAAABkYXRhAgAAAAEA";
+    silentAudio.volume = 0.01;
+    silentAudio.play().then(() => {
+      silentAudio.pause();
+      isAudioUnlocked = true;
+    }).catch(() => {});
+
+    // 2. Unlock AudioContext if present
+    const AudioCtx = window.AudioContext || window.webkitAudioContext;
+    if (AudioCtx) {
+      const ctx = new AudioCtx();
+      ctx.resume().then(() => {
+        ctx.close().catch(() => {});
+      }).catch(() => {});
+    }
+
+    // 3. Pre-load SpeechSynthesis voices
+    if ("speechSynthesis" in window) {
+      window.speechSynthesis.getVoices();
+    }
+  } catch (_) {}
+}
 
 /**
  * Instantly stops any ongoing or in-flight TTS playback, aborts network fetch,
@@ -100,14 +132,14 @@ export async function playQuestionTTS(text, { onStart, onEnd } = {}) {
         return;
       } else {
         console.warn(
-          `ElevenLabs TTS response error (${response.status}), falling back to Edge TTS.`
+          `[InterviewTTS] ElevenLabs response error (${response.status}), falling back to Edge TTS.`
         );
       }
     } catch (err) {
       if (err?.name === "AbortError" || activePlaybackId !== playbackId) {
         return; // Aborted intentionally on exit, do not trigger fallback
       }
-      console.warn("ElevenLabs TTS request failed, falling back to Edge TTS:", err);
+      console.warn("[InterviewTTS] ElevenLabs request failed, falling back to Edge TTS:", err);
     }
   }
 
@@ -123,6 +155,7 @@ function playBlobUrl(blobUrl, { onStart, onEnd, fallbackText, playbackId }) {
 
   try {
     const audio = new Audio(blobUrl);
+    audio.volume = 1.0;
     currentAudioInstance = audio;
 
     audio.onplay = () => {
@@ -136,7 +169,7 @@ function playBlobUrl(blobUrl, { onStart, onEnd, fallbackText, playbackId }) {
 
     audio.onerror = (e) => {
       if (activePlaybackId !== playbackId) return;
-      console.warn("Blob audio playback error, fallback to Edge TTS:", e);
+      console.warn("[InterviewTTS] Blob playback error, falling back to Edge TTS:", e);
       if (currentAudioInstance === audio) currentAudioInstance = null;
       playWithEdgeTts(fallbackText, { onStart, onEnd, playbackId });
     };
@@ -145,7 +178,7 @@ function playBlobUrl(blobUrl, { onStart, onEnd, fallbackText, playbackId }) {
     if (playPromise !== undefined) {
       playPromise.catch((err) => {
         if (activePlaybackId !== playbackId) return;
-        console.warn("Blob audio play blocked, fallback to Edge TTS:", err);
+        console.warn("[InterviewTTS] Blob audio play blocked, falling back to Edge TTS:", err);
         playWithEdgeTts(fallbackText, { onStart, onEnd, playbackId });
       });
     }
@@ -162,6 +195,7 @@ function playWithEdgeTts(text, { onStart, onEnd, playbackId } = {}) {
 
   try {
     const audio = new Audio(ttsUrl);
+    audio.volume = 1.0;
     currentAudioInstance = audio;
 
     audio.onplay = () => {
@@ -175,7 +209,7 @@ function playWithEdgeTts(text, { onStart, onEnd, playbackId } = {}) {
 
     audio.onerror = (e) => {
       if (activePlaybackId !== playbackId) return;
-      console.warn("Edge TTS stream error, fallback to Web Speech:", e);
+      console.warn("[InterviewTTS] Edge TTS error, falling back to Web Speech:", e);
       if (currentAudioInstance === audio) currentAudioInstance = null;
       fallbackWebSpeech(text, { onStart, onEnd, playbackId });
     };
@@ -184,7 +218,7 @@ function playWithEdgeTts(text, { onStart, onEnd, playbackId } = {}) {
     if (playPromise !== undefined) {
       playPromise.catch((err) => {
         if (activePlaybackId !== playbackId) return;
-        console.warn("Audio play blocked, fallback to Web Speech:", err);
+        console.warn("[InterviewTTS] Audio play blocked, falling back to Web Speech:", err);
         fallbackWebSpeech(text, { onStart, onEnd, playbackId });
       });
     }
@@ -200,28 +234,44 @@ function fallbackWebSpeech(text, { onStart, onEnd, playbackId } = {}) {
 
   if (!("speechSynthesis" in window)) {
     if (onStart) onStart();
-    if (onEnd) setTimeout(onEnd, 3000);
+    if (onEnd) setTimeout(onEnd, 3500);
     return;
   }
 
-  window.speechSynthesis.cancel();
-  const utterance = new SpeechSynthesisUtterance(text);
-  utterance.lang = "id-ID";
-  utterance.rate = 0.95;
-  utterance.pitch = 0.65;
+  try {
+    window.speechSynthesis.cancel();
+    const utterance = new SpeechSynthesisUtterance(text);
+    utterance.lang = "id-ID";
+    utterance.rate = 1.0;
+    utterance.pitch = 0.9;
 
-  utterance.onstart = () => {
-    if (activePlaybackId === playbackId && onStart) onStart();
-  };
+    const voices = window.speechSynthesis.getVoices();
+    const idVoice = voices.find(
+      (v) =>
+        v.lang?.toLowerCase().startsWith("id") ||
+        v.name?.toLowerCase().includes("indonesia") ||
+        v.name?.toLowerCase().includes("indonesian")
+    );
+    if (idVoice) utterance.voice = idVoice;
 
-  utterance.onend = () => {
-    if (activePlaybackId === playbackId && onEnd) onEnd();
-  };
+    utterance.onstart = () => {
+      if (activePlaybackId === playbackId && onStart) onStart();
+    };
 
-  utterance.onerror = () => {
-    if (activePlaybackId === playbackId && onEnd) onEnd();
-  };
+    utterance.onend = () => {
+      if (activePlaybackId === playbackId && onEnd) onEnd();
+    };
 
-  window.speechSynthesis.speak(utterance);
+    utterance.onerror = (e) => {
+      console.warn("[InterviewTTS] WebSpeech error:", e);
+      if (activePlaybackId === playbackId && onEnd) onEnd();
+    };
+
+    window.speechSynthesis.speak(utterance);
+  } catch (err) {
+    console.warn("[InterviewTTS] WebSpeech exception:", err);
+    if (onStart) onStart();
+    if (onEnd) setTimeout(onEnd, 3500);
+  }
 }
 

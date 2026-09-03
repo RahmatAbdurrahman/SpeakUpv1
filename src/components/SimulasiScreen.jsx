@@ -35,7 +35,7 @@ import SlideViewer from "./SlideViewer";
 import TranscriptCard from "./TranscriptCard";
 import LessonExitModal from "./LessonExitModal";
 import { exportAnalysisToPDF } from "../lib/pdfExport";
-import { playQuestionTTS, stopQuestionTTS } from "../lib/interviewTTS";
+import { playQuestionTTS, stopQuestionTTS, unlockAudio } from "../lib/interviewTTS";
 import { supabase } from "../lib/supabaseClient";
 import {
   SCENARIOS,
@@ -253,7 +253,10 @@ export function UploadStep({ scenario, uploading, error, onBack, onSubmit }) {
           type="button"
           className="btn-simulasi-lanjut"
           disabled={!file || uploading}
-          onClick={() => onSubmit({ file, interviewObjective })}
+          onClick={() => {
+            unlockAudio();
+            onSubmit({ file, interviewObjective });
+          }}
         >
           {uploading ? "Mengunggah & Menganalisis..." : "Lanjut"}
         </button>
@@ -797,8 +800,23 @@ function InterviewCallView({
           }}
         />
 
-        {/* Bottom Subtitle Badge with Expand Button */}
+        {/* Bottom Subtitle Badge with Expand & Replay Voice Button */}
         <div className="simulasi-avatar-subtitle-pill">
+          <button
+            type="button"
+            className="simulasi-subtitle-speak-btn"
+            onClick={() => {
+              unlockAudio();
+              speakQuestion(currentQuestion);
+            }}
+            title="Putar Ulang Suara Pertanyaan"
+            aria-label="Putar Ulang Suara"
+          >
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M11 5L6 9H2V15H6L11 19V5Z" stroke="#FFFFFF" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+              <path d="M15.54 8.46C16.48 9.4 17 10.67 17 12C17 13.33 16.48 14.6 15.54 15.54" stroke="#FFFFFF" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+            </svg>
+          </button>
           <span className="simulasi-avatar-subtitle-text">
             {isInterviewerSpeaking ? subtitle : currentQuestion}
           </span>

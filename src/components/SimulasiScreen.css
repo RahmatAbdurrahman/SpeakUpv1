@@ -744,6 +744,27 @@
   max-width: 200px;
 }
 
+.simulasi-subtitle-speak-btn {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: rgba(36, 169, 129, 0.45);
+  border: none;
+  color: #FFFFFF;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  padding: 0;
+  flex-shrink: 0;
+  transition: background 0.15s ease, transform 0.15s ease;
+}
+
+.simulasi-subtitle-speak-btn:hover {
+  background: rgba(36, 169, 129, 0.85);
+  transform: scale(1.1);
+}
+
 .simulasi-subtitle-expand-btn {
   width: 22px;
   height: 22px;
