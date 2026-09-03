@@ -978,3 +978,82 @@
 .live-conference-enable-audio:active {
   transform: translateX(-50%) scale(0.97);
 }
+
+/* ── Gerbang mutu Live Presentation ──────────────────────────────────────
+   Sepadan dengan .modul7-gate-* / RecordingGateModal di Simulasi, tapi
+   bertema gelap mengikuti UI live room. */
+.live-gate-backdrop {
+  position: absolute;
+  inset: 0;
+  z-index: 90;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  background: rgba(4, 9, 11, 0.82);
+  backdrop-filter: blur(6px);
+  box-sizing: border-box;
+}
+
+.live-gate-sheet {
+  width: 100%;
+  max-width: 330px;
+  background: #16232A;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 20px;
+  padding: 22px 20px;
+  box-shadow: 0 18px 40px rgba(0, 0, 0, 0.55);
+  text-align: center;
+}
+
+.live-gate-title {
+  font-family: var(--font-family-base, 'Space Grotesk', sans-serif);
+  font-size: 16px;
+  font-weight: 700;
+  color: #F8FAFC;
+  margin: 0 0 8px;
+}
+
+.live-gate-desc {
+  font-family: var(--font-family-base, 'Space Grotesk', sans-serif);
+  font-size: 12.5px;
+  font-weight: 500;
+  color: #94A3B8;
+  line-height: 1.55;
+  margin: 0 0 18px;
+}
+
+.live-gate-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
+}
+
+.btn-live-gate-primary,
+.btn-live-gate-ghost {
+  width: 100%;
+  height: 42px;
+  border-radius: 24px;
+  font-family: var(--font-family-base, 'Space Grotesk', sans-serif);
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.btn-live-gate-primary {
+  border: none;
+  background: #15B392;
+  color: #FFFFFF;
+}
+
+.btn-live-gate-ghost {
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  background: transparent;
+  color: #CBD5E1;
+}
+
+.btn-live-gate-primary:active,
+.btn-live-gate-ghost:active {
+  transform: scale(0.98);
+}
