@@ -639,7 +639,6 @@ function InterviewCallView({
   };
 
   const endSpeaking = () => {
-    if (speakingDelayTimeoutRef.current) clearTimeout(speakingDelayTimeoutRef.current);
     if (ttsTimeoutRef.current) clearTimeout(ttsTimeoutRef.current);
     stopQuestionTTS();
     setIsInterviewerSpeaking(false);
@@ -654,13 +653,19 @@ function InterviewCallView({
   };
 
   // Trigger question speech (Speaking.webm + Real-Time Male Voice TTS + Subtitle)
+  // Avatar speaks STRICTLY when audio emits sound (onStart) and stops when audio ends (onEnd).
   const speakQuestion = (text) => {
     if (blinkTimeoutRef.current) clearTimeout(blinkTimeoutRef.current);
     if (ttsTimeoutRef.current) clearTimeout(ttsTimeoutRef.current);
-    if (speakingDelayTimeoutRef.current) clearTimeout(speakingDelayTimeoutRef.current);
 
     setIsAnswering(false);
     setSubtitle(text);
+
+    // Initial state: Avatar MUST stay in idle/blinking mode while TTS synthesizes
+    setIsInterviewerSpeaking(false);
+    if (videoBlinkingRef.current) {
+      videoBlinkingRef.current.play().catch(() => {});
+    }
 
     const activateSpeakingVideo = () => {
       setIsInterviewerSpeaking(true);
@@ -673,38 +678,18 @@ function InterviewCallView({
       }
     };
 
-    const isFirstQuestion = qIndex === 0;
-    const delayMs = isFirstQuestion ? 3000 : 0;
-
-    if (delayMs > 0) {
-      // 3-second delay only on the first question for avatar speaking state while TTS initializes
-      setIsInterviewerSpeaking(false);
-      if (videoBlinkingRef.current) {
-        videoBlinkingRef.current.play().catch(() => {});
-      }
-
-      speakingDelayTimeoutRef.current = setTimeout(() => {
-        activateSpeakingVideo();
-      }, delayMs);
-    } else {
-      // Subsequent questions speak immediately without delay
-      activateSpeakingVideo();
-    }
-
-    // Play real-time male voice TTS (ElevenLabs / Edge TTS fallback)
+    // Play real-time male voice TTS: transition video to speaking ONLY when audio actually plays
     playQuestionTTS(text, {
       onStart: () => {
-        if (!isFirstQuestion || !speakingDelayTimeoutRef.current) {
-          activateSpeakingVideo();
-        }
+        activateSpeakingVideo();
       },
       onEnd: () => {
         endSpeaking();
       },
     });
 
-    // Safety fallback duration based on sentence length
-    const fallbackDuration = Math.min(24000, Math.max(9000, delayMs + text.length * 120));
+    // Safety fallback duration based on sentence length (in case network drops)
+    const fallbackDuration = Math.min(30000, Math.max(12000, text.length * 150));
     ttsTimeoutRef.current = setTimeout(() => {
       endSpeaking();
     }, fallbackDuration);
@@ -719,7 +704,6 @@ function InterviewCallView({
 
     return () => {
       clearTimeout(timer);
-      if (speakingDelayTimeoutRef.current) clearTimeout(speakingDelayTimeoutRef.current);
       if (blinkTimeoutRef.current) clearTimeout(blinkTimeoutRef.current);
       if (ttsTimeoutRef.current) clearTimeout(ttsTimeoutRef.current);
       stopQuestionTTS();
@@ -729,7 +713,6 @@ function InterviewCallView({
   // Ensure TTS audio is immediately destroyed when the interview component unmounts
   useEffect(() => {
     return () => {
-      if (speakingDelayTimeoutRef.current) clearTimeout(speakingDelayTimeoutRef.current);
       stopQuestionTTS();
     };
   }, []);

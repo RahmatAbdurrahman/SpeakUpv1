@@ -157,10 +157,17 @@ function playBlobUrl(blobUrl, { onStart, onEnd, fallbackText, playbackId }) {
     const audio = new Audio(blobUrl);
     audio.volume = 1.0;
     currentAudioInstance = audio;
+    let started = false;
 
-    audio.onplay = () => {
-      if (activePlaybackId === playbackId && onStart) onStart();
+    const handlePlaybackStart = () => {
+      if (!started && activePlaybackId === playbackId) {
+        started = true;
+        if (onStart) onStart();
+      }
     };
+
+    audio.onplaying = handlePlaybackStart;
+    audio.onplay = handlePlaybackStart;
 
     audio.onended = () => {
       if (currentAudioInstance === audio) currentAudioInstance = null;
@@ -197,10 +204,17 @@ function playWithEdgeTts(text, { onStart, onEnd, playbackId } = {}) {
     const audio = new Audio(ttsUrl);
     audio.volume = 1.0;
     currentAudioInstance = audio;
+    let started = false;
 
-    audio.onplay = () => {
-      if (activePlaybackId === playbackId && onStart) onStart();
+    const handlePlaybackStart = () => {
+      if (!started && activePlaybackId === playbackId) {
+        started = true;
+        if (onStart) onStart();
+      }
     };
+
+    audio.onplaying = handlePlaybackStart;
+    audio.onplay = handlePlaybackStart;
 
     audio.onended = () => {
       if (currentAudioInstance === audio) currentAudioInstance = null;
