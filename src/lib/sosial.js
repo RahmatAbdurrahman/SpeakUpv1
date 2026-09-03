@@ -90,7 +90,35 @@ export async function goLive(sessionId) {
   return data;
 }
 
-export async function fetchLiveRoomDetails(sessionId) {
+/**
+ * Notes + path materi presenter untuk ditampilkan di Live Room.
+ *
+ * PENTING soal viewer: query langsung ke simulation_sessions SELALU null bagi
+ * penonton, karena policy `sessions_all_own` hanya mengizinkan pemilik sesi —
+ * dan barisnya memang tidak boleh dibuka (memuat transcript presenter). Jadi
+ * jalur utama sekarang lewat RPC `get_live_room_material`, yang SECURITY
+ * DEFINER dan hanya mengembalikan notes + path selama room berstatus 'live'.
+ * Query lama dipertahankan sebagai cadangan untuk host (mis. room belum live).
+ */
+export async function fetchLiveRoomDetails(roomId, sessionId) {
+  if (roomId) {
+    try {
+      const { data, error } = await supabase.rpc("get_live_room_material", { p_room_id: roomId });
+      const row = Array.isArray(data) ? data[0] : data;
+      if (!error && row?.material_path) {
+        return {
+          simulationId: row.simulation_id,
+          hostId: row.host_id,
+          notes: row.notes || "",
+          materialPdfPath: row.material_path,
+          kategori: "kelas",
+        };
+      }
+    } catch {
+      // jatuh ke jalur pemilik di bawah
+    }
+  }
+
   if (!sessionId) return null;
   try {
     const { data: session, error } = await supabase

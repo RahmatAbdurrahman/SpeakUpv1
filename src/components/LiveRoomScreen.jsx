@@ -39,6 +39,12 @@ import LessonExitModal from "./LessonExitModal";
 
 const AVATAR_COLORS = ["#E0F2FE:#0369A1", "#FEF3C7:#B45309", "#DCFCE7:#15803D", "#FCE7F3:#BE185D"];
 
+// Disamakan persis dengan SimulasiScreen (RecordingStep) supaya Live Presentation
+// dan Simulasi Presentasi memakai ambang anti-cheat yang sama. Kalau salah satu
+// diubah, ubah keduanya.
+const SILENCE_THRESHOLD = 12;
+const MIN_LIVE_SECONDS = 15;
+
 function initialsFor(name) {
   const parts = (name || "?").trim().split(/\s+/);
   return ((parts[0]?.[0] || "") + (parts[1]?.[0] || "")).toUpperCase() || "?";
@@ -92,6 +98,15 @@ export default function LiveRoomScreen({ roomData, onLeaveRoom, onSessionEnded }
   const pipVideoRef = useRef(null);
   const containerRef = useRef(null);
   const pipRef = useRef(null);
+  // Wadah tersembunyi untuk elemen <audio> milik track suara presenter.
+  const audioSinkRef = useRef(null);
+  // Cermin dari state mainView, supaya handler LiveKit (closure yang dibuat
+  // sekali saat connect) tidak membaca nilai basi saat penonton menukar tampilan.
+  const mainViewRef = useRef("slide");
+  // Ref tidak memicu render, jadi status "ada video masuk" perlu state sendiri
+  // agar placeholder kamera-mati hilang begitu track presenter tiba.
+  const [hasRemoteVideo, setHasRemoteVideo] = useState(false);
+  const [perluAktifkanSuara, setPerluAktifkanSuara] = useState(false);
 
   // Audio / Video / Call state
   const [isMicOn, setIsMicOn] = useState(false);
@@ -124,6 +139,15 @@ export default function LiveRoomScreen({ roomData, onLeaveRoom, onSessionEnded }
   const recorderRef = useRef(null);
   const recChunksRef = useRef([]);
   const recStartRef = useRef(null);
+  // Anti-cheat sama seperti Simulasi Presentasi: dengarkan energi mikrofon
+  // sepanjang sesi, lalu tolak menilai kalau presenter tidak pernah bersuara.
+  const detectedSpeechRef = useRef(false);
+  const audioCtxRef = useRef(null);
+  const rafRef = useRef(null);
+  // null | "silent" | "incomplete"
+  const [gate, setGate] = useState(null);
+  // Durasi dibekukan saat gerbang muncul — jangan hitung Date.now() saat render.
+  const [gateSeconds, setGateSeconds] = useState(0);
 
   // Live Viewer Count & Timer
   const [realViewerCount, setRealViewerCount] = useState(0);
@@ -191,8 +215,8 @@ export default function LiveRoomScreen({ roomData, onLeaveRoom, onSessionEnded }
   // ── Fetch Details (notes & material PDF) for Viewer / Broadcaster ─────────
   useEffect(() => {
     let active = true;
-    if (roomData?.sessionId && (!notes || !materialPdfPath)) {
-      fetchLiveRoomDetails(roomData.sessionId).then((details) => {
+    if ((roomData?.roomId || roomData?.sessionId) && (!notes || !materialPdfPath)) {
+      fetchLiveRoomDetails(roomData.roomId, roomData.sessionId).then((details) => {
         if (!active || !details) return;
         if (details.notes) setNotes((n) => n || details.notes);
         if (details.materialPdfPath) setMaterialPdfPath((p) => p || details.materialPdfPath);
@@ -201,7 +225,7 @@ export default function LiveRoomScreen({ roomData, onLeaveRoom, onSessionEnded }
     return () => {
       active = false;
     };
-  }, [roomData?.sessionId, notes, materialPdfPath]);
+  }, [roomData?.roomId, roomData?.sessionId, notes, materialPdfPath]);
 
   // ── Load Signed URL for PDF Presentation ─────────────────────────────────
   useEffect(() => {
@@ -234,6 +258,7 @@ export default function LiveRoomScreen({ roomData, onLeaveRoom, onSessionEnded }
 
   // ── Re-attach video track on view swap ───────────────────────────────────
   useEffect(() => {
+    mainViewRef.current = mainView;
     const track = currentVideoTrackRef.current;
     if (!track) return;
     const targetEl = mainView === "camera" ? mainVideoRef.current : pipVideoRef.current;
@@ -345,10 +370,35 @@ export default function LiveRoomScreen({ roomData, onLeaveRoom, onSessionEnded }
     });
 
   // ── Finish Presentation Pipeline ─────────────────────────────────────────
-  const handleFinishLivePresentation = async () => {
+  // `lewatiGerbang` dipakai tombol "Akhiri Saja" di modal gerbang: presenter
+  // tetap boleh menutup sesi, hanya saja tanpa dinilai.
+  const handleFinishLivePresentation = async ({ lewatiGerbang = false } = {}) => {
+    // GERBANG MUTU — sengaja dijalankan SEBELUM endLiveRoom(), supaya tombol
+    // "Lanjutkan" benar-benar meneruskan siaran yang masih hidup. Ambangnya
+    // sama persis dengan Simulasi Presentasi (lihat SILENCE_THRESHOLD /
+    // MIN_LIVE_SECONDS di atas), jadi sesi kosong tidak pernah dinilai.
+    if (!lewatiGerbang) {
+      const durasi = recStartRef.current
+        ? Math.round((Date.now() - recStartRef.current) / 1000)
+        : 0;
+      if (!detectedSpeechRef.current) {
+        setGateSeconds(durasi);
+        setGate("silent");
+        return;
+      }
+      if (durasi < MIN_LIVE_SECONDS) {
+        setGateSeconds(durasi);
+        setGate("incomplete");
+        return;
+      }
+    }
+
+    setGate(null);
     setFinishing(true);
     setFinishError("");
     setAnalysisStage("uploading");
+
+    let pesanAnalisis = "";
     try {
       if (roomData?.roomId) {
         await endLiveRoom(roomData.roomId).catch(() => {});
@@ -356,14 +406,7 @@ export default function LiveRoomScreen({ roomData, onLeaveRoom, onSessionEnded }
       roomRef.current?.disconnect();
       roomRef.current = null;
 
-      let recorded = await stopLocalRecording();
-      if (!recorded || !recorded.blob || recorded.blob.size === 0) {
-        // Fallback safe audio blob jika perekam tidak sempat menangkap chunk
-        recorded = {
-          blob: new Blob([new Uint8Array(100)], { type: "audio/webm" }),
-          durationSeconds: Math.max(1, secondsElapsed),
-        };
-      }
+      const recorded = await stopLocalRecording();
 
       const {
         data: { user },
@@ -372,7 +415,12 @@ export default function LiveRoomScreen({ roomData, onLeaveRoom, onSessionEnded }
 
       let results = null;
 
-      if (user && !userErr && roomData?.sessionId) {
+      // Blob palsu 100 byte yang dulu disisipkan di sini sudah DIHAPUS: itu
+      // membuat sesi tanpa rekaman tetap masuk pipeline AI dan berpeluang
+      // menghasilkan skor atas sesuatu yang tidak pernah terjadi.
+      const adaRekaman = Boolean(recorded?.blob && recorded.blob.size > 0);
+
+      if (adaRekaman && user && !userErr && roomData?.sessionId) {
         try {
           const audioPath = await uploadSessionAudio(user.id, roomData.sessionId, recorded.blob);
           await updateSessionAudio(roomData.sessionId, audioPath);
@@ -383,31 +431,44 @@ export default function LiveRoomScreen({ roomData, onLeaveRoom, onSessionEnded }
             onStage: setAnalysisStage,
           });
         } catch (analysisErr) {
-          console.warn("AI analysis step warning:", analysisErr);
+          // Termasuk 422 dari gerbang transkrip analyze-session (rekaman hening
+          // / halusinasi Whisper). Pesannya ditahan supaya bisa ditampilkan,
+          // bukan ditelan diam-diam seperti sebelumnya.
+          pesanAnalisis = friendlySimulasiError(analysisErr);
         }
 
         try {
           results = await fetchSessionResults(roomData.sessionId);
-        } catch (fetchErr) {
-          console.warn("fetchSessionResults warning:", fetchErr);
+        } catch {
+          // biarkan results null — ditangani di bawah
         }
 
         if (roomData.simulationId) {
           await markSimulationCompleted(roomData.simulationId).catch(() => {});
         }
+      } else if (!adaRekaman) {
+        pesanAnalisis =
+          "Rekaman presentasimu tidak tertangkap — mikrofon sepertinya tidak aktif. Sesi ditutup tanpa penilaian AI.";
       }
 
       setAnalysisStage("done");
-      if (results) {
+
+      // fetchSessionResults SELALU mengembalikan objek ({metrics, feedback}),
+      // jadi memeriksa `results` saja selalu truthy — dulu ini membuat layar
+      // hasil terbuka dalam keadaan kosong. Yang menentukan adalah feedback-nya.
+      if (results?.feedback) {
         onSessionEnded?.({ sessionId: roomData?.sessionId, results });
       } else {
-        onLeaveRoom?.();
+        setFinishing(false);
+        setFinishError(
+          pesanAnalisis ||
+            "Sesi sudah ditutup, tapi belum ada feedback AI yang bisa ditampilkan.",
+        );
       }
     } catch (err) {
       console.error("handleFinishLivePresentation error:", err);
+      setFinishing(false);
       setFinishError(friendlySimulasiError(err));
-      // Jika terjadi error fatal, tetap akhiri sesi dan keluar dengan aman
-      onLeaveRoom?.();
     }
   };
 
@@ -463,27 +524,71 @@ export default function LiveRoomScreen({ roomData, onLeaveRoom, onSessionEnded }
         }
         roomRef.current = room;
 
-        room.on(RoomEvent.TrackSubscribed, (track) => {
+        // Satu jalur pasang untuk video DAN audio.
+        // BUG sebelumnya: hanya Track.Kind.Video yang ditangani, sehingga track
+        // audio presenter tidak pernah di-attach ke elemen mana pun — dan track
+        // LiveKit yang tidak di-attach tidak berbunyi sama sekali di penonton.
+        const pasangTrack = (track) => {
           if (track.kind === Track.Kind.Video) {
             currentVideoTrackRef.current = track;
-            const targetEl = mainView === "camera" ? mainVideoRef.current : pipVideoRef.current;
+            const targetEl =
+              mainViewRef.current === "camera" ? mainVideoRef.current : pipVideoRef.current;
             if (targetEl) attachTrack(track, targetEl);
+            setHasRemoteVideo(true);
+          } else if (track.kind === Track.Kind.Audio) {
+            const sink = audioSinkRef.current;
+            if (sink) {
+              // Sengaja TIDAK memakai attachTrack di sini: helper itu
+              // mengosongkan wadah sebelum menempel, sehingga pembicara kedua
+              // (mode duet) akan membungkam yang pertama. Elemen audio tidak
+              // terlihat, jadi aman ditumpuk. detachTrack tetap membersihkannya.
+              sink.appendChild(track.attach());
+            }
           }
-        });
+        };
+
+        room.on(RoomEvent.TrackSubscribed, pasangTrack);
         room.on(RoomEvent.TrackUnsubscribed, (track) => {
-          if (currentVideoTrackRef.current === track) currentVideoTrackRef.current = null;
+          if (currentVideoTrackRef.current === track) {
+            currentVideoTrackRef.current = null;
+            setHasRemoteVideo(false);
+          }
           detachTrack(track);
         });
+
+        // BUG sebelumnya: handler di atas baru dipasang SETELAH connectToRoom()
+        // selesai, padahal LiveKit menembakkan TrackSubscribed untuk peserta
+        // yang sudah lebih dulu siaran tepat saat proses connect. Penonton yang
+        // masuk ke siaran berjalan (alur normal) jadi melewatkan kamera & suara
+        // presenter selamanya. Sapuan ini memasang track yang sudah terlanjur
+        // ter-subscribe sebelum kita sempat mendengarkan.
+        room.remoteParticipants.forEach((peserta) => {
+          peserta.trackPublications.forEach((pub) => {
+            if (pub.isSubscribed && pub.track) pasangTrack(pub.track);
+          });
+        });
+
+        // Browser memblokir autoplay bersuara sampai ada interaksi pengguna.
+        // Penonton sudah menekan tombol untuk masuk room, jadi biasanya lolos;
+        // kalau ditolak, tombol "Aktifkan suara" muncul di UI.
+        try {
+          await room.startAudio();
+        } catch {
+          if (active) setPerluAktifkanSuara(true);
+        }
         room.on(RoomEvent.LocalTrackPublished, (publication) => {
           if (publication.track?.kind === Track.Kind.Video) {
             currentVideoTrackRef.current = publication.track;
-            const targetEl = mainView === "camera" ? mainVideoRef.current : pipVideoRef.current;
+            const targetEl =
+              mainViewRef.current === "camera" ? mainVideoRef.current : pipVideoRef.current;
             if (targetEl) attachTrack(publication.track, targetEl);
+            setHasRemoteVideo(true);
           }
         });
         room.on(RoomEvent.LocalTrackUnpublished, (publication) => {
           if (publication.track && currentVideoTrackRef.current === publication.track) {
             currentVideoTrackRef.current = null;
+            setHasRemoteVideo(false);
             detachTrack(publication.track);
           }
         });
@@ -564,8 +669,33 @@ export default function LiveRoomScreen({ roomData, onLeaveRoom, onSessionEnded }
           if (e.data.size > 0) recChunksRef.current.push(e.data);
         };
         recStartRef.current = Date.now();
+        detectedSpeechRef.current = false;
         recorder.start();
         recorderRef.current = recorder;
+
+        // Pantau energi mikrofon dari stream yang SAMA dengan perekam, jadi
+        // tidak perlu izin getUserMedia kedua. Pola identik dengan
+        // RecordingStep di SimulasiScreen.
+        try {
+          const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+          audioCtxRef.current = audioCtx;
+          const analyser = audioCtx.createAnalyser();
+          analyser.fftSize = 512;
+          audioCtx.createMediaStreamSource(stream).connect(analyser);
+          const data = new Uint8Array(analyser.frequencyBinCount);
+          const tick = () => {
+            analyser.getByteFrequencyData(data);
+            let sum = 0;
+            for (let i = 0; i < data.length; i++) sum += data[i];
+            if (sum / data.length > SILENCE_THRESHOLD) detectedSpeechRef.current = true;
+            rafRef.current = requestAnimationFrame(tick);
+          };
+          tick();
+        } catch {
+          // Browser tanpa AudioContext: jangan pernah memblokir sesi nyata —
+          // gerbang transkrip di analyze-session tetap jadi jaring pengaman.
+          detectedSpeechRef.current = true;
+        }
       } catch {
         // Microphone unavailable
       }
@@ -580,6 +710,8 @@ export default function LiveRoomScreen({ roomData, onLeaveRoom, onSessionEnded }
     return () => {
       if (recorderRef.current && recorderRef.current.state !== "inactive") recorderRef.current.stop();
       recStreamRef.current?.getTracks().forEach((t) => t.stop());
+      if (rafRef.current) cancelAnimationFrame(rafRef.current);
+      audioCtxRef.current?.close?.().catch(() => {});
     };
   }, []);
 
@@ -736,6 +868,71 @@ export default function LiveRoomScreen({ roomData, onLeaveRoom, onSessionEnded }
 
   return (
     <div className="live-conference-wrapper" ref={containerRef}>
+      {/* Wadah elemen <audio> track presenter. Tanpa ini suara tidak berbunyi. */}
+      <div ref={audioSinkRef} style={{ display: "none" }} aria-hidden="true" />
+
+      {/* Gerbang mutu — sepadan dengan RecordingGateModal di Simulasi Presentasi.
+          Muncul SEBELUM room ditutup, jadi "Lanjutkan" meneruskan siaran. */}
+      {gate && (
+        <div className="live-gate-backdrop">
+          <div className="live-gate-sheet">
+            <h2 className="live-gate-title">
+              {gate === "silent" ? "Belum ada suara terdeteksi" : "Presentasimu baru sebentar"}
+            </h2>
+            <p className="live-gate-desc">
+              {gate === "silent"
+                ? "Selama siaran ini mikrofonmu tidak menangkap suara sama sekali, jadi belum ada yang bisa dinilai AI. Cek izin mikrofon, lalu lanjutkan presentasimu."
+                : `Baru sekitar ${gateSeconds} detik berjalan — hasil analisisnya bisa kurang akurat kalau ditutup sekarang.`}
+            </p>
+            <div className="live-gate-actions">
+              <button type="button" className="btn-live-gate-primary" onClick={() => setGate(null)}>
+                Lanjutkan Presentasi
+              </button>
+              <button
+                type="button"
+                className="btn-live-gate-ghost"
+                onClick={() => handleFinishLivePresentation({ lewatiGerbang: true })}
+              >
+                Akhiri Tanpa Dinilai
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Sesi sudah ditutup tapi tidak ada feedback (gerbang server menolak,
+          mik mati, atau AI gagal). Dulu kasus ini melempar presenter keluar
+          tanpa penjelasan apa pun. */}
+      {!finishing && finishError && (
+        <div className="live-gate-backdrop">
+          <div className="live-gate-sheet">
+            <h2 className="live-gate-title">Sesi selesai</h2>
+            <p className="live-gate-desc">{finishError}</p>
+            <div className="live-gate-actions">
+              <button type="button" className="btn-live-gate-primary" onClick={() => onLeaveRoom?.()}>
+                Kembali
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {perluAktifkanSuara && (
+        <button
+          type="button"
+          className="live-conference-enable-audio"
+          onClick={async () => {
+            try {
+              await roomRef.current?.startAudio();
+              setPerluAktifkanSuara(false);
+            } catch {
+              triggerToast("Gagal mengaktifkan suara");
+            }
+          }}
+        >
+          🔊 Ketuk untuk mengaktifkan suara
+        </button>
+      )}
       {/* ── Toast Alert ─────────────────────────────────────────── */}
       {showToast && (
         <div className="teams-toast">
@@ -838,7 +1035,7 @@ export default function LiveRoomScreen({ roomData, onLeaveRoom, onSessionEnded }
                 <p>{connectionError}</p>
               </div>
             )}
-            {!connecting && !connectionError && !isBroadcaster && !currentVideoTrackRef.current && (
+            {!connecting && !connectionError && !isBroadcaster && !hasRemoteVideo && (
               <div className="live-conference-cam-off-placeholder">
                 <div className="live-conference-avatar-circle">
                   <span>{initialsFor(speakerName)}</span>
@@ -867,7 +1064,7 @@ export default function LiveRoomScreen({ roomData, onLeaveRoom, onSessionEnded }
           // When Slide is in main view, PiP shows camera
           <div className="live-conference-pip-content">
             <div ref={pipVideoRef} className="live-conference-pip-video" />
-            {!connecting && !currentVideoTrackRef.current && (
+            {!connecting && !hasRemoteVideo && (
               <div className="live-conference-pip-camoff">
                 <span>{isBroadcaster ? "👤" : initialsFor(speakerName)}</span>
               </div>
