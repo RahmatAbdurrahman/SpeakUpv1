@@ -254,11 +254,17 @@ function fallbackWebSpeech(text, { onStart, onEnd, playbackId } = {}) {
   }
 
   try {
-    window.speechSynthesis.cancel();
+    if (window.speechSynthesis.speaking || window.speechSynthesis.pending) {
+      window.speechSynthesis.cancel();
+    }
+    if (window.speechSynthesis.paused) {
+      window.speechSynthesis.resume();
+    }
+
     const utterance = new SpeechSynthesisUtterance(text);
     utterance.lang = "id-ID";
     utterance.rate = 1.0;
-    utterance.pitch = 0.9;
+    utterance.pitch = 0.95;
 
     const voices = window.speechSynthesis.getVoices();
     const idVoice = voices.find(
@@ -269,8 +275,12 @@ function fallbackWebSpeech(text, { onStart, onEnd, playbackId } = {}) {
     );
     if (idVoice) utterance.voice = idVoice;
 
+    let speechStarted = false;
     utterance.onstart = () => {
-      if (activePlaybackId === playbackId && onStart) onStart();
+      if (activePlaybackId === playbackId && onStart && !speechStarted) {
+        speechStarted = true;
+        onStart();
+      }
     };
 
     utterance.onend = () => {
@@ -278,7 +288,8 @@ function fallbackWebSpeech(text, { onStart, onEnd, playbackId } = {}) {
     };
 
     utterance.onerror = (e) => {
-      console.warn("[InterviewTTS] WebSpeech error:", e);
+      console.warn("[InterviewTTS] WebSpeech error:", e?.error || e);
+      // If speech synthesis errors, don't leave avatar stuck
       if (activePlaybackId === playbackId && onEnd) onEnd();
     };
 
