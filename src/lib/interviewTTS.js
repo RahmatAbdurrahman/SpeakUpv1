@@ -3,7 +3,8 @@
  * with automatic fallback to Microsoft Edge TTS (id-ID-ArdiNeural) and Web Speech.
  */
 
-const ELEVENLABS_API_KEY = import.meta.env.VITE_ELEVENLABS_API_KEY || "";
+const ELEVENLABS_API_KEY =
+  import.meta.env.VITE_ELEVENLABS_API_KEY || "sk_e7a08804d047a0fd33110f4cc1e44940912506b028197d34";
 const ELEVENLABS_VOICE_ID = "pNInz6obpgDQGcFmaJgB"; // Adam - Professional & Natural Male Voice
 
 let currentAudioInstance = null;
