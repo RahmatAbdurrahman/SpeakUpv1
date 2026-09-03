@@ -24,7 +24,7 @@ export default function Onboarding({ onStart, onLogin }) {
           <img src={speakUpLogo} alt="SpeakUp Logo" className="brand-logo" />
         </div>
         <p className="brand-tagline" data-node-id="236:548">
-          From Fear to Confidence.
+          Practice. Speak. Be Heard.
         </p>
       </div>
 
